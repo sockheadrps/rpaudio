@@ -1,0 +1,31 @@
+*.mp3
+t.py
+.venv
+
+# Compiled source
+/target/
+
+# Cargo package files
+**/*.rs.bk
+Cargo.lock
+
+# Output from running tests
+*.log
+
+# IDEs and editors
+/.idea/
+/.vscode/
+/*.iml
+
+# Optional: Uncomment if you have a custom directory for build artifacts
+# /out/
+
+# Optional: You may also want to ignore the following
+# if you use Rust Language Server (RLS)
+/rls/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
