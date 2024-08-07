@@ -5,7 +5,7 @@ use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{mpsc, Arc, Mutex, Condvar};
-use std::thread;
+use std::thread::{self, sleep};
 use std::time::Duration;
 
 enum Command {
