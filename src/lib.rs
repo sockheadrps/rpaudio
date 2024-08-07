@@ -11,11 +11,13 @@ enum Command {
     Pause,
     Resume,
     Stop,
+    Play,
 }
 
 #[pyclass]
 pub struct AudioHandler {
     command_sender: Arc<Mutex<mpsc::Sender<Command>>>,
+    is_playing: Arc<Mutex<bool>>,
 }
 
 #[pymethods]
@@ -24,11 +26,10 @@ impl AudioHandler {
     fn new() -> Self {
         let (sender, receiver) = mpsc::channel();
         let sender = Arc::new(Mutex::new(sender));
+        let is_playing = Arc::new(Mutex::new(false));
 
-        // Start the audio player thread
-        let sender_clone = Arc::clone(&sender);
         thread::spawn(move || {
-            let mut stream = None;
+            let mut _stream = None;
             let mut sink = None;
 
             while let Ok(command) = receiver.recv() {
@@ -41,8 +42,14 @@ impl AudioHandler {
                         let source = Decoder::new(BufReader::new(file)).unwrap();
                         new_sink.append(source);
 
-                        stream = Some(new_stream);
+                        _stream = Some(new_stream);
                         sink = Some(new_sink);
+
+                    }
+                    Command::Play => {
+                        if let Some(sink) = &sink {
+                            sink.play();
+                        }
                     }
                     Command::Pause => {
                         if let Some(sink) = &sink {
@@ -66,6 +73,7 @@ impl AudioHandler {
 
         AudioHandler {
             command_sender: sender,
+            is_playing,
         }
     }
 
@@ -76,7 +84,16 @@ impl AudioHandler {
         Ok(())
     }
 
+    fn play(&self) -> PyResult<()> {
+        *self.is_playing.lock().unwrap() = true;
+        let command = Command::Play;
+        self.command_sender.lock().unwrap().send(command)
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+        Ok(())
+    }
+
     fn pause(&self) -> PyResult<()> {
+        *self.is_playing.lock().unwrap() = false;
         let command = Command::Pause;
         self.command_sender.lock().unwrap().send(command)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
@@ -84,6 +101,7 @@ impl AudioHandler {
     }
 
     fn resume(&self) -> PyResult<()> {
+        *self.is_playing.lock().unwrap() = true;
         let command = Command::Resume;
         self.command_sender.lock().unwrap().send(command)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
@@ -91,13 +109,17 @@ impl AudioHandler {
     }
 
     fn stop(&self) -> PyResult<()> {
+        *self.is_playing.lock().unwrap() = false;
         let command = Command::Stop;
         self.command_sender.lock().unwrap().send(command)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
         Ok(())
     }
-}
 
+    fn is_playing(&self) -> bool {
+        *self.is_playing.lock().unwrap()
+    }
+}
 
 #[pymodule]
 fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
