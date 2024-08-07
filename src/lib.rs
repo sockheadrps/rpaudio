@@ -4,8 +4,8 @@ use pyo3::exceptions::PyRuntimeError;
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::{mpsc, Arc, Mutex, Condvar};
-use std::thread::{self, sleep};
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread::{self};
 use std::time::Duration;
 
 enum Command {
@@ -20,7 +20,6 @@ pub struct AudioHandler {
     command_sender: Arc<Mutex<mpsc::Sender<Command>>>,
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
-    done: Arc<(Mutex<bool>, Condvar)>,
 }
 
 #[pymethods]
@@ -33,12 +32,10 @@ impl AudioHandler {
         let sender = Arc::new(Mutex::new(sender));
         let is_playing = Arc::new(Mutex::new(false));
         let callback = Arc::new(Mutex::new(callback));
-        let done = Arc::new((Mutex::new(false), Condvar::new()));
 
         let _command_sender = Arc::clone(&sender);
         let is_playing_clone = Arc::clone(&is_playing);
         let callback_clone = Arc::clone(&callback);
-        let done_clone = Arc::clone(&done);
 
         thread::spawn(move || {
             let mut _stream = None;
@@ -60,17 +57,12 @@ impl AudioHandler {
                         let sink = sink.take().unwrap();
                         let is_playing_clone = Arc::clone(&is_playing_clone);
                         let callback_clone = Arc::clone(&callback_clone);
-                        let done_clone = Arc::clone(&done_clone);
 
                         thread::spawn(move || {
                             loop {
                                 if sink.empty() {
                                     *is_playing_clone.lock().unwrap() = false;
                                     AudioHandler::invoke_callback(&callback_clone);
-                                    let (lock, cvar) = &*done_clone;
-                                    let mut done = lock.lock().unwrap();
-                                    *done = true;
-                                    cvar.notify_all();
                                     break;
                                 }
                                 thread::sleep(Duration::from_millis(100));
@@ -94,22 +86,17 @@ impl AudioHandler {
                             sink.stop();
                             *is_playing_clone.lock().unwrap() = false;
                         }
-                        let (lock, cvar) = &*done_clone;
-                        let mut done = lock.lock().unwrap();
-                        *done = true;
-                        cvar.notify_all();
+                        AudioHandler::invoke_callback(&callback_clone);
                         break;
                     }
                 }
             }
-            AudioHandler::invoke_callback(&callback_clone);
         });
 
         AudioHandler {
             command_sender: sender,
             is_playing,
             callback,
-            done,
         }
     }
 
@@ -141,11 +128,6 @@ impl AudioHandler {
         let command = Command::Stop;
         self.command_sender.lock().unwrap().send(command)
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        let (lock, cvar) = &*self.done;
-        let mut done = lock.lock().unwrap();
-        while !*done {
-            done = cvar.wait(done).unwrap();
-        }
         Ok(())
     }
 
