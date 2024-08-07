@@ -1,20 +1,11 @@
 import rpaudio
 from time import sleep
+def on_audio_stop():
+    print("Audio has stopped")
 
-audio_handler = rpaudio.AudioHandler()
-audio_handler.load_audio("ex.wav")
-print("Audio loaded")
-sleep(1)  # Allow some time for the audio to load
-
-audio_handler.play()
-print("Audio playing:", audio_handler.is_playing())
-sleep(2)
-audio_handler.pause()
-print("Audio paused after pause:", audio_handler.is_playing())
-sleep(2)
-audio_handler.resume()
-print("Audio playing after resume:", audio_handler.is_playing())
-sleep(2)
-print("Stopping audio")
-audio_handler.stop()
-print("Audio playing after stop:", audio_handler.is_playing())
+handler = rpaudio.AudioHandler(callback=on_audio_stop)
+handler.load_audio("ex.wav")
+handler.play()
+while handler.is_playing():
+    sleep(1)
+    print(handler.is_playing())

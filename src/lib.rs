@@ -1,15 +1,16 @@
 use pyo3::prelude::*;
+use pyo3::types::PyAny;
 use pyo3::exceptions::PyRuntimeError;
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 
 enum Command {
     Load(String),
     Pause,
-    Resume,
     Stop,
     Play,
 }
@@ -18,15 +19,21 @@ enum Command {
 pub struct AudioHandler {
     command_sender: Arc<Mutex<mpsc::Sender<Command>>>,
     is_playing: Arc<Mutex<bool>>,
+    callback: Arc<Mutex<Option<Py<PyAny>>>>,
 }
 
 #[pymethods]
 impl AudioHandler {
     #[new]
-    fn new() -> Self {
+    fn new(callback: Option<Py<PyAny>>) -> Self {
         let (sender, receiver) = mpsc::channel();
         let sender = Arc::new(Mutex::new(sender));
         let is_playing = Arc::new(Mutex::new(false));
+        let callback = Arc::new(Mutex::new(callback));
+
+        let _command_sender = Arc::clone(&sender);
+        let is_playing_clone = Arc::clone(&is_playing);
+        let callback_clone = Arc::clone(&callback);
 
         thread::spawn(move || {
             let mut _stream = None;
@@ -45,25 +52,38 @@ impl AudioHandler {
                         _stream = Some(new_stream);
                         sink = Some(new_sink);
 
+                        // Start a separate thread to monitor sink state
+                        let sink = sink.take().unwrap(); // Take ownership of Sink
+                        let is_playing_clone = Arc::clone(&is_playing_clone);
+                        let callback_clone = Arc::clone(&callback_clone);
+
+                        thread::spawn(move || {
+                            loop {
+                                if sink.empty() {
+                                    *is_playing_clone.lock().unwrap() = false;
+                                    AudioHandler::invoke_callback(&callback_clone);
+                                    break;
+                                }
+                                thread::sleep(Duration::from_millis(100));
+                            }
+                        });
                     }
                     Command::Play => {
                         if let Some(sink) = &sink {
                             sink.play();
+                            *is_playing_clone.lock().unwrap() = true;
                         }
                     }
                     Command::Pause => {
                         if let Some(sink) = &sink {
                             sink.pause();
-                        }
-                    }
-                    Command::Resume => {
-                        if let Some(sink) = &sink {
-                            sink.play();
+                            *is_playing_clone.lock().unwrap() = false;
                         }
                     }
                     Command::Stop => {
                         if let Some(sink) = &sink {
                             sink.stop();
+                            *is_playing_clone.lock().unwrap() = false;
                         }
                         break;
                     }
@@ -74,6 +94,7 @@ impl AudioHandler {
         AudioHandler {
             command_sender: sender,
             is_playing,
+            callback,
         }
     }
 
@@ -100,14 +121,6 @@ impl AudioHandler {
         Ok(())
     }
 
-    fn resume(&self) -> PyResult<()> {
-        *self.is_playing.lock().unwrap() = true;
-        let command = Command::Resume;
-        self.command_sender.lock().unwrap().send(command)
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        Ok(())
-    }
-
     fn stop(&self) -> PyResult<()> {
         *self.is_playing.lock().unwrap() = false;
         let command = Command::Stop;
@@ -118,6 +131,18 @@ impl AudioHandler {
 
     fn is_playing(&self) -> bool {
         *self.is_playing.lock().unwrap()
+    }
+}
+
+impl AudioHandler {
+    fn invoke_callback(callback: &Arc<Mutex<Option<Py<PyAny>>>>) {
+        Python::with_gil(|py| {
+            if let Some(callback) = &*callback.lock().unwrap() {
+                if let Err(e) = callback.call0(py) {
+                    eprintln!("Failed to invoke callback: {}", e);
+                }
+            }
+        });
     }
 }
 
