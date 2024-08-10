@@ -17,117 +17,80 @@ enum Command {
 
 #[pyclass]
 pub struct AudioHandler {
-    command_sender: Arc<Mutex<mpsc::Sender<Command>>>,
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
+    sink: Option<Arc<Mutex<Sink>>>
 }
 
 #[pymethods]
 impl AudioHandler {
     #[new]
     fn new(callback: Option<Py<PyAny>>) -> Self {
-        pyo3::prepare_freethreaded_python();
-
-        let (sender, receiver) = mpsc::channel();
-        let sender = Arc::new(Mutex::new(sender));
-        let is_playing = Arc::new(Mutex::new(false));
-        let callback = Arc::new(Mutex::new(callback));
-
-        let _command_sender = Arc::clone(&sender);
-        let is_playing_clone = Arc::clone(&is_playing);
-        let callback_clone = Arc::clone(&callback);
-
-        thread::spawn(move || {
-            let mut _stream = None;
-            let mut sink = None;
-
-            while let Ok(command) = receiver.recv() {
-                match command {
-                    Command::Load(file_path) => {
-                        let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
-                        let new_sink = Sink::try_new(&stream_handle).unwrap();
-
-                        let file = File::open(file_path).unwrap();
-                        let source = Decoder::new(BufReader::new(file)).unwrap();
-                        new_sink.append(source);
-
-                        _stream = Some(new_stream);
-                        sink = Some(new_sink);
-
-                        let sink = sink.take().unwrap();
-                        let is_playing_clone = Arc::clone(&is_playing_clone);
-                        let callback_clone = Arc::clone(&callback_clone);
-
-                        thread::spawn(move || {
-                            loop {
-                                if sink.empty() {
-                                    *is_playing_clone.lock().unwrap() = false;
-                                    AudioHandler::invoke_callback(&callback_clone);
-                                    break;
-                                }
-                                thread::sleep(Duration::from_millis(100));
-                            }
-                        });
-                    }
-                    Command::Play => {
-                        if let Some(sink) = &sink {
-                            sink.play();
-                            *is_playing_clone.lock().unwrap() = true;
-                        }
-                    }
-                    Command::Pause => {
-                        if let Some(sink) = &sink {
-                            sink.pause();
-                            *is_playing_clone.lock().unwrap() = false;
-                        }
-                    }
-                    Command::Stop => {
-                        if let Some(sink) = &sink {
-                            sink.stop();
-                            *is_playing_clone.lock().unwrap() = false;
-                        }
-                        AudioHandler::invoke_callback(&callback_clone);
-                        break;
-                    }
-                }
-            }
-        });
-
         AudioHandler {
-            command_sender: sender,
-            is_playing,
-            callback,
+            // command_sender: sender,
+            is_playing: Arc::new(Mutex::new(false)),
+            callback: Arc::new(Mutex::new(callback)),
+            sink: None
         }
     }
 
-    fn load_audio(&self, file_path: &str) -> PyResult<()> {
-        let command = Command::Load(file_path.to_string());
-        self.command_sender.lock().unwrap().send(command)
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+    fn load_audio(&mut self, file_path: &str) -> PyResult<()> {
+        if let Some(_) = self.sink {
+            return Ok(());
+        }
+
+        let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
+        self.sink = Some(Arc::new(Mutex::new(Sink::try_new(&stream_handle).unwrap())));
+
+        let file = File::open(file_path).unwrap();
+        let source = Decoder::new(BufReader::new(file)).unwrap();
+        (*self.sink.as_ref().unwrap().lock().unwrap()).pause();
+        (*self.sink.as_ref().unwrap().lock().unwrap()).append(source);
+
+        let _stream = Some(new_stream);
+        let is_playing = self.is_playing.clone();
+        let callback = self.callback.clone();
+
+        let sink = self.sink.as_ref().unwrap().clone();
+
+        thread::spawn(move || {
+            loop {
+                let tmp = &*sink.lock().unwrap();
+                if tmp.empty() {
+                    *is_playing.lock().unwrap() = false;
+                    Self::invoke_callback(&*callback.lock().unwrap());
+                    break;
+                }
+                thread::sleep(Duration::from_millis(100));
+            }
+        });
         Ok(())
     }
 
-    fn play(&self) -> PyResult<()> {
-        *self.is_playing.lock().unwrap() = true;
-        let command = Command::Play;
-        self.command_sender.lock().unwrap().send(command)
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+    fn play(&mut self) -> PyResult<()> {
+        if let Some(sink) = &self.sink {
+            let sink = &*sink.lock().unwrap();
+            sink.play();
+            *self.is_playing.lock().unwrap() = true;
+            sink.sleep_until_end()
+        }
         Ok(())
     }
 
-    fn pause(&self) -> PyResult<()> {
-        *self.is_playing.lock().unwrap() = false;
-        let command = Command::Pause;
-        self.command_sender.lock().unwrap().send(command)
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+    fn pause(&mut self) -> PyResult<()> {
+        if let Some(sink) = &self.sink {
+            (*sink.lock().unwrap()).pause();
+            *self.is_playing.lock().unwrap() = false;
+        }
         Ok(())
     }
 
-    fn stop(&self) -> PyResult<()> {
-        *self.is_playing.lock().unwrap() = false;
-        let command = Command::Stop;
-        self.command_sender.lock().unwrap().send(command)
-            .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+    fn stop(&mut self) -> PyResult<()> {
+        if let Some(sink) = &self.sink {
+            (*sink.lock().unwrap()).stop();
+            *self.is_playing.lock().unwrap() = false;
+        }
+        Self::invoke_callback(&*self.callback.lock().unwrap());
         Ok(())
     }
 
@@ -137,9 +100,9 @@ impl AudioHandler {
 }
 
 impl AudioHandler {
-    fn invoke_callback(callback: &Arc<Mutex<Option<Py<PyAny>>>>) {
+    fn invoke_callback(callback: &Option<Py<PyAny>>) {
         Python::with_gil(|py| {
-            if let Some(callback) = &*callback.lock().unwrap() {
+            if let Some(callback) = callback {
                 if let Err(e) = callback.call0(py) {
                     eprintln!("Failed to invoke callback: {}", e);
                 }
