@@ -1,6 +1,7 @@
 *.mp3
 .venv
 
+build/
 # Compiled source
 /target/
 
