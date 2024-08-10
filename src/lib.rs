@@ -6,6 +6,7 @@ use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
+use pyo3::exceptions::PyRuntimeError;
 
 
 #[pyclass]
@@ -71,24 +72,28 @@ impl AudioHandler {
         Ok(())
     }
 
-    #[pyo3(text_signature = "($self)")]
+
     fn play(&mut self) -> PyResult<()> {
-        // Play the audio
         if let Some(sink) = &self.sink {
             (*sink.lock().unwrap()).play();
             *self.is_playing.lock().unwrap() = true;
+            println!("PLAY");
+            Ok(())
+        } else {
+            let message = "No sink available to play. Load audio first.";
+            Err(PyRuntimeError::new_err(message))
         }
-        println!("PLAY");
-        Ok(())
     }
 
     fn pause(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
             (*sink.lock().unwrap()).pause();
             *self.is_playing.lock().unwrap() = false;
+            println!("PAUSE");
+            Ok(())
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("No sink available to pause. Load audio first."))
         }
-        println!("PAUSE");
-        Ok(())
     }
 
     fn stop(&mut self) -> PyResult<()> {
@@ -96,9 +101,12 @@ impl AudioHandler {
             (*sink.lock().unwrap()).stop();
             *self.is_playing.lock().unwrap() = false;
             Self::invoke_callback(&*self.callback.lock().unwrap());
+            println!("STOP");
+            Ok(())
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("No sink available to stop. Load audio first."))
         }
-        println!("STOP");
-        Ok(())
+        
     }
 }
 
