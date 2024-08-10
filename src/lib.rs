@@ -1,11 +1,10 @@
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
-use pyo3::exceptions::PyRuntimeError;
 use rodio::{Decoder, OutputStream, Sink};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::{mpsc, Arc, Mutex};
-use std::thread::{self};
+use std::sync::{Arc, Mutex};
+use std::thread;
 use std::time::Duration;
 
 enum Command {
