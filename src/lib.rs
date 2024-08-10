@@ -8,7 +8,7 @@ use std::thread;
 use std::time::Duration;
 
 
-#[pyclass(unsendable)]
+#[pyclass]
 pub struct AudioHandler {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
@@ -16,6 +16,7 @@ pub struct AudioHandler {
     stream: Option<OutputStream>,
 }
 
+unsafe impl Send for AudioHandler {}
 
 #[pymethods]
 impl AudioHandler {
