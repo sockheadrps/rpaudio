@@ -8,23 +8,30 @@ use std::thread;
 use std::time::Duration;
 
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct AudioHandler {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
-    sink: Option<Arc<Mutex<Sink>>>
+    sink: Option<Arc<Mutex<Sink>>>,
+    stream: Option<OutputStream>,
 }
+
 
 #[pymethods]
 impl AudioHandler {
     #[new]
     fn new(callback: Option<Py<PyAny>>) -> Self {
         AudioHandler {
-            // command_sender: sender,
             is_playing: Arc::new(Mutex::new(false)),
             callback: Arc::new(Mutex::new(callback)),
-            sink: None
+            sink: None,
+            stream: None,
         }
+    }
+
+    #[getter]
+    fn is_playing(&self) -> PyResult<bool> {
+        return Ok(*self.is_playing.lock().unwrap());
     }
 
     fn load_audio(&mut self, file_path: &str) -> PyResult<()> {
@@ -33,23 +40,25 @@ impl AudioHandler {
         }
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
-        self.sink = Some(Arc::new(Mutex::new(Sink::try_new(&stream_handle).unwrap())));
+        let sink = Arc::new(Mutex::new(Sink::try_new(&stream_handle).unwrap()));
 
         let file = File::open(file_path).unwrap();
         let source = Decoder::new(BufReader::new(file)).unwrap();
-        (*self.sink.as_ref().unwrap().lock().unwrap()).pause();
-        (*self.sink.as_ref().unwrap().lock().unwrap()).append(source);
+        sink.lock().unwrap().append(source);
 
-        let _stream = Some(new_stream);
+        self.stream = Some(new_stream);
+        self.sink = Some(sink.clone());
+
         let is_playing = self.is_playing.clone();
         let callback = self.callback.clone();
 
-        let sink = self.sink.as_ref().unwrap().clone();
-
         thread::spawn(move || {
             loop {
-                let tmp = &*sink.lock().unwrap();
-                if tmp.empty() {
+                if !*is_playing.lock().unwrap() && sink.lock().unwrap().empty() {
+                    break;
+                }
+
+                if sink.lock().unwrap().empty() {
                     *is_playing.lock().unwrap() = false;
                     Self::invoke_callback(&*callback.lock().unwrap());
                     break;
@@ -57,16 +66,18 @@ impl AudioHandler {
                 thread::sleep(Duration::from_millis(100));
             }
         });
+
         Ok(())
     }
 
+    #[pyo3(text_signature = "($self)")]
     fn play(&mut self) -> PyResult<()> {
+        // Play the audio
         if let Some(sink) = &self.sink {
-            let sink = &*sink.lock().unwrap();
-            sink.play();
+            (*sink.lock().unwrap()).play();
             *self.is_playing.lock().unwrap() = true;
-            sink.sleep_until_end()
         }
+        println!("PLAY");
         Ok(())
     }
 
@@ -75,6 +86,7 @@ impl AudioHandler {
             (*sink.lock().unwrap()).pause();
             *self.is_playing.lock().unwrap() = false;
         }
+        println!("PAUSE");
         Ok(())
     }
 
@@ -82,15 +94,13 @@ impl AudioHandler {
         if let Some(sink) = &self.sink {
             (*sink.lock().unwrap()).stop();
             *self.is_playing.lock().unwrap() = false;
+            Self::invoke_callback(&*self.callback.lock().unwrap());
         }
-        Self::invoke_callback(&*self.callback.lock().unwrap());
+        println!("STOP");
         Ok(())
     }
-
-    fn is_playing(&self) -> bool {
-        *self.is_playing.lock().unwrap()
-    }
 }
+
 
 impl AudioHandler {
     fn invoke_callback(callback: &Option<Py<PyAny>>) {
