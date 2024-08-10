@@ -7,12 +7,6 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-enum Command {
-    Load(String),
-    Pause,
-    Stop,
-    Play,
-}
 
 #[pyclass]
 pub struct AudioHandler {
