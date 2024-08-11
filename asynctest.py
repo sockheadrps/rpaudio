@@ -5,7 +5,7 @@ def on_audio_stop():
     print("Audio has stopped")
 
 async def play_audio():
-    handler = rpaudio.AudioHandler(callback=on_audio_stop)
+    handler = rpaudio.AudioSink(callback=on_audio_stop)
     handler.load_audio("ex.wav")
     handler.play()
     count = 0
@@ -21,11 +21,11 @@ async def play_audio():
             handler.stop()
 
 
-async def print_every_second():
+async def sleep_loop():
     for i in range(10):
         await asyncio.sleep(1)
 
 async def main():
-    await asyncio.gather(play_audio(), print_every_second())
+    await asyncio.gather(play_audio(), sleep_loop())
 
 asyncio.run(main())
