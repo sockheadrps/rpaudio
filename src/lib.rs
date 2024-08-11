@@ -10,20 +10,20 @@ use pyo3::exceptions::PyRuntimeError;
 
 
 #[pyclass]
-pub struct AudioHandler {
+pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<OutputStream>,
 }
 
-unsafe impl Send for AudioHandler {}
+unsafe impl Send for AudioSink {}
 
 #[pymethods]
-impl AudioHandler {
+impl AudioSink {
     #[new]
     fn new(callback: Option<Py<PyAny>>) -> Self {
-        AudioHandler {
+        AudioSink {
             is_playing: Arc::new(Mutex::new(false)),
             callback: Arc::new(Mutex::new(callback)),
             sink: None,
@@ -111,7 +111,7 @@ impl AudioHandler {
 }
 
 
-impl AudioHandler {
+impl AudioSink {
     fn invoke_callback(callback: &Option<Py<PyAny>>) {
         Python::with_gil(|py| {
             if let Some(callback) = callback {
@@ -125,6 +125,7 @@ impl AudioHandler {
 
 #[pymodule]
 fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<AudioHandler>()?;
+    m.add_class::<AudioSink>()?;
     Ok(())
 }
+
