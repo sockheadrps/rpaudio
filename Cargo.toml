@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+audiotags = "0.5.0"
+id3 = "1.14.0"
 pyo3 = { version = "0.20.0", features = ["full"] }
 rodio = "0.19.0"
 

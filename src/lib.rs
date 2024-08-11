@@ -1,12 +1,16 @@
 use pyo3::prelude::*;
 use pyo3::types::PyAny;
 use rodio::{Decoder, OutputStream, Sink};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use pyo3::exceptions::PyRuntimeError;
+mod exmetadata;
+pub use exmetadata::extract_metadata;
+
 
 
 #[pyclass]
@@ -15,6 +19,7 @@ pub struct AudioSink {
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<OutputStream>,
+    metadata: HashMap<String, String>,
 }
 
 unsafe impl Send for AudioSink {}
@@ -28,6 +33,7 @@ impl AudioSink {
             callback: Arc::new(Mutex::new(callback)),
             sink: None,
             stream: None,
+            metadata: HashMap::new(),
         }
     }
 
@@ -40,6 +46,9 @@ impl AudioSink {
         if let Some(_) = self.sink {
             return Ok(());
         }
+
+        self.metadata = exmetadata::extract_metadata(file_path).unwrap();
+        
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Arc::new(Mutex::new(Sink::try_new(&stream_handle).unwrap()));
@@ -72,6 +81,10 @@ impl AudioSink {
         Ok(())
     }
 
+    fn metadata(&self) -> PyResult<HashMap<String, String>> {
+        Ok(self.metadata.clone())
+    }
+    
 
     fn play(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {

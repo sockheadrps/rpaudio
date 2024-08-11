@@ -90,7 +90,7 @@ class AudioSink(Protocol):
         ...
 
     @property
-    def metadata(self) -> dict[str, any]:
+    def metadata(self) -> dict[str, str]:
         """
         Get metadata for the audio file.
 
