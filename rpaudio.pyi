@@ -72,15 +72,16 @@ class AudioSink(Protocol):
         ...
 
     @property
-    def effects(self, effect: dict[str, any]) -> dict[str, any]:
+    def get_effects(self, effect: dict[str, any]) -> dict[str, any]:
         """
         Get current effect settings.
         rtype: dict[str, any]
         """
         ...
     
+    
     @property.setter
-    def effects(self, effect: dict[str, any]) -> None:
+    def set_effects(self, effect: dict[str, any]) -> None:
         """
         Apply an effect to the audio.
 

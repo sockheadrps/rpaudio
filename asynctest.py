@@ -24,6 +24,7 @@ async def play_audio():
 
 async def sleep_loop():
     for i in range(10):
+        print(f"Sleeping {i}")
         await asyncio.sleep(1)
 
 async def main():
