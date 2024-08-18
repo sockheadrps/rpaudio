@@ -8,7 +8,7 @@ use std::thread;
 use std::time::Duration;
 use pyo3::exceptions::PyRuntimeError;
 mod exmetadata;
-pub use exmetadata::{extract_metadata, MetaData};
+pub use exmetadata::{metadata, MetaData};
 
 
 
@@ -46,14 +46,17 @@ impl AudioSink {
             return Ok(());
         }
 
-        self.metadata = exmetadata::extract_metadata(file_path).unwrap();
-        
+        self.metadata = metadata(file_path).expect("Failed to extract metadata").expect("msg");
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = Arc::new(Mutex::new(Sink::try_new(&stream_handle).unwrap()));
+        let sink_result = Sink::try_new(&stream_handle);
+        let sink = match sink_result {
+            Ok(s) => Arc::new(Mutex::new(s)),
+            Err(e) => return Err(PyRuntimeError::new_err(format!("Failed to create sink: {}", e))),
+        };
 
         let file = File::open(file_path).unwrap();
-        let source = Decoder::new(BufReader::new(file)).unwrap();
+        let source = Decoder::new(BufReader::new(file)).map_err(|e| format!("Failed to decode WAV file: {}", e)).unwrap();
         sink.lock().unwrap().append(source);
 
         self.stream = Some(new_stream);
@@ -80,6 +83,7 @@ impl AudioSink {
         Ok(())
     }
 
+    #[getter]
     fn metadata(&self) -> MetaData {
         self.metadata.clone()
     }
@@ -135,9 +139,11 @@ impl AudioSink {
     }
 }
 
+
 #[pymodule]
 fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
+    m.add_class::<MetaData>()?; 
     Ok(())
 }
 
