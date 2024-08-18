@@ -214,3 +214,207 @@ class AudioChannel(Protocol):
         applies sink settings, and auto-consumes the queue if enabled.
         """
         raise NotImplementedError
+
+
+
+class MetaData:
+    """
+    A class representing metadata for an audio file.
+
+    This class provides various attributes that store metadata such as title, artist, album information, and more.
+    """
+
+    def __init__(self, audio_sink) -> None:
+        """
+        Constructor method.
+
+        Initializes an instance of MetaData with values from the audio_sink.
+
+        :param audio_sink: The source of metadata for the audio file.
+        :type audio_sink: Any
+        """
+        attribute_mapping = {
+            "title": "title",
+            "artist": "artist",
+            "date": "date",
+            "year": "year",
+            "album_title": "album_title",
+            "album_artist": "album_artist",
+            "track_number": "track_number",
+            "total_tracks": "total_tracks",
+            "disc_number": "disc_number",
+            "total_discs": "total_discs",
+            "genre": "genre",
+            "composer": "composer",
+            "comment": "comment",
+            "sample_rate": None,  
+            "channels": None,     
+            "duration": None      
+        }
+
+        for attribute, method_name in attribute_mapping.items():
+            if method_name is not None:
+                value = getattr(audio_sink, method_name)()  
+                setattr(self, attribute, value)
+            else:
+                setattr(self, attribute, None)
+
+    @property
+    def title(self) -> Optional[str]:
+        """
+        Get the title of the audio file.
+
+        :return: The title of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def artist(self) -> Optional[str]:
+        """
+        Get the artist of the audio file.
+
+        :return: The artist of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def date(self) -> Optional[str]:
+        """
+        Get the date associated with the audio file.
+
+        :return: The date of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def year(self) -> Optional[str]:
+        """
+        Get the year the audio file was released.
+
+        :return: The year of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def album_title(self) -> Optional[str]:
+        """
+        Get the album title of the audio file.
+
+        :return: The album title of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def album_artist(self) -> Optional[str]:
+        """
+        Get the album artist of the audio file.
+
+        :return: The album artist of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def track_number(self) -> Optional[str]:
+        """
+        Get the track number of the audio file.
+
+        :return: The track number of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def total_tracks(self) -> Optional[str]:
+        """
+        Get the total number of tracks in the album.
+
+        :return: The total number of tracks, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def disc_number(self) -> Optional[str]:
+        """
+        Get the disc number of the audio file.
+
+        :return: The disc number, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def total_discs(self) -> Optional[str]:
+        """
+        Get the total number of discs in the album.
+
+        :return: The total number of discs, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def genre(self) -> Optional[str]:
+        """
+        Get the genre of the audio file.
+
+        :return: The genre of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def composer(self) -> Optional[str]:
+        """
+        Get the composer of the audio file.
+
+        :return: The composer of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def comment(self) -> Optional[str]:
+        """
+        Get the comment associated with the audio file.
+
+        :return: The comment of the audio file, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def sample_rate(self) -> Optional[int]:
+        """
+        Get the sample rate of the audio file.
+
+        :return: The sample rate of the audio file, or None if not available.
+        :rtype: Optional[int]
+        """
+        ...
+
+    @property
+    def channels(self) -> Optional[str]:
+        """
+        Get the number of channels in the audio file.
+
+        :return: The number of channels, or None if not available.
+        :rtype: Optional[str]
+        """
+        ...
+
+    @property
+    def duration(self) -> Optional[float]:
+        """
+        Get the duration of the audio file in seconds.
+
+        :return: The duration of the audio file, or None if not available.
+        :rtype: Optional[float]
+        """
+        ...
