@@ -1,32 +1,29 @@
 use pyo3::prelude::*;
-use pyo3::types::PyAny;
-use rodio::{Decoder, OutputStream, Sink};
-use std::fs::File;
-use std::io::BufReader;
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
 use pyo3::exceptions::PyRuntimeError;
+use std::sync::{Arc, Mutex};
+use std::fs::File;
+use std::{thread, time::Duration};
+use rodio::{Decoder, OutputStream, Sink};
+use std::io::BufReader;
 mod exmetadata;
-pub use exmetadata::{metadata, MetaData};
+mod audioqueue;
+pub use exmetadata::{MetaData, metadata};
+unsafe impl Send for AudioSink {}
 
-
-
+#[derive(Clone)]
 #[pyclass]
 pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
     sink: Option<Arc<Mutex<Sink>>>,
-    stream: Option<OutputStream>,
+    stream: Option<Arc<Mutex<OutputStream>>>,
     metadata: MetaData,
 }
-
-unsafe impl Send for AudioSink {}
 
 #[pymethods]
 impl AudioSink {
     #[new]
-    fn new(callback: Option<Py<PyAny>>) -> Self {
+    pub fn new(callback: Option<Py<PyAny>>) -> Self {
         AudioSink {
             is_playing: Arc::new(Mutex::new(false)),
             callback: Arc::new(Mutex::new(callback)),
@@ -37,16 +34,23 @@ impl AudioSink {
     }
 
     #[getter]
-    fn is_playing(&self) -> PyResult<bool> {
-        return Ok(*self.is_playing.lock().unwrap());
+    pub fn metadata(&self) -> MetaData {
+        self.metadata.clone()
     }
 
-    fn load_audio(&mut self, file_path: &str) -> PyResult<()> {
-        if let Some(_) = self.sink {
+    #[getter]
+    pub fn is_playing(&self) -> bool {
+        *self.is_playing.lock().unwrap()
+    }
+
+    pub fn load_audio(&mut self, file_path: String) -> PyResult<()> {
+        if self.sink.is_some() {
+            println!("Sink already exists, unload it first");
             return Ok(());
         }
 
-        self.metadata = metadata(file_path).expect("Failed to extract metadata").expect("msg");
+        let metadata = metadata(&file_path)?;
+        self.metadata = metadata;
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink_result = Sink::try_new(&stream_handle);
@@ -55,77 +59,95 @@ impl AudioSink {
             Err(e) => return Err(PyRuntimeError::new_err(format!("Failed to create sink: {}", e))),
         };
 
-        let file = File::open(file_path).unwrap();
-        let source = Decoder::new(BufReader::new(file)).map_err(|e| format!("Failed to decode WAV file: {}", e)).unwrap();
+        let file_path_clone = file_path.clone();
+        let file = File::open(file_path_clone).unwrap();
+        let source = Decoder::new(BufReader::new(file))
+            .map_err(|e| format!("Failed to decode audio file: {}", e))
+            .unwrap();
         sink.lock().unwrap().append(source);
 
-        self.stream = Some(new_stream);
+        self.stream = Some(Arc::new(Mutex::new(new_stream)));
         self.sink = Some(sink.clone());
+
+        if let Some(sink) = &self.sink {
+            (*sink.lock().unwrap()).pause();
+        }
 
         let is_playing = self.is_playing.clone();
         let callback = self.callback.clone();
+        let sink_clone = sink.clone();
 
+        let file_path_clone = file_path.clone();
         thread::spawn(move || {
             loop {
-                if !*is_playing.lock().unwrap() && sink.lock().unwrap().empty() {
-                    break;
+                {
+                    let mut is_playing_guard = is_playing.lock().unwrap();
+                    let sink = sink_clone.lock().unwrap();
+
+                    if sink.empty() {
+                        println!("Sink is empty, stopping playback of {}", file_path_clone);
+                        *is_playing_guard = false;
+                        drop(is_playing_guard);
+                        Self::invoke_callback(&*callback.lock().unwrap());
+                        break;
+                    }
+
+                    if sink.is_paused() {
+                        *is_playing_guard = false;
+                    } else {
+                        *is_playing_guard = true;
+                    }
                 }
 
-                if sink.lock().unwrap().empty() {
-                    *is_playing.lock().unwrap() = false;
-                    Self::invoke_callback(&*callback.lock().unwrap());
-                    break;
-                }
                 thread::sleep(Duration::from_millis(100));
             }
+
+            let mut is_playing_guard = is_playing.lock().unwrap();
+            *is_playing_guard = false;
         });
 
         Ok(())
     }
 
-    #[getter]
-    fn metadata(&self) -> MetaData {
-        self.metadata.clone()
-    }
-    
-
-    fn play(&mut self) -> PyResult<()> {
+    pub fn play(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
-            (*sink.lock().unwrap()).play();
+            sink.lock().unwrap().play();
             *self.is_playing.lock().unwrap() = true;
-            println!("PLAY");
             Ok(())
         } else {
-            let message = "No sink available to play. Load audio first.";
-            Err(PyRuntimeError::new_err(message))
+            Err(PyRuntimeError::new_err("No sink available to play. Load audio first."))
         }
     }
 
-    fn pause(&mut self) -> PyResult<()> {
+    pub fn pause(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
-            (*sink.lock().unwrap()).pause();
+            sink.lock().unwrap().pause();
             *self.is_playing.lock().unwrap() = false;
-            println!("PAUSE");
             Ok(())
         } else {
-            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("No sink available to pause. Load audio first."))
+            Err(PyRuntimeError::new_err("No sink available to pause. Load audio first."))
         }
     }
 
-    fn stop(&mut self) -> PyResult<()> {
+    pub fn stop(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
-            (*sink.lock().unwrap()).stop();
+            sink.lock().unwrap().stop();
             *self.is_playing.lock().unwrap() = false;
             Self::invoke_callback(&*self.callback.lock().unwrap());
-            println!("STOP");
             Ok(())
         } else {
-            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>("No sink available to stop. Load audio first."))
+            Err(PyRuntimeError::new_err("No sink available to stop. Load audio first."))
         }
-        
+    }
+
+    pub fn empty(&self) -> bool {
+        if let Some(sink) = &self.sink {
+            sink.lock().unwrap().empty()
+        } else {
+            false
+        }
     }
 }
-
 
 impl AudioSink {
     fn invoke_callback(callback: &Option<Py<PyAny>>) {
@@ -138,12 +160,10 @@ impl AudioSink {
         });
     }
 }
-
-
 #[pymodule]
-fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rpaudio(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
-    m.add_class::<MetaData>()?; 
+    m.add_class::<MetaData>()?;
+    audioqueue::audioqueue(py, m)?;
     Ok(())
 }
-
