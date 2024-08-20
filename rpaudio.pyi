@@ -149,73 +149,106 @@ class AudioManager(Protocol):
         """
         raise NotImplementedError
 
-
 class AudioChannel(Protocol):
     """
-    Manages a queue of AudioSink objects and provides an interface to control them.
+    Manages a collection of audio sinks and controls playback.
 
-    :param channel_id: The unique identifier for the audio channel.
-    :type channel_id: Union[int, str]
-    :param channel_callback: An optional callback function to be invoked when the queue becomes idle.
-    :type channel_callback: Optional[Callable[[], None]]
+    This protocol defines the methods and properties required for an audio channel,
+    including adding, removing, and controlling audio sinks, as well as automatic
+    consumption of sinks.
+
+    :ivar queue_contents: A list of audio sinks in the channel's queue.
+    :vartype queue_contents: list[AudioSink]
+    :ivar auto_consume: Flag indicating whether the channel should automatically consume sinks.
+    :vartype auto_consume: bool
+    :ivar current_audio: The currently playing audio sink.
+    :vartype current_audio: Optional[AudioSink]
     """
 
-    def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
-        raise NotImplementedError
-
-    def add_audio(self, audio: AudioSink) -> None:
+    def push(self, sink: AudioSink) -> None:
         """
-        Adds an audio object to the channel queue.
+        Adds a new audio sink to the channel's queue.
 
-        :param audio: The audio object to add to the queue.
-        :type audio: AudioSink
+        :param sink: The audio sink to add.
+        :type sink: AudioSink
         """
-        raise NotImplementedError
+        ...
+
+    def pop(self) -> Optional[AudioSink]:
+        """
+        Removes and returns the next audio sink from the channel's queue.
+
+        :return: The next audio sink from the queue or None if the queue is empty.
+        :rtype: Optional[AudioSink]
+        """
+        ...
+
+    def consume(self) -> None:
+        """
+        Consumes the next audio sink from the queue and starts playback.
+
+        This method should be used to manually start playback of the next audio sink.
+        """
+        ...
+
+    @property
+    def is_playing(self) -> bool:
+        """
+        Checks if there is currently audio playing in the channel.
+
+        :return: True if audio is currently playing, False otherwise.
+        :rtype: bool
+        """
+        ...
+
+    @property
+    def queue_contents(self) -> List[AudioSink]:
+        """
+        Gets the current contents of the audio queue.
+
+        :return: A list of audio sinks currently in the queue.
+        :rtype: list[AudioSink]
+        """
+        ...
+
+    @property
+    def current_audio(self) -> Optional[AudioSink]:
+        """
+        Gets the currently playing audio sink.
+
+        :return: The currently playing audio sink or None if no audio is playing.
+        :rtype: Optional[AudioSink]
+        """
+        ...
 
     @property
     def auto_consume(self) -> bool:
         """
-        Gets the auto-consume property.
+        Gets the auto-consume flag status.
 
-        :return: True if the channel automatically consumes the queue, False otherwise.
+        :return: True if auto-consume is enabled, False otherwise.
         :rtype: bool
         """
-        raise NotImplementedError
+        ...
 
     @auto_consume.setter
     def auto_consume(self, value: bool) -> None:
         """
-        Sets the auto-consume property.
+        Sets the auto-consume flag status.
 
-        :param value: If True, the channel will automatically consume the queue.
+        :param value: True to enable auto-consume, False to disable it.
         :type value: bool
         """
-        raise NotImplementedError
+        ...
 
-    def drop_current_audio(self) -> None:
+    def channel_loop(self) -> None:
         """
-        Drops the current audio object from the queue.
+        Starts the channel loop which manages playback and auto-consumption.
+        
+        This method runs in a separate thread and continuously checks the queue and
+        manages playback based on the auto-consume flag.
         """
-        raise NotImplementedError
-
-    @property
-    def current_audio(self) -> AudioSink:
-        """
-        Returns the current audio object in the queue.
-
-        :return: The current audio object in the queue.
-        :rtype: AudioSink
-        """
-        raise NotImplementedError
-
-    async def control_loop(self) -> None:
-        """
-        Listens for audio events to pass to the sink, plays the audio objects in the queue, applies channel callback if queue is exhausted,
-        applies sink settings, and auto-consumes the queue if enabled.
-        """
-        raise NotImplementedError
-
-
+        ...
 
 class MetaData:
     """
@@ -416,5 +449,68 @@ class MetaData:
 
         :return: The duration of the audio file, or None if not available.
         :rtype: Optional[float]
+        """
+        ...
+
+class AudioChannel(Protocol):
+    """
+    Manages a queue of AudioSink objects and handles playback.
+
+    :param channel_id: A unique identifier for the audio channel.
+    :type channel_id: Union[int, str]
+    :param channel_callback: (optional) A callback invoked when the queue is idle.
+    :type channel_callback: Optional[Callable[[], None]]
+    """
+
+    def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
+        ...
+
+    def push(self, audio: AudioSink) -> None:
+        """
+        Adds an AudioSink to the channel queue.
+        
+        :param audio: The audio object to add to the queue.
+        :type audio: AudioSink
+        """
+        ...
+
+    @property
+    def auto_consume(self) -> bool:
+        """
+        Returns whether the channel automatically consumes the queue.
+        
+        :rtype: bool
+        """
+        ...
+
+    @auto_consume.setter
+    def auto_consume(self, value: bool) -> None:
+        """
+        Sets the auto-consume behavior of the channel.
+        
+        :param value: True to enable auto-consume, False to disable.
+        :type value: bool
+        """
+        ...
+
+    def drop_current_audio(self) -> None:
+        """
+        Drops the current audio from the queue.
+        """
+        ...
+
+    @property
+    def current_audio(self) -> AudioSink:
+        """
+        Returns the currently playing AudioSink object.
+        
+        :rtype: AudioSink
+        """
+        ...
+
+    async def control_loop(self) -> None:
+        """
+        Continuously monitors the queue and handles playback, 
+        auto-consume, and callback execution.
         """
         ...
