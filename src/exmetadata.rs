@@ -1,14 +1,13 @@
 use pyo3::prelude::*;
+use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};
 use std::{fs::File, path::Path};
 use rodio::{Decoder, Source};
 use std::io::BufReader;
 use crate::AudioSink;
 
-#[derive(Debug)]
-#[derive(Default, Clone)]
-#[allow(dead_code)]
 #[pyclass]
+#[derive(Debug, Default, Clone)]
 pub struct MetaData {
     title: Option<String>,
     artist: Option<String>,
@@ -31,7 +30,7 @@ pub struct MetaData {
 #[pymethods]
 impl MetaData {
     #[new]
-    fn new(audio_sink: &AudioSink) -> Self {
+    pub fn new(audio_sink: &AudioSink) -> Self {
         MetaData {
             title: audio_sink.metadata.title.clone(),
             artist: audio_sink.metadata.artist.clone(),
@@ -131,16 +130,14 @@ impl MetaData {
     fn duration(&self) -> Option<f64> {
         self.duration
     }
-    
 }
-
 
 pub trait AudioTag {
     fn metadata_fields(&self) -> MetaData;
 }
 
 fn data_to_string<T: ToString>(data: Option<T>) -> Option<String> {
-    data.and_then(|s| Some(s.to_string()))
+    data.map(|s| s.to_string())
 }
 
 impl AudioTag for Id3v2Tag {
@@ -166,22 +163,21 @@ impl AudioTag for Id3v2Tag {
     }
 }
 
-
-pub fn metadata(file_path: &str) -> Result<Option<MetaData>, String> {
+pub fn metadata(file_path: &str) -> PyResult<MetaData> {
     let path = Path::new(file_path);
 
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("mp3") | Some("m4a") | Some("mp4") | Some("flac") => {
             let tag = Tag::new()
                 .read_from_path(path)
-                .map_err(|e| e.to_string())?;
+                .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
             let id3_tag = Id3v2Tag::from(tag);
             let metadata = id3_tag.metadata_fields();
-            Ok(Some(metadata))
+            Ok(metadata)
         },
         Some("wav") => {
-            let file = File::open(file_path).map_err(|e| e.to_string())?;
-            let source = Decoder::new(BufReader::new(file)).map_err(|e| e.to_string())?;
+            let file = File::open(file_path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+            let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
             let sample_rate = source.sample_rate();
             let channels = source.channels();
             let duration = source.total_duration().map_or(0.0, |d| d.as_secs_f64());
@@ -191,8 +187,8 @@ pub fn metadata(file_path: &str) -> Result<Option<MetaData>, String> {
                 duration: Some(duration),
                 ..MetaData::default()
             };
-            Ok(Some(metadata)) 
+            Ok(metadata)
         },
-        _ => Err("Unsupported file format".to_string())
+        _ => Err(PyRuntimeError::new_err("Unsupported file format")),
     }
 }
