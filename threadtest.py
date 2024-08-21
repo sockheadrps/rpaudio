@@ -6,8 +6,8 @@ def on_audio_stop():
     print("Audio has stopped")
 
 def play_audio():
-    handler = rpaudio.AudioHandler(callback=on_audio_stop)
-    handler.load_audio("ex.wav")
+    handler = rpaudio.AudioSink(callback=on_audio_stop)
+    handler.load_audio("Acrylic.mp3")
     handler.play()
     count = 0
     while handler.is_playing:
@@ -21,15 +21,14 @@ def play_audio():
             time.sleep(1)
             handler.stop()
 
-def print_every_second():
+def sleep_loop():
     for i in range(10):
-        print(f"Second {i + 1}")
+        print(f"Sleep {i}")
         time.sleep(1)
 
 def main():
-    # Create threads
     audio_thread = threading.Thread(target=play_audio)
-    print_thread = threading.Thread(target=print_every_second)
+    print_thread = threading.Thread(target=sleep_loop)
     
     # Start threads
     audio_thread.start()
