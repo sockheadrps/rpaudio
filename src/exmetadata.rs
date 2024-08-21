@@ -9,22 +9,22 @@ use crate::AudioSink;
 #[pyclass]
 #[derive(Debug, Default, Clone)]
 pub struct MetaData {
-    title: Option<String>,
-    artist: Option<String>,
-    date: Option<String>,
-    year: Option<String>,
-    album_title: Option<String>,
-    album_artist: Option<String>,
-    track_number: Option<String>,
-    total_tracks: Option<String>,
-    disc_number: Option<String>,
-    total_discs: Option<String>,
-    genre: Option<String>,
-    composer: Option<String>,
-    comment: Option<String>,
-    sample_rate: Option<u32>,
-    channels: Option<String>,
-    duration: Option<f64>,
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub date: Option<String>,
+    pub year: Option<String>,
+    pub album_title: Option<String>,
+    pub album_artist: Option<String>,
+    pub track_number: Option<String>,
+    pub total_tracks: Option<String>,
+    pub disc_number: Option<String>,
+    pub total_discs: Option<String>,
+    pub genre: Option<String>,
+    pub composer: Option<String>,
+    pub comment: Option<String>,
+    pub sample_rate: Option<u32>,
+    pub channels: Option<String>,
+    pub duration: Option<f64>,
 }
 
 #[pymethods]
