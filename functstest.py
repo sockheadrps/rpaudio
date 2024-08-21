@@ -63,7 +63,6 @@ async def sleep_loop() -> None:
     while True:
         if complete_1 and complete_2:
             break
-        print(f"Sleeping")
         await asyncio.sleep(1)
 
 async def main() -> None:
