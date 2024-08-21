@@ -1,12 +1,16 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
+use pyo3::types::PyDict;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::fs::File;
 use std::{thread, time::Duration};
 use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
+
 mod exmetadata;
 mod audioqueue;
+mod mixer;
 pub use exmetadata::{MetaData, metadata};
 unsafe impl Send for AudioSink {}
 
@@ -15,9 +19,10 @@ unsafe impl Send for AudioSink {}
 pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
+    cancel_callback: Arc<Mutex<bool>>, // Field to control callback cancellation
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<Arc<Mutex<OutputStream>>>,
-    metadata: MetaData,
+    pub metadata: MetaData,
 }
 
 #[pymethods]
@@ -27,6 +32,7 @@ impl AudioSink {
         AudioSink {
             is_playing: Arc::new(Mutex::new(false)),
             callback: Arc::new(Mutex::new(callback)),
+            cancel_callback: Arc::new(Mutex::new(false)),
             sink: None,
             stream: None,
             metadata: MetaData::default(),
@@ -34,8 +40,31 @@ impl AudioSink {
     }
 
     #[getter]
-    pub fn metadata(&self) -> MetaData {
-        self.metadata.clone()
+    pub fn metadata(&self, py: Python) -> PyResult<Py<PyDict>> {
+        let mut dict = HashMap::new();
+        dict.insert("title", self.metadata.title.clone());
+        dict.insert("artist", self.metadata.artist.clone());
+        dict.insert("date", self.metadata.date.clone());
+        dict.insert("year", self.metadata.year.clone());
+        dict.insert("album_title", self.metadata.album_title.clone());
+        dict.insert("album_artist", self.metadata.album_artist.clone());
+        dict.insert("track_number", self.metadata.track_number.clone());
+        dict.insert("total_tracks", self.metadata.total_tracks.clone());
+        dict.insert("disc_number", self.metadata.disc_number.clone());
+        dict.insert("total_discs", self.metadata.total_discs.clone());
+        dict.insert("genre", self.metadata.genre.clone());
+        dict.insert("composer", self.metadata.composer.clone());
+        dict.insert("comment", self.metadata.comment.clone());
+        dict.insert("sample_rate", self.metadata.sample_rate.map(|rate| rate.to_string()));
+        dict.insert("channels", self.metadata.channels.clone());
+        dict.insert("duration", self.metadata.duration.map(|duration| duration.to_string()));
+
+        let py_dict = PyDict::new(py);
+        for (key, value) in dict {
+            py_dict.set_item(key, value)?;
+        }
+
+        Ok(py_dict.into())
     }
 
     #[getter]
@@ -75,9 +104,9 @@ impl AudioSink {
 
         let is_playing = self.is_playing.clone();
         let callback = self.callback.clone();
+        let cancel_callback = self.cancel_callback.clone();
         let sink_clone = sink.clone();
 
-        let file_path_clone = file_path.clone();
         thread::spawn(move || {
             loop {
                 {
@@ -85,10 +114,11 @@ impl AudioSink {
                     let sink = sink_clone.lock().unwrap();
 
                     if sink.empty() {
-                        println!("Sink is empty, stopping playback of {}", file_path_clone);
                         *is_playing_guard = false;
                         drop(is_playing_guard);
-                        Self::invoke_callback(&*callback.lock().unwrap());
+                        if !*cancel_callback.lock().unwrap() {
+                            Self::invoke_callback(&*callback.lock().unwrap());
+                        }
                         break;
                     }
 
@@ -133,7 +163,6 @@ impl AudioSink {
         if let Some(sink) = &self.sink {
             sink.lock().unwrap().stop();
             *self.is_playing.lock().unwrap() = false;
-            Self::invoke_callback(&*self.callback.lock().unwrap());
             Ok(())
         } else {
             Err(PyRuntimeError::new_err("No sink available to stop. Load audio first."))
@@ -146,6 +175,10 @@ impl AudioSink {
         } else {
             false
         }
+    }
+
+    pub fn cancel_callback(&mut self) {
+        *self.cancel_callback.lock().unwrap() = true;
     }
 }
 
@@ -160,10 +193,12 @@ impl AudioSink {
         });
     }
 }
+
 #[pymodule]
 fn rpaudio(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
     m.add_class::<MetaData>()?;
+    m.add_class::<mixer::ChannelManager>()?;
     audioqueue::audioqueue(py, m)?;
     Ok(())
 }
