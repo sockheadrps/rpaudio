@@ -5,10 +5,10 @@ use std::{fmt, thread};
 use std::time::Duration;
 use crate::AudioSink;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[pyclass]
 pub struct AudioChannel {
-    queue: Arc<Mutex<Vec<AudioSink>>>,
+    pub queue: Arc<Mutex<Vec<AudioSink>>>,
     auto_consume: Arc<Mutex<bool>>,
     currently_playing: Arc<Mutex<Option<AudioSink>>>,
 }
@@ -63,6 +63,11 @@ impl AudioChannel {
         queue_guard.clone()  // Ensure AudioSink implements Clone
     }
 
+    pub fn set_queue_contents(&mut self, new_queue: Vec<AudioSink>) {
+        let mut queue_guard = self.queue.lock().unwrap();
+        *queue_guard = new_queue;
+    }
+
     #[getter]
     pub fn is_playing(&self) -> bool {
         let currently_playing_guard = self.currently_playing.lock().unwrap();
@@ -83,7 +88,7 @@ impl AudioChannel {
                 {
                     let should_consume = *auto_consume.lock().unwrap();
                     if !should_consume {
-                        println!("Auto consume is turned off, sleeping and waiting for it to turn on");
+                        // println!("Auto consume is turned off, sleeping and waiting for it to turn on");
                         thread::sleep(Duration::from_millis(500));
                         continue; 
                     }
@@ -97,7 +102,7 @@ impl AudioChannel {
                         let mut next_sink = queue_guard.remove(0);
                         *playing_guard = Some(next_sink.clone());
     
-                        println!("Playing new sink");
+                        // println!("Playing new sink");
     
                         if let Err(e) = next_sink.play() {
                             eprintln!("Failed to play sink: {}", e);
@@ -115,7 +120,7 @@ impl AudioChannel {
                         let is_playing = sink.is_playing();
     
                         if !is_playing && sink.empty() {
-                            println!("Finished playing current sink");
+                            // println!("Finished playing current sink");
                             *playing_guard = None;
                         }
                     }
@@ -126,16 +131,16 @@ impl AudioChannel {
                     let playing_empty = currently_playing.lock().unwrap().is_none();
     
                     if playing_empty && queue_empty {
-                        println!("Queue is empty, stopping channel loop after audio has finished");
+                        // println!("Queue is empty, stopping channel loop after audio has finished");
                         break;
                     }
                 }
             }
     
-            println!("Channel loop finished");
+            // println!("Channel loop finished");
         });
     
-        println!("Channel loop started");
+        // println!("Channel loop started");
     }
 }    
 
