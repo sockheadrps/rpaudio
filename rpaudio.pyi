@@ -101,154 +101,7 @@ class AudioSink(Protocol):
         ...
 
 
-class AudioManager(Protocol):
-    """
-    Manages multiple audio channels and provides an API to control them.
 
-    :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
-    :vartype channels: dict
-    """
-    def __init__(self) -> None:
-        """
-        Initializes an instance of AudioManager.
-        """
-        raise NotImplementedError
-
-    def add_channel(self, channel: AudioChannel) -> None:
-        """
-        Adds a new audio channel to the manager.
-
-        :param channel: The audio channel to add.
-        :type channel: AudioChannel
-        """
-        raise NotImplementedError
-
-    def drop_channel(self, channel_id: Union[int, str]) -> None:
-        """
-        Drops an audio channel from the manager.
-
-        :param channel_id: The unique identifier of the channel to drop.
-        :type channel_id: Union[int, str]
-        """
-        raise NotImplementedError
-
-    def apply_effect(self, channel_id: Union[int, str], effect: dict[str, any]) -> None:
-        """
-        Stores effect settings for a channel to apply to each AudioSink object in the channel queue. 
-
-        :param channel_id: The unique identifier of the channel to apply the effect to.
-        :type channel_id: Union[int, str]
-        :param effect: The effect to apply to the channel.
-        :type effect: dict[str, any]
-        """
-        raise NotImplementedError
-
-    async def channel_loop(self) -> None:
-        """
-        Asynchronously listens for audio events and sends them to the appropriate channel.
-        """
-        raise NotImplementedError
-
-class AudioChannel(Protocol):
-    """
-    Manages a collection of audio sinks and controls playback.
-
-    This protocol defines the methods and properties required for an audio channel,
-    including adding, removing, and controlling audio sinks, as well as automatic
-    consumption of sinks.
-
-    :ivar queue_contents: A list of audio sinks in the channel's queue.
-    :vartype queue_contents: list[AudioSink]
-    :ivar auto_consume: Flag indicating whether the channel should automatically consume sinks.
-    :vartype auto_consume: bool
-    :ivar current_audio: The currently playing audio sink.
-    :vartype current_audio: Optional[AudioSink]
-    """
-
-    def push(self, sink: AudioSink) -> None:
-        """
-        Adds a new audio sink to the channel's queue.
-
-        :param sink: The audio sink to add.
-        :type sink: AudioSink
-        """
-        ...
-
-    def pop(self) -> Optional[AudioSink]:
-        """
-        Removes and returns the next audio sink from the channel's queue.
-
-        :return: The next audio sink from the queue or None if the queue is empty.
-        :rtype: Optional[AudioSink]
-        """
-        ...
-
-    def consume(self) -> None:
-        """
-        Consumes the next audio sink from the queue and starts playback.
-
-        This method should be used to manually start playback of the next audio sink.
-        """
-        ...
-
-    @property
-    def is_playing(self) -> bool:
-        """
-        Checks if there is currently audio playing in the channel.
-
-        :return: True if audio is currently playing, False otherwise.
-        :rtype: bool
-        """
-        ...
-
-    @property
-    def queue_contents(self) -> List[AudioSink]:
-        """
-        Gets the current contents of the audio queue.
-
-        :return: A list of audio sinks currently in the queue.
-        :rtype: list[AudioSink]
-        """
-        ...
-
-    @property
-    def current_audio(self) -> Optional[AudioSink]:
-        """
-        Gets the currently playing audio sink.
-
-        :return: The currently playing audio sink or None if no audio is playing.
-        :rtype: Optional[AudioSink]
-        """
-        ...
-
-    @property
-    def auto_consume(self) -> bool:
-        """
-        Gets the auto-consume flag status.
-
-        :return: True if auto-consume is enabled, False otherwise.
-        :rtype: bool
-        """
-        ...
-
-    @auto_consume.setter
-    def auto_consume(self, value: bool) -> None:
-        """
-        Sets the auto-consume flag status.
-
-        :param value: True to enable auto-consume, False to disable it.
-        :type value: bool
-        """
-        ...
-
-    def channel_loop(self) -> None:
-        """
-        Starts the channel loop which manages playback and auto-consumption.
-        
-        This method runs in a separate thread and continuously checks the queue and
-        manages playback based on the auto-consume flag.
-        """
-        ...
 
 class MetaData:
     """
@@ -278,32 +131,7 @@ class MetaData:
         self.channels = audio_sink.get_metadata("channels")
         self.duration = audio_sink.get_metadata("duration")
 
-    def __repr__(self) -> str:
-        """
-        Provides a dictionary-like string representation of the MetaData object.
-        
-        :return: A dictionary-like string representation of the MetaData object.
-        :rtype: str
-        """
-        return (f"{{"
-                f"'title': {repr(self.title)}, "
-                f"'artist': {repr(self.artist)}, "
-                f"'date': {repr(self.date)}, "
-                f"'year': {repr(self.year)}, "
-                f"'album_title': {repr(self.album_title)}, "
-                f"'album_artist': {repr(self.album_artist)}, "
-                f"'track_number': {repr(self.track_number)}, "
-                f"'total_tracks': {repr(self.total_tracks)}, "
-                f"'disc_number': {repr(self.disc_number)}, "
-                f"'total_discs': {repr(self.total_discs)}, "
-                f"'genre': {repr(self.genre)}, "
-                f"'composer': {repr(self.composer)}, "
-                f"'comment': {repr(self.comment)}, "
-                f"'sample_rate': {repr(self.sample_rate)}, "
-                f"'channels': {repr(self.channels)}, "
-                f"'duration': {repr(self.duration)}"
-                f"}}")
-    
+
     @property
     def title(self) -> Optional[str]:
         """
@@ -529,18 +357,17 @@ class AudioChannel(Protocol):
 
 class ChannelManager(Protocol):
     """
-    Manages a collection of audio channels, allowing for adding, removing, and controlling them.
+    Manages multiple audio channels and provides an API to control them.
 
-    :param channels: (optional) A dictionary of initial channels, keyed by name.
-    :type channels: Optional[Dict[str, AudioChannel]]
+    :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
+    :vartype channels: dict
     """
 
-    def __init__(self, channels: Optional[Dict[str, AudioChannel]] = None) -> None:
-        """
-        Initializes a new ChannelManager instance.
+    channels: dict[str, AudioChannel]
 
-        :param channels: (optional) A dictionary of initial channels.
-        :type channels: Optional[Dict[str, AudioChannel]]
+    def __init__(self) -> None:
+        """
+        Initializes a new instance of ChannelManager.
         """
         ...
 
@@ -548,59 +375,42 @@ class ChannelManager(Protocol):
         """
         Adds a new audio channel to the manager.
 
-        :param name: The name of the channel to add.
+        :param name: The unique identifier for the channel.
         :type name: str
-        :param channel: The AudioChannel instance to add.
+        :param channel: The audio channel to add.
         :type channel: AudioChannel
         """
         ...
 
     def drop_channel(self, name: str) -> None:
         """
-        Removes an audio channel from the manager by name.
+        Drops an audio channel from the manager.
 
-        :param name: The name of the channel to remove.
+        :param name: The unique identifier of the channel to drop.
         :type name: str
+        :raises RuntimeError: If the channel is not found.
         """
         ...
 
     def channel(self, name: str) -> Optional[AudioChannel]:
         """
-        Retrieves an audio channel by name.
+        Retrieves a channel by its identifier.
 
-        :param name: The name of the channel to retrieve.
+        :param name: The unique identifier of the channel.
         :type name: str
-        :return: The AudioChannel instance if found, otherwise None.
+        :return: The corresponding AudioChannel instance, or None if not found.
         :rtype: Optional[AudioChannel]
-        """
-        ...
-
-    def start_channel(self, name: str) -> None:
-        """
-        Starts the specified channel by enabling auto-consume.
-
-        :param name: The name of the channel to start.
-        :type name: str
-        """
-        ...
-
-    def stop_channel(self, name: str) -> None:
-        """
-        Stops the specified channel by disabling auto-consume.
-
-        :param name: The name of the channel to stop.
-        :type name: str
         """
         ...
 
     def start_all(self) -> None:
         """
-        Starts all channels by enabling auto-consume for each.
+        Starts auto-consuming audio on all channels.
         """
         ...
 
     def stop_all(self) -> None:
         """
-        Stops all channels by disabling auto-consume for each.
+        Stops auto-consuming audio on all channels.
         """
         ...
