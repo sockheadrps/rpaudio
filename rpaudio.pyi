@@ -1,4 +1,4 @@
-from typing import Optional, Callable, Protocol, Union
+from typing import Dict, Optional, Callable, Protocol, Union
 
 
 class AudioSink(Protocol):
@@ -91,7 +91,7 @@ class AudioSink(Protocol):
         ...
 
     @property
-    def metadata(self) -> dict[str, str]:
+    def metadata(self) -> Dict[str, str]:
         """
         Get metadata for the audio file.
 
@@ -253,45 +253,57 @@ class AudioChannel(Protocol):
 class MetaData:
     """
     A class representing metadata for an audio file.
-
-    This class provides various attributes that store metadata such as title, artist, album information, and more.
     """
-
-    def __init__(self, audio_sink) -> None:
+    def __init__(self, audio_sink: 'AudioSink') -> None:
         """
-        Constructor method.
-
         Initializes an instance of MetaData with values from the audio_sink.
-
+        
         :param audio_sink: The source of metadata for the audio file.
-        :type audio_sink: Any
+        :type audio_sink: AudioSink
         """
-        attribute_mapping = {
-            "title": "title",
-            "artist": "artist",
-            "date": "date",
-            "year": "year",
-            "album_title": "album_title",
-            "album_artist": "album_artist",
-            "track_number": "track_number",
-            "total_tracks": "total_tracks",
-            "disc_number": "disc_number",
-            "total_discs": "total_discs",
-            "genre": "genre",
-            "composer": "composer",
-            "comment": "comment",
-            "sample_rate": None,  
-            "channels": None,     
-            "duration": None      
-        }
+        self.title = audio_sink.get_metadata("title")
+        self.artist = audio_sink.get_metadata("artist")
+        self.date = audio_sink.get_metadata("date")
+        self.year = audio_sink.get_metadata("year")
+        self.album_title = audio_sink.get_metadata("album_title")
+        self.album_artist = audio_sink.get_metadata("album_artist")
+        self.track_number = audio_sink.get_metadata("track_number")
+        self.total_tracks = audio_sink.get_metadata("total_tracks")
+        self.disc_number = audio_sink.get_metadata("disc_number")
+        self.total_discs = audio_sink.get_metadata("total_discs")
+        self.genre = audio_sink.get_metadata("genre")
+        self.composer = audio_sink.get_metadata("composer")
+        self.comment = audio_sink.get_metadata("comment")
+        self.sample_rate = audio_sink.get_metadata("sample_rate")
+        self.channels = audio_sink.get_metadata("channels")
+        self.duration = audio_sink.get_metadata("duration")
 
-        for attribute, method_name in attribute_mapping.items():
-            if method_name is not None:
-                value = getattr(audio_sink, method_name)()  
-                setattr(self, attribute, value)
-            else:
-                setattr(self, attribute, None)
-
+    def __repr__(self) -> str:
+        """
+        Provides a dictionary-like string representation of the MetaData object.
+        
+        :return: A dictionary-like string representation of the MetaData object.
+        :rtype: str
+        """
+        return (f"{{"
+                f"'title': {repr(self.title)}, "
+                f"'artist': {repr(self.artist)}, "
+                f"'date': {repr(self.date)}, "
+                f"'year': {repr(self.year)}, "
+                f"'album_title': {repr(self.album_title)}, "
+                f"'album_artist': {repr(self.album_artist)}, "
+                f"'track_number': {repr(self.track_number)}, "
+                f"'total_tracks': {repr(self.total_tracks)}, "
+                f"'disc_number': {repr(self.disc_number)}, "
+                f"'total_discs': {repr(self.total_discs)}, "
+                f"'genre': {repr(self.genre)}, "
+                f"'composer': {repr(self.composer)}, "
+                f"'comment': {repr(self.comment)}, "
+                f"'sample_rate': {repr(self.sample_rate)}, "
+                f"'channels': {repr(self.channels)}, "
+                f"'duration': {repr(self.duration)}"
+                f"}}")
+    
     @property
     def title(self) -> Optional[str]:
         """
@@ -512,5 +524,83 @@ class AudioChannel(Protocol):
         """
         Continuously monitors the queue and handles playback, 
         auto-consume, and callback execution.
+        """
+        ...
+
+class ChannelManager(Protocol):
+    """
+    Manages a collection of audio channels, allowing for adding, removing, and controlling them.
+
+    :param channels: (optional) A dictionary of initial channels, keyed by name.
+    :type channels: Optional[Dict[str, AudioChannel]]
+    """
+
+    def __init__(self, channels: Optional[Dict[str, AudioChannel]] = None) -> None:
+        """
+        Initializes a new ChannelManager instance.
+
+        :param channels: (optional) A dictionary of initial channels.
+        :type channels: Optional[Dict[str, AudioChannel]]
+        """
+        ...
+
+    def add_channel(self, name: str, channel: AudioChannel) -> None:
+        """
+        Adds a new audio channel to the manager.
+
+        :param name: The name of the channel to add.
+        :type name: str
+        :param channel: The AudioChannel instance to add.
+        :type channel: AudioChannel
+        """
+        ...
+
+    def drop_channel(self, name: str) -> None:
+        """
+        Removes an audio channel from the manager by name.
+
+        :param name: The name of the channel to remove.
+        :type name: str
+        """
+        ...
+
+    def channel(self, name: str) -> Optional[AudioChannel]:
+        """
+        Retrieves an audio channel by name.
+
+        :param name: The name of the channel to retrieve.
+        :type name: str
+        :return: The AudioChannel instance if found, otherwise None.
+        :rtype: Optional[AudioChannel]
+        """
+        ...
+
+    def start_channel(self, name: str) -> None:
+        """
+        Starts the specified channel by enabling auto-consume.
+
+        :param name: The name of the channel to start.
+        :type name: str
+        """
+        ...
+
+    def stop_channel(self, name: str) -> None:
+        """
+        Stops the specified channel by disabling auto-consume.
+
+        :param name: The name of the channel to stop.
+        :type name: str
+        """
+        ...
+
+    def start_all(self) -> None:
+        """
+        Starts all channels by enabling auto-consume for each.
+        """
+        ...
+
+    def stop_all(self) -> None:
+        """
+        Stops all channels by disabling auto-consume for each.
         """
         ...
