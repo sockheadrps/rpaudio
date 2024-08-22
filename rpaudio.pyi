@@ -145,29 +145,41 @@ class AudioSink(Protocol):
     @property
     def get_effects(self, effect: dict[str, any]) -> dict[str, any]:
         """
+        NOT IMPLEMENTED YET
+
         Get current effect settings.
         rtype: dict[str, any]
         """
-        ...
+        raise NotImplementedError("This method is not implemented yet.")
     
     
     @property.setter
     def set_effects(self, effect: dict[str, any]) -> None:
         """
+        NOT IMPLEMENTED YET
+
         Apply an effect to the audio.
 
         :param effect: A dictionary containing the effect settings.
         :type effect: dict[str, any]
         """
-        ...
+        raise NotImplementedError("This method is not implemented yet.")
 
     @property
     def metadata(self) -> Dict[str, str]:
         """
         Get metadata for the audio file.
 
+        Example:
+
+        .. code-block:: python
+        
+            audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+            audio_1.load_audio("ex.wav")
+            data = audio_1.metadata
+
         :return: A dictionary containing metadata for the audio file.
-        :rtype: dict[str, any]
+        :rtype: dict[str, str]
         """
         ...
 
@@ -363,77 +375,48 @@ class MetaData:
         """
         ...
 
-class AudioChannel(Protocol):
-    """
-    Manages a queue of AudioSink objects and handles playback.
 
-    :param channel_id: A unique identifier for the audio channel.
-    :type channel_id: Union[int, str]
-    :param channel_callback: (optional) A callback invoked when the queue is idle.
-    :type channel_callback: Optional[Callable[[], None]]
-    """
-
-    def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
-        ...
-
-    def push(self, audio: AudioSink) -> None:
-        """
-        Adds an AudioSink to the channel queue.
-        
-        :param audio: The audio object to add to the queue.
-        :type audio: AudioSink
-        """
-        ...
-
-    @property
-    def auto_consume(self) -> bool:
-        """
-        Returns whether the channel automatically consumes the queue.
-        
-        :rtype: bool
-        """
-        ...
-
-    @auto_consume.setter
-    def auto_consume(self, value: bool) -> None:
-        """
-        Sets the auto-consume behavior of the channel.
-        
-        :param value: True to enable auto-consume, False to disable.
-        :type value: bool
-        """
-        ...
-
-    def drop_current_audio(self) -> None:
-        """
-        Drops the current audio from the queue.
-        """
-        ...
-
-    @property
-    def current_audio(self) -> AudioSink:
-        """
-        Returns the currently playing AudioSink object.
-        
-        :rtype: AudioSink
-        """
-        ...
-
-    async def control_loop(self) -> None:
-        """
-        Continuously monitors the queue and handles playback, 
-        auto-consume, and callback execution.
-        """
-        ...
 
 class ChannelManager(Protocol):
     """
     Manages multiple audio channels and provides an API to control them.
 
+        Example:
+        
+        .. code-block:: python
+
+            # Intializing 2 audio sinks
+            audio_1 = AudioSink(callback=on_audio_stop)
+            audio_1.load_audio("ex.wav")
+            audio_2 = AudioSink(callback=on_audio_stop)
+            audio_2.load_audio("Acrylic.mp3")
+            print(audio_1.metadata)
+
+            # Intializing 1st audio channel
+            channel_1 = AudioChannel()
+            channel_1.push(audio_1)
+            channel_1.push(audio_2)
+
+            # Intializing 2 more audio sinks
+            audio_3 = AudioSink(callback=on_audio_stop)
+            audio_3.load_audio("ex.wav")
+            audio_4 = AudioSink(callback=on_audio_stop)
+            audio_4.load_audio("Acrylic.mp3")
+            # Intializing 2nd audio channel
+            channel_2 = AudioChannel()
+            channel_2.push(audio_3)
+            channel_2.push(audio_4)
+
+            # Intializing ChannelManager
+            manager = ChannelManager()
+            manager.add_channel("Channel1", channel_1)
+            manager.add_channel("Channel2", channel_2)
+
     :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
     :vartype channels: dict
     """
 
+class AudioChannel(Protocol):
     channels: dict[str, AudioChannel]
 
     def __init__(self) -> None:

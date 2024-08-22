@@ -3,15 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-
 rpaudio Documentation
 =====================
 
 Welcome to the rpaudio documentation!
 
 Contents:
-----------
+---------
+
 .. toctree::
    :maxdepth: 2
 
+   quickstart
+   _autosummary/rpaudio.AudioChannel
+   _autosummary/rpaudio.ChannelManager
+   _autosummary/rpaudio.AudioSink
+   examples/index
 
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

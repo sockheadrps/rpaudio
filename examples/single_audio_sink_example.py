@@ -6,8 +6,9 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop)
-    handler.load_audio("ex.wav")
-
+    handler.load_audio("Acrylic.mp3")
+    metadata = handler.get_metadata()
+    print(f"Metadata: {metadata.title}")
     handler.play()
     count = 0
     while handler.is_playing:

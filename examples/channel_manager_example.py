@@ -2,6 +2,7 @@ import asyncio
 from rpaudio import AudioSink, AudioChannel, ChannelManager
 
 
+
 def on_audio_stop():
     print("Audio stopped.")
 
@@ -43,8 +44,11 @@ async def run_manager(manager: ChannelManager):
 
 async def main():
     # Intializing 2 audio sinks
-    audio_1 = AudioSink(callback=on_audio_stop).load_audio("ex.wav")
-    audio_2 = AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
+    audio_1 = AudioSink(callback=on_audio_stop)
+    audio_1.load_audio("ex.wav")
+    audio_2 = AudioSink(callback=on_audio_stop)
+    audio_2.load_audio("Acrylic.mp3")
+    print(audio_1.metadata)
 
     # Intializing 1st audio channel
     channel_1 = AudioChannel()
@@ -52,9 +56,10 @@ async def main():
     channel_1.push(audio_2)
 
     # Intializing 2 more audio sinks
-    audio_3 = AudioSink(callback=on_audio_stop).load_audio("ex.wav")
-    audio_4 = AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
-
+    audio_3 = AudioSink(callback=on_audio_stop)
+    audio_3.load_audio("ex.wav")
+    audio_4 = AudioSink(callback=on_audio_stop)
+    audio_4.load_audio("Acrylic.mp3")
     # Intializing 2nd audio channel
     channel_2 = AudioChannel()
     channel_2.push(audio_3)

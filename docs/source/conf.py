@@ -23,6 +23,7 @@ napoleon_use_rtype = True
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'autoapi.extension',
     'sphinx.ext.napoleon',
     "sphinx.ext.viewcode",
@@ -35,16 +36,20 @@ templates_path = ['_templates']
 
 # AutoAPI configuration
 autoapi_dirs = ['../../']  
-
-
+autoapi_generate_api_docs = True
+autoapi_root = 'autoapi'
 autoapi_type = 'python'
 autodoc_typehints = 'description'
 autoapi_file_patterns = ['*.pyi']
 autoapi_ignore = ['__init__.py', '__init__.pyi', 'asynctest.py', 'threadtest.py', 'docs\source\conf.py']
-autoapi_keep_files = False
+autoapi_keep_files = True  # To keep the generated _autoapi files
 autoapi_member_order = 'groupwise'
 autoapi_options = [
     'members',
     'undoc-members',
     'show-inheritance',
 ]
+
+
+autosummary_generate = True  # Generate autosummary pages
+autosummary_imported_members = True
