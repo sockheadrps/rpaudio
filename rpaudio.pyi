@@ -409,10 +409,10 @@ class AudioChannel(Protocol):
         """
         ...
 
-    async def control_loop(self) -> None:
+    async def _control_loop(self) -> None:
         """
         Continuously monitors the queue and handles playback, 
-        auto-consume, and callback execution.
+        auto-consume, and callback execution. Not meant for python access
         """
         ...
 

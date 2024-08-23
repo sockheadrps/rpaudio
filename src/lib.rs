@@ -7,11 +7,10 @@ use std::fs::File;
 use std::io::BufReader;
 use std::time::{Duration, Instant};
 use rodio::{Decoder, OutputStream, Sink};
-use std::{thread, time::Duration as StdDuration};
-
+use std::thread;
 mod exmetadata;
-mod audioqueue;
 mod mixer;
+mod audioqueue;
 pub use exmetadata::{MetaData, metadata};
 unsafe impl Send for AudioSink {}
 
@@ -20,7 +19,7 @@ unsafe impl Send for AudioSink {}
 pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
-    cancel_callback: Arc<Mutex<bool>>, // Field to control callback cancellation
+    cancel_callback: Arc<Mutex<bool>>, 
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<Arc<Mutex<OutputStream>>>,
     pub metadata: MetaData,
@@ -81,10 +80,10 @@ impl AudioSink {
         *self.is_playing.lock().unwrap()
     }
 
-    pub fn load_audio(&mut self, file_path: String) -> PyResult<()> {
+    pub fn load_audio(&mut self, file_path: String) -> PyResult<Self> {
         if self.sink.is_some() {
             println!("Sink already exists, unload it first");
-            return Ok(());
+            return Ok(self.clone()); 
         }
 
         let metadata = metadata(&file_path)?;
@@ -154,7 +153,7 @@ impl AudioSink {
             *is_playing_guard = false;
         });
 
-        Ok(())
+        Ok(self.clone())
     }
 
     pub fn play(&mut self) -> PyResult<()> {
@@ -233,7 +232,7 @@ impl AudioSink {
             return Err(PyValueError::new_err("Position must be non-negative."));
         }
 
-        if let Some(sink) = &self.sink {
+        if let Some(_sink) = &self.sink {
             // Seeking functionality depends on how `rodio::Sink` supports seeking
             // Placeholder code as `rodio::Sink` may not directly support seeking
             // You may need to handle this according to how seeking should be implemented
@@ -272,10 +271,10 @@ impl AudioSink {
 }
 
 #[pymodule]
-fn rpaudio(py: Python, m: &PyModule) -> PyResult<()> {
+fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
     m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
-    audioqueue::audioqueue(py, m)?;
+    m.add_class::<audioqueue::AudioChannel>()?;
     Ok(())
 }
