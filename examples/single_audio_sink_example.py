@@ -6,7 +6,7 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop)
-    handler.load_audio("ex.wav")
+    handler.load_audio("Acrylic.mp3")
 
     handler.play()
     count = 0
@@ -19,7 +19,15 @@ async def play_audio():
             handler.pause()
             await asyncio.sleep(2)
             handler.play()
-            await asyncio.sleep(1)
+            handler.set_volume(0.5)
+
+            print(f"Current position: {handler.get_pos()}")
+            handler.try_seek(10.0) 
+            print(f"Position after seek: {handler.get_pos()}")
+            handler.set_speed(1.5) 
+            print(f"Playback speed: {handler.get_speed()}")
+
+            await asyncio.sleep(10)
             handler.stop()
         if handler.is_playing is False:
             break

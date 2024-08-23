@@ -14,7 +14,7 @@ complete_2: bool = False
 def on_audio_stop() -> None:
     print("Audio has stopped")
 
-async def play_audio(channel: rpaudio.AudioChannel) -> None:
+async def play_audio(channel) -> None:
     global complete_1, complete_2
     start_time: datetime = datetime.now()
     paused_once: bool = False
@@ -71,18 +71,16 @@ async def sleep_loop() -> None:
         await asyncio.sleep(1)
 
 async def main() -> None:
-    # Channel 1
-    audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+    audio_1 = rpaudio.AudioSink(callback=on_audio_stop)
     audio_1.load_audio("ex.wav")
-    metadata: rpaudio.MetaData = rpaudio.MetaData(audio_1)
-    print(f"Channels: {metadata.channels}, Duration: {metadata.duration}")
+    channels = audio_1.metadata["channels"]
+    duration = audio_1.metadata["duration"]
+    print(f"Channels: {channels}, Duration: {duration}")
 
     audio_2: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
     audio_2.load_audio("Acrylic.mp3")
-    metadata_2: rpaudio.MetaData = rpaudio.MetaData(audio_2)
-    print(f"Title: {metadata_2.title}, Artist: {metadata_2.artist}")
-    
-    channel_1: rpaudio.AudioChannel = rpaudio.AudioChannel()
+
+    channel_1 = rpaudio.AudioChannel()
     channel_1.auto_consume = True
     channel_1.push(audio_1)
     channel_1.push(audio_2)
