@@ -1,12 +1,13 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::types::PyDict;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::fs::File;
-use std::{thread, time::Duration};
-use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
+use std::time::{Duration, Instant};
+use rodio::{Decoder, OutputStream, Sink};
+use std::{thread, time::Duration as StdDuration};
 
 mod exmetadata;
 mod audioqueue;
@@ -23,6 +24,10 @@ pub struct AudioSink {
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<Arc<Mutex<OutputStream>>>,
     pub metadata: MetaData,
+    volume: Arc<Mutex<f32>>,
+    start_time: Arc<Mutex<Option<Instant>>>,
+    speed: Arc<Mutex<f32>>,
+    position: Arc<Mutex<Duration>>,
 }
 
 #[pymethods]
@@ -36,6 +41,10 @@ impl AudioSink {
             sink: None,
             stream: None,
             metadata: MetaData::default(),
+            volume: Arc::new(Mutex::new(1.0)),
+            start_time: Arc::new(Mutex::new(None)),
+            speed: Arc::new(Mutex::new(1.0)),
+            position: Arc::new(Mutex::new(Duration::new(0, 0))),
         }
     }
 
@@ -106,8 +115,15 @@ impl AudioSink {
         let callback = self.callback.clone();
         let cancel_callback = self.cancel_callback.clone();
         let sink_clone = sink.clone();
+        let start_time = self.start_time.clone();
+        let speed = self.speed.clone();
 
         thread::spawn(move || {
+            {
+                let mut start_time_guard = start_time.lock().unwrap();
+                *start_time_guard = Some(Instant::now());
+            }
+
             loop {
                 {
                     let mut is_playing_guard = is_playing.lock().unwrap();
@@ -127,6 +143,8 @@ impl AudioSink {
                     } else {
                         *is_playing_guard = true;
                     }
+                    let speed = speed.lock().unwrap();
+                    sink.set_speed(*speed);
                 }
 
                 thread::sleep(Duration::from_millis(100));
@@ -179,6 +197,65 @@ impl AudioSink {
 
     pub fn cancel_callback(&mut self) {
         *self.cancel_callback.lock().unwrap() = true;
+    }
+
+    pub fn set_volume(&mut self, volume: f32) -> PyResult<()> {
+        if volume < 0.0 || volume > 1.0 {
+            return Err(PyValueError::new_err("Volume must be between 0.0 and 1.0."));
+        }
+
+        if let Some(sink) = &self.sink {
+            sink.lock().unwrap().set_volume(volume);
+            *self.volume.lock().unwrap() = volume; // Update internal volume state
+            Ok(())
+        } else {
+            Err(PyRuntimeError::new_err("No sink available to set volume. Load audio first."))
+        }
+    }
+
+    pub fn get_volume(&self) -> PyResult<f32> {
+        Ok(*self.volume.lock().unwrap())
+    }
+
+    pub fn get_pos(&self) -> PyResult<f64> {
+        let start_time = self.start_time.lock().unwrap();
+        if let Some(start_time) = *start_time {
+            let elapsed = start_time.elapsed();
+            let speed = *self.speed.lock().unwrap();
+            Ok(elapsed.as_secs_f64() / speed as f64)
+        } else {
+            Err(PyRuntimeError::new_err("Playback not started."))
+        }
+    }
+
+    pub fn try_seek(&mut self, position: f32) -> PyResult<()> {
+        if position < 0.0 {
+            return Err(PyValueError::new_err("Position must be non-negative."));
+        }
+
+        if let Some(sink) = &self.sink {
+            // Seeking functionality depends on how `rodio::Sink` supports seeking
+            // Placeholder code as `rodio::Sink` may not directly support seeking
+            // You may need to handle this according to how seeking should be implemented
+            println!("Seeking to position {}", position);
+            // Update position field
+            *self.position.lock().unwrap() = Duration::from_secs_f32(position);
+            Ok(())
+        } else {
+            Err(PyRuntimeError::new_err("No sink available to seek. Load audio first."))
+        }
+    }
+
+    pub fn set_speed(&mut self, speed: f32) -> PyResult<()> {
+        if speed <= 0.0 {
+            return Err(PyValueError::new_err("Speed must be greater than 0."));
+        }
+        *self.speed.lock().unwrap() = speed;
+        Ok(())
+    }
+
+    pub fn get_speed(&self) -> f32 {
+        *self.speed.lock().unwrap()
     }
 }
 
