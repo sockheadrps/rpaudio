@@ -38,7 +38,7 @@ jobs:
       - name: Build HTML
         working-directory: ./rpaudio
         run: |
-          sphinx-build -b html docs/source docs/build/html
+          sphinx-build -M html ./docs/source ./build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
