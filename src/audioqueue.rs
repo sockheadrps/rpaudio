@@ -27,7 +27,7 @@ impl AudioChannel {
             auto_consume: Arc::new(Mutex::new(false)),
             currently_playing: Arc::new(Mutex::new(None)),
         };
-        channel.channel_loop(); 
+        channel._channel_loop(); 
         channel
     }
 
@@ -77,7 +77,7 @@ impl AudioChannel {
         }
     }
 
-    fn channel_loop(&self) {
+    fn _channel_loop(&self) {
         let queue = Arc::clone(&self.queue);
         let auto_consume = Arc::clone(&self.auto_consume);
         let currently_playing = Arc::clone(&self.currently_playing);

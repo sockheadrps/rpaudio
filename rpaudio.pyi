@@ -9,17 +9,43 @@ class AudioSink(Protocol):
     and manipulate playback speed and volume. An optional callback function can be invoked when
     the audio stops playing.
 
-    :param callback: (optional) A function that will be called when the audio stops playing.
-    :type callback: Optional[Callable[[], None]]
+    Example:
+    
+    .. code-block:: python
+
+        handler = AudioHandler(callback=my_callback)
+        handler.load_audio("my_audio_file.mp3")
+        handler.play()
+        handler.pause()
+        handler.stop()
+
+    Args:
+        callback (Optional[Callable[[], None]]): A function that will be called when the audio stops playing.
+
+    Attributes:
+        is_playing (bool): Flag indicating whether the audio is currently playing.
     """
+
     def __init__(self, callback: Optional[Callable[[], None]] = None) -> None:
         """
         Constructor method.
 
         Initializes an instance of AudioSink with an optional callback function.
 
-        :param callback: A function that will be called when the audio stops playing.
-        :type callback: Optional[Callable[[], None]]
+        Args:
+            callback (Optional[Callable[[], None]]): A function that will be called when the audio stops playing.
+
+        Returns:
+            None: This method does not return any value.
+
+        Example:
+        
+        .. code-block:: python
+
+            def on_audio_end():
+                print("Audio has ended.")
+
+            handler = AudioHandler(callback=on_audio_end)
         """
         ...
 
@@ -27,9 +53,18 @@ class AudioSink(Protocol):
     def is_playing(self) -> bool:
         """
         Flag indicating whether the audio is currently playing.
+
+        Returns:
+            bool: True if the audio is playing, False otherwise.
+
+        Example:
         
-        :return: True if the audio is playing, False otherwise.
-        :rtype: bool
+        .. code-block:: python
+
+            handler = AudioHandler(callback=my_callback)
+            handler.load_audio("my_audio_file.mp3")
+            handler.play()
+            print(handler.is_playing)  # True if audio is playing
         """
         ...
 
@@ -50,31 +85,59 @@ class AudioSink(Protocol):
         If the audio is already playing, this method has no effect.
 
         Raises:
-            RuntimeError: If no audio has been loaded
+            RuntimeError: If no audio has been loaded.
+
+        Example:
+        
+        .. code-block:: python
+
+            handler = AudioHandler(callback=my_callback)
+            handler.load_audio("my_audio_file.mp3")
+            handler.play()
         """
         ...
 
     def pause(self) -> None:
         """
         Pause the currently playing audio, if any.
-        
+
         Raises:
-            RuntimeError: If no audio has been loaded
+            RuntimeError: If no audio has been loaded.
+
+        Example:
+        
+        .. code-block:: python
+
+            handler = AudioHandler(callback=my_callback)
+            handler.load_audio("my_audio_file.mp3")
+            handler.play()
+            handler.pause()
         """
         ...
 
     def stop(self) -> None:
         """
         Stop the currently playing audio, if any.
-        
+
         Raises:
-            RuntimeError: If no audio has been loaded
+            RuntimeError: If no audio has been loaded.
+
+        Example:
+        
+        .. code-block:: python
+
+            handler = AudioHandler(callback=my_callback)
+            handler.load_audio("my_audio_file.mp3")
+            handler.play()
+            handler.stop()
         """
         ...
 
     @property
     def get_effects(self) -> dict[str, any]:
         """
+        NOT IMPLEMENTED YET
+
         Get current effect settings.
         
         :return: A dictionary containing the current effect settings.
@@ -85,17 +148,27 @@ class AudioSink(Protocol):
     @get_effects.setter
     def set_effects(self, effect: dict[str, any]) -> None:
         """
+        NOT IMPLEMENTED YET
+
         Apply an effect to the audio.
 
         :param effect: A dictionary containing the effect settings.
         :type effect: dict[str, any]
         """
-        ...
+        raise NotImplementedError("This method is not implemented yet.")
 
     @property
     def metadata(self) -> dict[str, any]:
         """
         Get metadata for the audio file.
+
+        Example:
+
+        .. code-block:: python
+        
+            audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+            audio_1.load_audio("ex.wav")
+            data = audio_1.metadata
 
         :return: A dictionary containing metadata for the audio file.
         :rtype: dict[str, any]
@@ -420,10 +493,42 @@ class ChannelManager(Protocol):
     """
     Manages multiple audio channels and provides an API to control them.
 
+        Example:
+        
+        .. code-block:: python
+
+            # Intializing 2 audio sinks
+            audio_1 = AudioSink(callback=on_audio_stop)
+            audio_1.load_audio("ex.wav")
+            audio_2 = AudioSink(callback=on_audio_stop)
+            audio_2.load_audio("Acrylic.mp3")
+            print(audio_1.metadata)
+
+            # Intializing 1st audio channel
+            channel_1 = AudioChannel()
+            channel_1.push(audio_1)
+            channel_1.push(audio_2)
+
+            # Intializing 2 more audio sinks
+            audio_3 = AudioSink(callback=on_audio_stop)
+            audio_3.load_audio("ex.wav")
+            audio_4 = AudioSink(callback=on_audio_stop)
+            audio_4.load_audio("Acrylic.mp3")
+            # Intializing 2nd audio channel
+            channel_2 = AudioChannel()
+            channel_2.push(audio_3)
+            channel_2.push(audio_4)
+
+            # Intializing ChannelManager
+            manager = ChannelManager()
+            manager.add_channel("Channel1", channel_1)
+            manager.add_channel("Channel2", channel_2)
+
     :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
     :vartype channels: dict
     """
 
+class AudioChannel(Protocol):
     channels: dict[str, AudioChannel]
 
     def __init__(self) -> None:

@@ -1,0 +1,51 @@
+name: Build-sphinx-docs
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [main]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install system dependencies
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y libasound2-dev
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e git+https://github.com/Beaux44/rpaudio.git@4a199a3b430f6c6f8209b3dbc9041bdaa04a7b3d#egg=rpaudio
+          pip install sphinx
+          pip install sphinx-rtd-theme
+          pip install sphinxcontrib-napoleon
+          pip install sphinx-autodoc-typehints
+          pip install sphinx-autoapi
+          pip install ghp-import
+          pip install maturin
+      - name: Build Rust extension
+        run: |
+          maturin build --release
+      - name: Build HTML
+        run: |
+          sphinx-build -b html docs/source docs/build/html
+
+      - name: Run ghp-import
+        run: |
+          ghp-import -n -p -f docs/_build/html
