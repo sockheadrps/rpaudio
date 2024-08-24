@@ -67,4 +67,5 @@ jobs:
         if: ${{ github.ref == 'refs/heads/docs' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/html
+          publish_branch: gh-pages
+          publish_dir: docs/build/
