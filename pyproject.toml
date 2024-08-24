@@ -10,7 +10,7 @@ authors = [
   { name="Beaux44"}
 ]
 description = "Rust audio api binding for python"
-readme = "README.md"
+readme = "../README.md"
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -24,4 +24,4 @@ Issues = "https://github.com/sockheadrps/rpaudio/issues"
 
 [tool.maturin]
 name = "rpaudio"
-readme = "README.md"
+readme = "../README.md"
