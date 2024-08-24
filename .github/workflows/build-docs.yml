@@ -36,8 +36,9 @@ jobs:
           maturin build --release
 
       - name: Build HTML
+        working-directory: ./docs  # Change directory to ./docs
         run: |
-          sphinx-build -M html ./docs/source ./build
+          sphinx-build -b html source build 
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
