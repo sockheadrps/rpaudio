@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::fs::File;
 use std::io::BufReader;
 use std::time::{Duration, Instant};
-use rodio::{Decoder, OutputStream, Sink};
+use rodio::{Decoder, OutputStream, Sink, Source};
 use std::thread;
 mod exmetadata;
 mod mixer;
@@ -43,7 +43,7 @@ impl AudioSink {
             volume: Arc::new(Mutex::new(1.0)),
             start_time: Arc::new(Mutex::new(None)),
             speed: Arc::new(Mutex::new(1.0)),
-            position: Arc::new(Mutex::new(Duration::new(0, 0))),
+            position: Mutex::new(Duration::from_secs(0)).into(),
         }
     }
 
@@ -217,13 +217,12 @@ impl AudioSink {
     }
 
     pub fn get_pos(&self) -> PyResult<f64> {
-        let start_time = self.start_time.lock().unwrap();
-        if let Some(start_time) = *start_time {
-            let elapsed = start_time.elapsed();
-            let speed = *self.speed.lock().unwrap();
-            Ok(elapsed.as_secs_f64() / speed as f64)
+        if let Some(sink) = &self.sink {
+            let duration = sink.lock().unwrap().get_pos();
+            let position_seconds = duration.as_secs_f64();
+            Ok((position_seconds * 100.0).round() / 100.0)
         } else {
-            Err(PyRuntimeError::new_err("Playback not started."))
+            Err(PyRuntimeError::new_err("No sink available. Load audio first."))
         }
     }
 
@@ -231,17 +230,26 @@ impl AudioSink {
         if position < 0.0 {
             return Err(PyValueError::new_err("Position must be non-negative."));
         }
-
-        if let Some(_sink) = &self.sink {
-            // Seeking functionality depends on how `rodio::Sink` supports seeking
-            // Placeholder code as `rodio::Sink` may not directly support seeking
-            // You may need to handle this according to how seeking should be implemented
-            println!("Seeking to position {}", position);
-            // Update position field
-            *self.position.lock().unwrap() = Duration::from_secs_f32(position);
-            Ok(())
+    
+        if let Some(sink) = &self.sink {
+            let duration = Duration::from_secs_f32(position);
+            eprintln!("Attempting to seek to position: {:?}", duration);
+    
+            let result = sink.lock().unwrap().try_seek(duration);
+            match result {
+                Ok(_) => {
+                    eprintln!("Seek successful, updating internal position to {:?}", duration); // Debug output
+                    *self.position.lock().unwrap() = Duration::from_secs_f64(self.get_pos().unwrap());
+                    *self.start_time.lock().unwrap() = Some(Instant::now());
+                    Ok(())
+                }
+                Err(e) => {
+                    eprintln!("Seek failed: {:?}", e); 
+                    Err(PyRuntimeError::new_err(format!("Seek failed: {:?}", e)))
+                }
+            }
         } else {
-            Err(PyRuntimeError::new_err("No sink available to seek. Load audio first."))
+            Err(PyRuntimeError::new_err("No audio sink available. Load audio first."))
         }
     }
 
