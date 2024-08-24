@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-use pyo3::types::PyModule;
 use std::sync::{Arc, Mutex};
 use std::{fmt, thread};
 use std::time::Duration;
@@ -144,9 +143,3 @@ impl AudioChannel {
     }
 }    
 
-#[pymodule]
-pub fn audioqueue(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<AudioChannel>()?;
-    m.add_class::<AudioSink>()?;
-    Ok(())
-}

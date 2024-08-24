@@ -5,8 +5,9 @@ class AudioSink(Protocol):
     """
     Interface that wraps functionality for audio files.
 
-    This class provides methods to load, play, pause, and stop audio playback.
-    An optional callback function can be invoked when the audio stops playing.
+    This class provides methods to load, play, pause, stop audio playback, manage audio effects,
+    and manipulate playback speed and volume. An optional callback function can be invoked when
+    the audio stops playing.
 
     Example:
     
@@ -29,7 +30,7 @@ class AudioSink(Protocol):
         """
         Constructor method.
 
-        Initializes an instance of AudioHandler with an optional callback function.
+        Initializes an instance of AudioSink with an optional callback function.
 
         Args:
             callback (Optional[Callable[[], None]]): A function that will be called when the audio stops playing.
@@ -70,19 +71,9 @@ class AudioSink(Protocol):
     def load_audio(self, filename: str) -> None:
         """
         Load an audio file for playback.
-
-        Args:
-            filename (str): The path to the audio file to load.
-
-        Returns:
-            None: This method does not return any value.
-
-        Example:
         
-        .. code-block:: python
-
-            handler = AudioHandler(callback=my_callback)
-            handler.load_audio("my_audio_file.mp3")
+        :param filename: The path to the audio file to load.
+        :type filename: str
         """
         ...
 
@@ -143,17 +134,18 @@ class AudioSink(Protocol):
         ...
 
     @property
-    def get_effects(self, effect: dict[str, any]) -> dict[str, any]:
+    def get_effects(self) -> dict[str, any]:
         """
         NOT IMPLEMENTED YET
 
         Get current effect settings.
-        rtype: dict[str, any]
+        
+        :return: A dictionary containing the current effect settings.
+        :rtype: dict[str, any]
         """
-        raise NotImplementedError("This method is not implemented yet.")
-    
-    
-    @property.setter
+        ...
+
+    @get_effects.setter
     def set_effects(self, effect: dict[str, any]) -> None:
         """
         NOT IMPLEMENTED YET
@@ -166,7 +158,7 @@ class AudioSink(Protocol):
         raise NotImplementedError("This method is not implemented yet.")
 
     @property
-    def metadata(self) -> Dict[str, str]:
+    def metadata(self) -> dict[str, any]:
         """
         Get metadata for the audio file.
 
@@ -179,12 +171,71 @@ class AudioSink(Protocol):
             data = audio_1.metadata
 
         :return: A dictionary containing metadata for the audio file.
-        :rtype: dict[str, str]
+        :rtype: dict[str, any]
         """
         ...
 
+    def set_speed(self, speed: float) -> None:
+        """
+        Set the playback speed of the audio.
 
+        :param speed: The playback speed. Must be greater than 0.
+        :type speed: float
 
+        :raises ValueError: If the speed is less than or equal to 0.
+        """
+        ...
+
+    def get_speed(self) -> float:
+        """
+        Get the current playback speed of the audio.
+
+        :return: The playback speed.
+        :rtype: float
+        """
+        ...
+
+    def get_pos(self) -> float:
+        """
+        Get the current playback position in seconds.
+
+        :return: The playback position.
+        :rtype: float
+
+        :raises RuntimeError: If playback has not started.
+        """
+        ...
+
+    def try_seek(self, position: float) -> None:
+        """
+        Attempt to seek to a specific position in the audio playback.
+
+        :param position: The position in seconds to seek to.
+        :type position: float
+
+        :raises ValueError: If the position is negative or not a valid time in the audio.
+        """
+        ...
+
+    def set_volume(self, volume: float) -> None:
+        """
+        Set the volume level for playback.
+
+        :param volume: The volume level. Must be between 0.0 and 1.0.
+        :type volume: float
+
+        :raises ValueError: If the volume is not between 0.0 and 1.0.
+        """
+        ...
+
+    def get_volume(self) -> float:
+        """
+        Get the current volume level.
+
+        :return: The current volume level.
+        :rtype: float
+        """
+        ...
 
 class MetaData:
     """
@@ -375,7 +426,68 @@ class MetaData:
         """
         ...
 
+class AudioChannel(Protocol):
+    """
+    Manages a queue of AudioSink objects and handles playback.
 
+    :param channel_id: A unique identifier for the audio channel.
+    :type channel_id: Union[int, str]
+    :param channel_callback: (optional) A callback invoked when the queue is idle.
+    :type channel_callback: Optional[Callable[[], None]]
+    """
+
+    def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
+        ...
+
+    def push(self, audio: AudioSink) -> None:
+        """
+        Adds an AudioSink to the channel queue.
+        
+        :param audio: The audio object to add to the queue.
+        :type audio: AudioSink
+        """
+        ...
+
+    @property
+    def auto_consume(self) -> bool:
+        """
+        Returns whether the channel automatically consumes the queue.
+        
+        :rtype: bool
+        """
+        ...
+
+    @auto_consume.setter
+    def auto_consume(self, value: bool) -> None:
+        """
+        Sets the auto-consume behavior of the channel.
+        
+        :param value: True to enable auto-consume, False to disable.
+        :type value: bool
+        """
+        ...
+
+    def drop_current_audio(self) -> None:
+        """
+        Drops the current audio from the queue.
+        """
+        ...
+
+    @property
+    def current_audio(self) -> AudioSink:
+        """
+        Returns the currently playing AudioSink object.
+        
+        :rtype: AudioSink
+        """
+        ...
+
+    async def _control_loop(self) -> None:
+        """
+        Continuously monitors the queue and handles playback, 
+        auto-consume, and callback execution. Not meant for python access
+        """
+        ...
 
 class ChannelManager(Protocol):
     """

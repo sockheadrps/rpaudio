@@ -1,16 +1,16 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyRuntimeError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::types::PyDict;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::fs::File;
-use std::{thread, time::Duration};
-use rodio::{Decoder, OutputStream, Sink};
 use std::io::BufReader;
-
+use std::time::{Duration, Instant};
+use rodio::{Decoder, OutputStream, Sink, Source};
+use std::thread;
 mod exmetadata;
-mod audioqueue;
 mod mixer;
+mod audioqueue;
 pub use exmetadata::{MetaData, metadata};
 unsafe impl Send for AudioSink {}
 
@@ -19,10 +19,14 @@ unsafe impl Send for AudioSink {}
 pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
-    cancel_callback: Arc<Mutex<bool>>, // Field to control callback cancellation
+    cancel_callback: Arc<Mutex<bool>>, 
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<Arc<Mutex<OutputStream>>>,
     pub metadata: MetaData,
+    volume: Arc<Mutex<f32>>,
+    start_time: Arc<Mutex<Option<Instant>>>,
+    speed: Arc<Mutex<f32>>,
+    position: Arc<Mutex<Duration>>,
 }
 
 #[pymethods]
@@ -36,6 +40,10 @@ impl AudioSink {
             sink: None,
             stream: None,
             metadata: MetaData::default(),
+            volume: Arc::new(Mutex::new(1.0)),
+            start_time: Arc::new(Mutex::new(None)),
+            speed: Arc::new(Mutex::new(1.0)),
+            position: Mutex::new(Duration::from_secs(0)).into(),
         }
     }
 
@@ -72,10 +80,10 @@ impl AudioSink {
         *self.is_playing.lock().unwrap()
     }
 
-    pub fn load_audio(&mut self, file_path: String) -> PyResult<()> {
+    pub fn load_audio(&mut self, file_path: String) -> PyResult<Self> {
         if self.sink.is_some() {
             println!("Sink already exists, unload it first");
-            return Ok(());
+            return Ok(self.clone()); 
         }
 
         let metadata = metadata(&file_path)?;
@@ -106,8 +114,15 @@ impl AudioSink {
         let callback = self.callback.clone();
         let cancel_callback = self.cancel_callback.clone();
         let sink_clone = sink.clone();
+        let start_time = self.start_time.clone();
+        let speed = self.speed.clone();
 
         thread::spawn(move || {
+            {
+                let mut start_time_guard = start_time.lock().unwrap();
+                *start_time_guard = Some(Instant::now());
+            }
+
             loop {
                 {
                     let mut is_playing_guard = is_playing.lock().unwrap();
@@ -127,6 +142,8 @@ impl AudioSink {
                     } else {
                         *is_playing_guard = true;
                     }
+                    let speed = speed.lock().unwrap();
+                    sink.set_speed(*speed);
                 }
 
                 thread::sleep(Duration::from_millis(100));
@@ -136,7 +153,7 @@ impl AudioSink {
             *is_playing_guard = false;
         });
 
-        Ok(())
+        Ok(self.clone())
     }
 
     pub fn play(&mut self) -> PyResult<()> {
@@ -180,6 +197,73 @@ impl AudioSink {
     pub fn cancel_callback(&mut self) {
         *self.cancel_callback.lock().unwrap() = true;
     }
+
+    pub fn set_volume(&mut self, volume: f32) -> PyResult<()> {
+        if volume < 0.0 || volume > 1.0 {
+            return Err(PyValueError::new_err("Volume must be between 0.0 and 1.0."));
+        }
+
+        if let Some(sink) = &self.sink {
+            sink.lock().unwrap().set_volume(volume);
+            *self.volume.lock().unwrap() = volume; // Update internal volume state
+            Ok(())
+        } else {
+            Err(PyRuntimeError::new_err("No sink available to set volume. Load audio first."))
+        }
+    }
+
+    pub fn get_volume(&self) -> PyResult<f32> {
+        Ok(*self.volume.lock().unwrap())
+    }
+
+    pub fn get_pos(&self) -> PyResult<f64> {
+        if let Some(sink) = &self.sink {
+            let duration = sink.lock().unwrap().get_pos();
+            let position_seconds = duration.as_secs_f64();
+            Ok((position_seconds * 100.0).round() / 100.0)
+        } else {
+            Err(PyRuntimeError::new_err("No sink available. Load audio first."))
+        }
+    }
+
+    pub fn try_seek(&mut self, position: f32) -> PyResult<()> {
+        if position < 0.0 {
+            return Err(PyValueError::new_err("Position must be non-negative."));
+        }
+    
+        if let Some(sink) = &self.sink {
+            let duration = Duration::from_secs_f32(position);
+            eprintln!("Attempting to seek to position: {:?}", duration);
+    
+            let result = sink.lock().unwrap().try_seek(duration);
+            match result {
+                Ok(_) => {
+                    eprintln!("Seek successful, updating internal position to {:?}", duration); // Debug output
+                    *self.position.lock().unwrap() = Duration::from_secs_f64(self.get_pos().unwrap());
+                    *self.start_time.lock().unwrap() = Some(Instant::now());
+                    Ok(())
+                }
+                Err(e) => {
+                    eprintln!("Seek failed: {:?}", e); 
+                    Err(PyRuntimeError::new_err(format!("Seek failed: {:?}", e)))
+                }
+            }
+        } else {
+            Err(PyRuntimeError::new_err("No audio sink available. Load audio first."))
+        }
+    }
+
+    pub fn set_speed(&mut self, speed: f32) -> PyResult<()> {
+        if speed <= 0.0 {
+            return Err(PyValueError::new_err("Speed must be greater than 0."));
+        }
+        *self.speed.lock().unwrap() = speed;
+        Ok(())
+    }
+
+    pub fn get_speed(&self) -> f32 {
+        *self.speed.lock().unwrap()
+    }
 }
 
 impl AudioSink {
@@ -195,10 +279,10 @@ impl AudioSink {
 }
 
 #[pymodule]
-fn rpaudio(py: Python, m: &PyModule) -> PyResult<()> {
+fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
     m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
-    audioqueue::audioqueue(py, m)?;
+    m.add_class::<audioqueue::AudioChannel>()?;
     Ok(())
 }
