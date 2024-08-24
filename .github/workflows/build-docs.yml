@@ -36,7 +36,6 @@ jobs:
           maturin build --release
 
       - name: Build HTML
-        working-directory: ./rpaudio
         run: |
           sphinx-build -M html ./docs/source ./build
 
