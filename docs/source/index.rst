@@ -10,14 +10,14 @@ Welcome to the rpaudio documentation!
 
 Contents:
 ---------
-
 .. toctree::
    :maxdepth: 2
 
    quickstart
    _autosummary/rpaudio.AudioChannel
-   _autosummary/rpaudio.ChannelManager
    _autosummary/rpaudio.AudioSink
+   _autosummary/rpaudio.ChannelManager
+
    examples/index
 
 
