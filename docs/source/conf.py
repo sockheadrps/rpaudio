@@ -22,8 +22,6 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
     'autoapi.extension',
     'sphinx.ext.napoleon',
     "sphinx.ext.viewcode",
@@ -49,7 +47,3 @@ autoapi_options = [
     'undoc-members',
     'show-inheritance',
 ]
-
-
-autosummary_generate = True  # Generate autosummary pages
-autosummary_imported_members = True
