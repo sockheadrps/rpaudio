@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::fs::File;
 use std::io::BufReader;
 use std::time::{Duration, Instant};
-use rodio::{Decoder, OutputStream, Sink, Source};
+use rodio::{Decoder, OutputStream, Sink};
 use std::thread;
 mod exmetadata;
 mod mixer;

@@ -30,3 +30,6 @@ Cargo.lock
 # Windows
 Thumbs.db
 Acrylic.mp3
+
+.env
+.pypirc
