@@ -1,0 +1,47 @@
+name: Build-sphinx-docs
+
+on:
+  push:
+    branches: [docs]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e git+https://github.com/Beaux44/rpaudio.git@4a199a3b430f6c6f8209b3dbc9041bdaa04a7b3d#egg=rpaudio
+          pip install sphinx
+          pip install sphinx-rtd-theme
+          pip install sphinxcontrib-napoleon
+          pip install sphinx-autodoc-typehints
+          pip install sphinx-autoapi
+          pip install ghp-import
+          pip install maturin
+
+      - name: Build Rust extension
+        run: |
+          maturin build --release
+
+      - name: Build HTML
+        working-directory: ./rpaudio
+        run: |
+          sphinx-build -b html docs/source docs/build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GH_TOKEN  }}
+          publish_dir: docs/build/html
