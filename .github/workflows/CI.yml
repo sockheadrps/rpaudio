@@ -68,7 +68,7 @@ jobs:
       - name: Install ALSA development libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config build-essential libasound2-dev
+          sudo apt-get install -y pkg-config build-essential libasound2-dev alsa-source
           echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
           echo "PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
 

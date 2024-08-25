@@ -1,0 +1,1 @@
+-e git+https://github.com/Beaux44/rpaudio.git@4a199a3b430f6c6f8209b3dbc9041bdaa04a7b3d#egg=rpaudio
