@@ -82,6 +82,7 @@ jobs:
 
       - name: Set PKG_CONFIG_PATH
         run: |
+          find /usr -name alsa.pc
           echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
