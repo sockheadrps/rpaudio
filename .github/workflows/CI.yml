@@ -111,40 +111,6 @@ jobs:
         with:
           python-version: 3.9
 
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cross-compilation tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            pkg-config \
-            libssl-dev \
-            libasound2-dev \
-            debootstrap \
-            qemu-user-static \
-            gcc \
-            g++ \
-            build-essential
-
-      - name: Set up sysroot for cross-compilation
-        run: |
-          # Create a directory for the sysroot
-          sudo mkdir -p /opt/sysroot
-
-          # Install the sysroot using a specified mirror
-          sudo debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://httpredir.debian.org/debian
-
-          # Copy QEMU static binaries to sysroot
-          sudo cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
-
-          # Enter chroot environment and install required packages
-          sudo chroot /opt/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
-
-          # Set pkg-config environment variables
-          echo "PKG_CONFIG_SYSROOT_DIR=/opt/sysroot" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/opt/sysroot/usr/lib/pkgconfig:/opt/sysroot/usr/share/pkgconfig" >> $GITHUB_ENV
-          
-
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -152,16 +118,16 @@ jobs:
           manylinux: auto
           args: --release --out dist -m Cargo.toml
 
-      - uses: uraimo/run-on-arch-action@v2.7.2
+      - name: Install and Test Wheels
+        uses: uraimo/run-on-arch-action@v2.7.2
         if: matrix.target != 'ppc64'
-        name: Install built wheel
         with:
           arch: ${{ matrix.target }}
-          githubToken: ${{ github.token }}
           distro: ubuntu20.04
+          githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip
+            apt-get install -y --no-install-recommends python3 python3-pip pkg-config libssl-dev libasound2-dev
             pip3 install -U pip
           run: |
             pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
@@ -172,7 +138,6 @@ jobs:
         with:
           name: wheels
           path: dist
-
 
 
   musllinux:
