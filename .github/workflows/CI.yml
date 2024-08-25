@@ -98,23 +98,27 @@ jobs:
       
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
-            . "$HOME/.cargo/env"  # This loads Cargo into the PATH
+            . "$HOME/.cargo/env"  # Load Cargo environment
       
             # Upgrade pip and install maturin
             python3.9 -m pip install --upgrade pip
             python3.9 -m pip install maturin
       
+            # Verify maturin installation
+            echo "PATH=$PATH"
+            which maturin
+      
             # Build the wheel
-            maturin build --release --out /tmp/dist -m Cargo.toml
+            maturin build --release --out /tmp/dist -m Cargo.toml || { echo "Maturin build failed"; exit 1; }
       
             # Check if /tmp/dist contains files
-            ls /tmp/dist
+            ls /tmp/dist || { echo "No files in /tmp/dist"; exit 1; }
       
             # Create the /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
       
             # Move the output files back into the GitHub workspace for later steps or artifacts
-            mv /tmp/dist/* /io/dist/
+            mv /tmp/dist/* /io/dist/ || { echo "Failed to move files"; exit 1; }
     
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
