@@ -94,39 +94,36 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            yum install -y alsa-lib-devel pkgconfig python3 python3-pip
-
+            yum install -y alsa-lib-devel pkgconfig python3.9 python3.9-pip
+      
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
             export PATH="$HOME/.cargo/bin:$PATH"
-
+      
             # Upgrade pip and install maturin
-            pip3 install --upgrade pip
-            pip3 install maturin
-
-            # Build the wheel and specify an output directory outside the project directory
+            pip3.9 install --upgrade pip
+            pip3.9 install maturin
+      
+            # Build the wheel targeting Python 3.9
             maturin build --release --out /tmp/dist -m Cargo.toml
-
-            # Create the /io/dist directory if it doesn't exist
-            mkdir -p /io/dist/
-
+      
             # Move the output files back into the GitHub workspace for later steps or artifacts
+            mkdir -p /io/dist/
             mv /tmp/dist/* /io/dist/
-
+    
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
         with:
           image: quay.io/pypa/manylinux2014_x86_64:latest
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
-            # Ensure Python and pip are installed
-            yum install -y python3 python3-pip
-  
-            # Install the built wheel
+            # Ensure Python 3.9 and pip are installed
+            yum install -y python3.9 python3.9-pip
+            
             # Install the built wheel directly from the dist directory
-            pip3 install /io/dist/rpaudio-0.0.3-*.whl --force-reinstall
-            python3 -c "import rpaudio"
-  
+            pip3.9 install /io/dist/rpaudio-0.0.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl --force-reinstall
+            python3.9 -c "import rpaudio"
+
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
         with:
