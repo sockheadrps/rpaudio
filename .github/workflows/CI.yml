@@ -105,26 +105,29 @@ jobs:
             python3.9 -m pip install maturin
             export PATH="$HOME/.local/bin:$PATH"
 
-            mkdir /tmp/dist
+            # Create /tmp/dist directory
+            mkdir -p /tmp/dist
+
+            # Debugging: Print contents of /tmp before build
             echo "Contents of /tmp before build:"
+            ls -la /tmp
+
+            # Build the wheel and specify an output directory
+            maturin build --release --out /tmp/dist
+
+            # Debugging: Check contents after build
+            echo "Contents of /tmp/dist after build:"
             ls -la /tmp/dist
 
-            # Build the wheel and specify an output directory outside the project directory
-            maturin build --release --out /tmp/dist
-            echo "Contents of /tmp/dist after build:"
-            ls -la /tmp/dist || { echo "No files found in /tmp/dist"; exit 1; }
-
-            # Create the /io/dist directory if it doesn't exist
+            # Create /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
-            echo "Contents of /tmp/dist before moving:"
-            ls -la /tmp/dist/
 
-            # Move the output files back into the GitHub workspace for later steps or artifacts
-            mv –f  /tmp/dist/* /io/dist/
+            # Move the output files back into the GitHub workspace
+            mv -v /tmp/dist/* /io/dist/
 
-            # print the contents of the dist directory
-            ls /io/dist/
-
+            # Debugging: List /io/dist contents to verify the move
+            echo "Contents of /io/dist:"
+            ls -la /io/dist/
             # Install the built wheel
             python3.9 -m pip install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3.9 -c "import rpaudio"
