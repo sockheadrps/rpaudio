@@ -6,7 +6,6 @@ on:
       - experimental
     tags:
       - 'v*'
-
 jobs:
   macos:
     runs-on: macos-13
@@ -79,6 +78,7 @@ jobs:
         target:
           - x86_64-unknown-linux-musl
           - i686-unknown-linux-musl
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -121,6 +121,7 @@ jobs:
 
             $PYTHON_BIN -m pip install maturin
             export PATH="$HOME/.local/bin:$PATH"
+
 
             # Create /tmp/dist directory
             mkdir -p /tmp/dist
@@ -288,27 +289,20 @@ jobs:
           name: wheels
           path: dist
 
-  
-  check-commit-message:
-    runs-on: ubuntu-latest
-    outputs:
-      should-release: ${{ steps.check-message.outputs.should-release }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Get commit message
-        id: get-commit-message
-        run: |
-          # Get the latest commit message
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Latest commit message: $COMMIT_MESSAGE"
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+  check-commit-message:
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download check result
+        uses: actions/download-artifact@v3
+        with:
+          name: commit-message-check
 
       - name: Check commit message
         id: check-message
         run: |
-          if [[ "$COMMIT_MESSAGE" == BUILD* ]]; then
+          if [[ -f $GITHUB_ENV && -n "$(grep 'should-release=true' $GITHUB_ENV)" ]]; then
             echo "Should release"
             echo "should-release=true" >> $GITHUB_ENV
           else
@@ -318,14 +312,16 @@ jobs:
 
   release:
     name: Release
-    runs-on: ubuntu-latest
-    needs: [ macos, windows, linux, linux-cross, musllinux, musllinux-cross, check-commit-message ]
+    needs: [check-commit-message]
     if: needs.check-commit-message.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Download wheels
-        uses: actions/download-artifact@v3
+      - name: Run commit message check
+        id: check_commit_message
+        run: ./check_commit_message.sh
+      - uses: actions/download-artifact@v3
         with:
           name: wheels
       - uses: actions/setup-python@v4
