@@ -100,13 +100,8 @@ jobs:
             export PATH="$HOME/.cargo/bin:$PATH"
 
             # Upgrade pip and install maturin
-            pip3.9 install --upgrade pip
-            pip3.9 install maturin
-
-            python3.9 --version
-            python3.9 -m pip --version
-            python3.9 -c "import pip; print('pip version:', pip.__version__)"
-            python3.9 -c "print('Python 3.9 is working')"
+            python3.9 -m pip install --upgrade pip
+            python3.9 -m pip install maturin
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist
@@ -121,7 +116,7 @@ jobs:
             ls /io/dist/
 
             # Install the built wheel
-            pip3.9 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
+            python3.9 -m pip install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3.9 -c "import rpaudio"
   
       - name: Upload Wheels
