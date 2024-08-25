@@ -16,9 +16,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install gettext
         run: |
-          brew update
           brew install gettext
-          brew link --force gettext
+          brew link gettext --force
       - name: Build wheels - x86_64
         uses: PyO3/maturin-action@v1
         with:
@@ -126,7 +125,7 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip libasound2-dev
+            apt-get install -y --no-install-recommends python3 python3-pip libasound2-dev crossbuild-essential-arm64
             pip3 install -U pip
           run: |
             pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
