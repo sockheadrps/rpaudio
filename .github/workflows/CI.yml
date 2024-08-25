@@ -129,16 +129,16 @@ jobs:
       - name: Set up sysroot for cross-compilation
         run: |
           # Create a directory for the sysroot
-          mkdir -p /opt/sysroot
+          sudo mkdir -p /opt/sysroot
       
           # Install the sysroot (adjust command as needed for target platform)
           debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://archive.ubuntu.com/ubuntu
       
           # Copy QEMU static binaries to sysroot
-          cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
+          sudo cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
       
           # Enter chroot environment and install required packages
-          chroot /opt/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
+          sudo chroot /opt/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
       
           # Set pkg-config environment variables
           echo "PKG_CONFIG_SYSROOT_DIR=/opt/sysroot" >> $GITHUB_ENV
