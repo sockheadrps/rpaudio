@@ -93,6 +93,8 @@ jobs:
         run: |
           ls /usr/lib/pkgconfig
           ls /usr/local/lib/pkgconfig
+          pkg-config --variable pc_path pkg-config
+
 
       - uses: actions/checkout@v4
         with:
