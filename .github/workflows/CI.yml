@@ -92,6 +92,7 @@ jobs:
       - name: Verify pkg-config for libasound
         run: |
           pkg-config --variable pc_path pkg-config
+          sudo find /usr -name alsa.pc
 
 
       - uses: actions/checkout@v4
