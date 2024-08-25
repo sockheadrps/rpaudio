@@ -103,6 +103,11 @@ jobs:
             pip3.9 install --upgrade pip
             pip3.9 install maturin
 
+            python3.9 --version
+            python3.9 -m pip --version
+            python3.9 -c "import pip; print('pip version:', pip.__version__)"
+            python3.9 -c "print('Python 3.9 is working')"
+
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist
 
