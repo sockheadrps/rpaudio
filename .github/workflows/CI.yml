@@ -101,8 +101,7 @@ jobs:
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
-            pip install git+https://github.com/maturin-rs/maturin@v1.7.1
-
+            pip3 install maturin==1.7.1
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist -m Cargo.toml
