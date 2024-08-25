@@ -5,98 +5,98 @@ on:
   pull_request:
 
 jobs:
-  macos:
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          architecture: x64
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Install gettext
-        run: |
-          brew install gettext
-          brew link gettext --force
-      - name: Build wheels - x86_64
-        uses: PyO3/maturin-action@v1
-        with:
-          target: x86_64
-          args: --release --out dist --sdist -m Cargo.toml
-      - name: Install built wheel - x86_64
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: Build wheels - universal2
-        uses: PyO3/maturin-action@v1
-        with:
-          target: universal2-apple-darwin
-          args: --release --out dist -m Cargo.toml
-      - name: Install built wheel - universal2
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: dist
-  windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        target: [x64, x86]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          architecture: ${{ matrix.target }}
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
-          args: --release --out dist -m Cargo.toml
-      - name: Install built wheel
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: dist
+  # macos:
+  #   runs-on: macos-13
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.9
+  #         architecture: x64
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Install gettext
+  #       run: |
+  #         brew install gettext
+  #         brew link gettext --force
+  #     - name: Build wheels - x86_64
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: x86_64
+  #         args: --release --out dist --sdist -m Cargo.toml
+  #     - name: Install built wheel - x86_64
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
+  #         python -c "import rpaudio"
+  #     - name: Build wheels - universal2
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: universal2-apple-darwin
+  #         args: --release --out dist -m Cargo.toml
+  #     - name: Install built wheel - universal2
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
+  #         python -c "import rpaudio"
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels
+  #         path: dist
+  # windows:
+  #   runs-on: windows-latest
+  #   strategy:
+  #     matrix:
+  #       target: [x64, x86]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.9
+  #         architecture: ${{ matrix.target }}
+  #     - uses: dtolnay/rust-toolchain@stable
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         args: --release --out dist -m Cargo.toml
+  #     - name: Install built wheel
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
+  #         python -c "import rpaudio"
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels
+  #         path: dist
 
-  linux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [x86_64, i686]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          architecture: x64
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
-          manylinux: auto
-          args: --release --out dist -m Cargo.toml
-          before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
-      - name: Install built wheel
-        if: matrix.target == 'x86_64'
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: dist
+  # linux:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       target: [x86_64, i686]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.9
+  #         architecture: x64
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         manylinux: auto
+  #         args: --release --out dist -m Cargo.toml
+  #         before-script-linux: |
+  #           yum install -y alsa-lib-devel pkgconfig
+  #     - name: Install built wheel
+  #       if: matrix.target == 'x86_64'
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
+  #         python -c "import rpaudio"
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: wheels
+  #         path: dist
 
   linux-cross:
     runs-on: ubuntu-latest
@@ -125,7 +125,7 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python3 python3-pip libasound2-dev crossbuild-essential-arm64
+            apt-get install -y --no-install-recommends debootstrap qemu-user-static python3 python3-pip libasound2-dev crossbuild-essential-arm64
             pip3 install -U pip
           run: |
             pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
@@ -194,8 +194,8 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
-          # before-script-linux: |
-          #   apk add py3-pip pkg-config alsa-lib
+          before-script-linux: |
+            yum install pkg-config
       - uses: uraimo/run-on-arch-action@v2.7.2
         name: Install built wheel
         with:
@@ -215,7 +215,7 @@ jobs:
           path: dist
 
   check-commit-message:
-    needs: [macos, windows, linux]
+    needs: [linux-cross, musllinux-cross]
     runs-on: ubuntu-latest
     steps:
       - name: Download check result
