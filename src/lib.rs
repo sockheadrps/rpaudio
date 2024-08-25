@@ -13,6 +13,7 @@ mod mixer;
 mod audioqueue;
 pub use exmetadata::{MetaData, metadata};
 unsafe impl Send for AudioSink {}
+use pyo3::types::PyModule;
 
 #[derive(Clone)]
 #[pyclass]
@@ -32,6 +33,7 @@ pub struct AudioSink {
 #[pymethods]
 impl AudioSink {
     #[new]
+    #[pyo3(signature = (callback=None))]
     pub fn new(callback: Option<Py<PyAny>>) -> Self {
         AudioSink {
             is_playing: Arc::new(Mutex::new(false)),
@@ -67,7 +69,9 @@ impl AudioSink {
         dict.insert("channels", self.metadata.channels.clone());
         dict.insert("duration", self.metadata.duration.map(|duration| duration.to_string()));
 
-        let py_dict = PyDict::new(py);
+        let py_dict = PyDict::new_bound(py);
+    
+        // Insert items into the Python dictionary
         for (key, value) in dict {
             py_dict.set_item(key, value)?;
         }
@@ -278,11 +282,22 @@ impl AudioSink {
     }
 }
 
+
+
+
+
 #[pymodule]
-fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
+fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
     m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
     m.add_class::<audioqueue::AudioChannel>()?;
     Ok(())
 }
+// fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
+//     m.add_class::<AudioSink>()?;
+//     m.add_class::<MetaData>()?;
+//     m.add_class::<mixer::ChannelManager>()?;
+//     m.add_class::<audioqueue::AudioChannel>()?;
+//     Ok(())
+// }

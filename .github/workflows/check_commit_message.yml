@@ -1,0 +1,40 @@
+name: Check Commit Message
+
+on:
+  push:
+    branches:
+      - experimental
+    tags:
+      - 'v*'
+
+jobs:
+  check-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get commit message
+        id: get-commit-message
+        run: |
+          # Get the latest commit message
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Latest commit message: $COMMIT_MESSAGE"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+
+      - name: Check commit message
+        id: check-message
+        run: |
+          if [[ "$COMMIT_MESSAGE" == BUILD* ]]; then
+            echo "Should release"
+            echo "should-release=true" >> $GITHUB_ENV
+          else
+            echo "Should not release"
+            echo "should-release=false" >> $GITHUB_ENV
+          fi
+
+      - name: Upload check result
+        uses: actions/upload-artifact@v3
+        with:
+          name: commit-message-check
+          path: $GITHUB_ENV
