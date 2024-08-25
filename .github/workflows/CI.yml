@@ -94,7 +94,7 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            dnf install -y alsa-lib-devel pkgconfig python3.9 python3.9-pip
+            yum install -y alsa-lib-devel pkgconfig python3-3.9 python3-3.9-pip
 
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
