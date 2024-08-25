@@ -246,15 +246,46 @@ jobs:
 
   release:
     name: Release
-    needs: [macos, windows, linux]
-    # if: needs.check-commit-message.outputs.should-release == 'true'
     runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/')"
+    needs: [ macos, windows, linux ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      # - name: Run commit message check
-      #   id: check_commit_message
-      #   run: ./check_commit_message.sh
       - uses: actions/download-artifact@v3
         with:
           name: wheels
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          pip install --upgrade twine
+          twine upload --skip-existing *
+
+      - name: Increment Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch existing tags
+          git fetch --tags
+          
+          # Get the latest tag
+          latest_tag=$(git tag -l "v*" | sort -V | tail -n 1)
+          
+          # If no tag exists, start with v0.1.0
+          if [ -z "$latest_tag" ]; then
+            new_tag="v0.1.0"
+          else
+            # Increment the version
+            new_tag=$(echo $latest_tag | awk -F. -v OFS=. '{$NF++;print}')
+          fi
+
+          # Create new tag
+          git tag $new_tag
+          
+          # Push the new tag
+          git push origin $new_tag
