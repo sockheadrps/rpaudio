@@ -159,6 +159,7 @@ jobs:
         name: Install built wheel
         with:
           arch: ${{ matrix.target }}
+          githubToken: ${{ github.token }}
           distro: ubuntu20.04
           install: |
             apt-get update
