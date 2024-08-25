@@ -109,7 +109,7 @@ jobs:
             ls -la /tmp/dist
 
             # Build the wheel and specify an output directory outside the project directory
-            maturin build --release --out /tmp/dist
+            maturin build --release --out ~/tmp/dist
             echo "Contents of /tmp/dist after build:"
             ls -la /tmp/dist || { echo "No files found in /tmp/dist"; exit 1; }
 
@@ -117,7 +117,7 @@ jobs:
             mkdir -p /io/dist/
 
             # Move the output files back into the GitHub workspace for later steps or artifacts
-            mv -v /tmp/dist/* /io/dist/
+            mv -v ~/tmp/dist/* ~/io/dist/
 
             # print the contents of the dist directory
             ls /io/dist/
