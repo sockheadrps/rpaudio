@@ -105,7 +105,7 @@ jobs:
 
             mkdir -p /tmp/dist
             echo "Contents of /tmp before build:"
-            ls -la /tmp
+            ls -la /tmp/dist
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist
