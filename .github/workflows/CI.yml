@@ -2,8 +2,10 @@ name: Python
 
 on:
   push:
-  pull_request:
-
+    branches:
+      - main
+    tags:
+      - 'v*'
 jobs:
   macos:
     runs-on: macos-13
