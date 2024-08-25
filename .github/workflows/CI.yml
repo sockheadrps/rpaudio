@@ -104,19 +104,21 @@ jobs:
             python3.9 -m pip install --upgrade pip
             python3.9 -m pip install maturin
       
-            # Verify maturin installation
+
+            # Ensure maturin is in PATH
+            export PATH="$HOME/.cargo/bin:$PATH"
             echo "PATH=$PATH"
-            which maturin
-      
+            which maturin || { echo "Maturin not found in PATH"; exit 1; }
+
             # Build the wheel
             maturin build --release --out /tmp/dist -m Cargo.toml || { echo "Maturin build failed"; exit 1; }
-      
+
             # Check if /tmp/dist contains files
             ls /tmp/dist || { echo "No files in /tmp/dist"; exit 1; }
-      
+
             # Create the /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
-      
+
             # Move the output files back into the GitHub workspace for later steps or artifacts
             mv /tmp/dist/* /io/dist/ || { echo "Failed to move files"; exit 1; }
     
