@@ -85,6 +85,8 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: cargo
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
