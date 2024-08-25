@@ -69,7 +69,7 @@ impl ChannelManager {
 }
 
 #[pymodule]
-pub fn channelmanager(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn channelmanager(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ChannelManager>()?;
     Ok(())
 }
