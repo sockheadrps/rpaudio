@@ -97,6 +97,7 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           docker-options: |
             --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
+          rust-toolchain: stable
           run: |
             # Install required packages
             yum install -y alsa-lib-devel pkgconfig python3-pip
