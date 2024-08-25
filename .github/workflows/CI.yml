@@ -94,20 +94,26 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            yum --showduplicates list python3
-            yum install -y alsa-lib-devel pkgconfig python3.9 python3.9-pip
+            yum install -y alsa-lib-devel pkgconfig gcc make openssl-devel bzip2-devel libffi-devel zlib-devel
 
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
             export PATH="$HOME/.cargo/bin:$PATH"
             source "$HOME/.cargo/env"
 
+            # Download and install Python 3.9
+            curl -O https://www.python.org/ftp/python/3.9.7/Python-3.9.7.tgz
+            tar xzf Python-3.9.7.tgz
+            cd Python-3.9.7
+            ./configure --enable-optimizations
+            make altinstall
+            cd ..
 
+            # Use the newly installed Python 3.9
+            PYTHON_BIN=/usr/local/bin/python3.9
 
-
-
-            # Upgrade pip and install maturin
-            python3.9 -m pip install --upgrade pip
+            # Upgrade pip
+            $PYTHON_BIN -m pip install --upgrade pip
 
             # Create a virtual environment
             python3.9 -m venv venv
