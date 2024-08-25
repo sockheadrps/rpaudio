@@ -91,15 +91,14 @@ jobs:
           image: quay.io/pypa/manylinux2014_x86_64:latest
           options: -v ${{ github.workspace }}:/io -w /io
           docker-options: |
-            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
-            --env PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig
+            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
           run: |
-            # Update and install required packages
-            apt-get update
-            apt-get install -y libasound2-dev pkg-config
-  
-            # Install maturin
-            pip install maturin
+            # Install required packages
+            yum install -y alsa-lib-devel pkgconfig python3-pip
+            
+            # Upgrade pip and install maturin
+            pip3 install --upgrade pip
+            pip3 install maturin
   
             # Build the wheel
             maturin build --release --out dist -m Cargo.toml
@@ -110,11 +109,10 @@ jobs:
           image: quay.io/pypa/manylinux2014_x86_64:latest
           options: -v ${{ github.workspace }}:/io -w /io
           docker-options: |
-            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
-            --env PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig
+            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
           run: |
-            pip install rpaudio --no-index --find-links /io/dist/ --force-reinstall
-            python -c "import rpaudio"
+            pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
+            python3 -c "import rpaudio"
   
       - name: Upload wheels
         uses: actions/upload-artifact@v3
