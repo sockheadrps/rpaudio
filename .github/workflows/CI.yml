@@ -77,16 +77,13 @@ jobs:
         target: [x86_64, i686]
     steps:
       - name: Install ALSA development libraries
-        run: sudo apt-get update && sudo apt-get install -y pkg-config alsa librust-alsa-sys-dev build-essential  libasound2 libasound2-dev
-      - name: Set PKG_CONFIG_PATH
-        run: export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
-
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libasound2 libasound2-dev build-essential
 
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig" >> $GITHUB_ENV
+        run: echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Debug PKG_CONFIG_PATH
-        run: echo $PKG_CONFIG_PATH
+        run: echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
 
       - name: Verify pkg-config for ALSA
         run: |
