@@ -9,6 +9,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies on macOS
+        run: |
+          brew install gettext
+          brew link gettext --force
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
@@ -21,8 +25,6 @@ jobs:
           args: --release --out dist --sdist -m Cargo.toml
       - name: Install built wheel - x86_64
         run: |
-          brew install gettext
-          brew link gettext --force
           pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Build wheels - universal2
