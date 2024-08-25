@@ -116,7 +116,7 @@ jobs:
           manylinux: auto
           args: --release --out dist -m Cargo.toml
           before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
+            pacman -S alsa-lib pkgconf
       - uses: uraimo/run-on-arch-action@v2.7.2
         if: matrix.target != 'ppc64'
         name: Install built wheel
