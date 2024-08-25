@@ -51,7 +51,7 @@ jobs:
 
       - name: Install built wheel
         run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
+          pip install rpaudio --release --out dist --sdist -m Cargo.toml
           python -c "import rpaudio"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
