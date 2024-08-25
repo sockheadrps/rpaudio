@@ -129,20 +129,21 @@ jobs:
       - name: Set up sysroot for cross-compilation
         run: |
           # Create a directory for the sysroot
-          sudo mkdir -p /path/to/sysroot
-
+          sudo mkdir -p /opt/sysroot
+      
           # Install the sysroot (adjust command as needed for target platform)
-          sudo debootstrap --arch=${{ matrix.target }} --foreign focal /path/to/sysroot http://archive.ubuntu.com/ubuntu
-
+          sudo debootstrap --arch=${{ matrix.target }} --foreign focal /opt/sysroot http://archive.ubuntu.com/ubuntu
+      
           # Copy QEMU static binaries to sysroot
-          sudo cp /usr/bin/qemu-${{ matrix.target }}-static /path/to/sysroot/usr/bin/
-
+          sudo cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
+      
           # Enter chroot environment and install required packages
-          sudo chroot /path/to/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
-
+          sudo chroot /opt/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
+      
           # Set pkg-config environment variables
-          echo "PKG_CONFIG_SYSROOT_DIR=/path/to/sysroot" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/path/to/sysroot/usr/lib/pkgconfig:/path/to/sysroot/usr/share/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_SYSROOT_DIR=/opt/sysroot" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/opt/sysroot/usr/lib/pkgconfig:/opt/sysroot/usr/share/pkgconfig" >> $GITHUB_ENV
+          
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
