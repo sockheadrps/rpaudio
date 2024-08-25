@@ -84,6 +84,61 @@
   <section id="audiosink">
 <h1>AudioSink<a class="headerlink" href="#audiosink" title="Link to this heading"></a></h1>
 <p>This example demonstrates how to use the <cite>AudioSink</cite> class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rpaudio</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="k">def</span> <span class="nf">on_audio_stop</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Audio has stopped&quot;</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">play_audio</span><span class="p">():</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;Acrylic.mp3&quot;</span><span class="p">)</span>
+
+    <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="c1"># Pause the audio for 2 seconds</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Pausing audio&quot;</span><span class="p">)</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="c1"># Resume the audio, but turn down the volume</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resuming audio, lowering volume&quot;</span><span class="p">)</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="c1"># Seek to 10 seconds</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current position: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">try_seek</span><span class="p">(</span><span class="mf">33.5</span><span class="p">)</span> 
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position after seek: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="c1"># Change the playback speed to 1.5</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">set_speed</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span> 
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Playback speed: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_speed</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+            <span class="c1"># Stop the audio</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">sleep_loop</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sleeping </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">play_audio</span><span class="p">(),</span> <span class="n">sleep_loop</span><span class="p">())</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+</div>
 </section>
 
 
