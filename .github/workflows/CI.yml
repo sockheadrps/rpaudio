@@ -94,7 +94,7 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            yum install -y alsa-lib-devel pkgconfig python3.9 python3.9-pip
+            yum install -y alsa-lib-devel pkgconfig python39 python39-pip
       
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -109,6 +109,7 @@ jobs:
       
             # Move the output files back into the GitHub workspace for later steps or artifacts
             mkdir -p /io/dist/
+
             mv /tmp/dist/* /io/dist/
       
       - name: Install built wheel
@@ -118,10 +119,10 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Ensure Python 3.9 and pip are installed
-            yum install -y python3.9 python3.9-pip
-            
+            yum install -y python39 python39-pip
+
             # Install the built wheel directly from the dist directory
-            pip3.9 install /io/dist/rpaudio-0.0.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl --force-reinstall
+            python3.9 -m pip install /io/dist/rpaudio-0.0.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl --force-reinstall
             python3.9 -c "import rpaudio"
   
       - name: Upload Wheels
