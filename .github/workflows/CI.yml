@@ -80,6 +80,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y librust-alsa-sys-dev libasound2-dev pkg-config
       - name: Set PKG_CONFIG_PATH
         run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+      - name: Verify pkg-config for ALSA
+        run: |
+          pkg-config --libs --cflags alsa || echo "ALSA not found"
+      
         
       - uses: actions/checkout@v4
         with:
