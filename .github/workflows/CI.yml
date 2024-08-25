@@ -105,17 +105,46 @@ jobs:
         target: [aarch64, armv7, s390x, ppc64le, ppc64]
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
+
+      - name: Set up Rust
+        uses: rust-lang/rustup-action@v2
+        with:
+          toolchain: stable
+
+      - name: Install cross-compilation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev libasound2-dev debootstrap qemu-user-static
+
+      - name: Set up sysroot and pkg-config
+        run: |
+          # Create a directory for the sysroot
+          sudo mkdir -p /path/to/sysroot
+
+          # Install the sysroot (adjust command as needed for target platform)
+          sudo debootstrap --arch=${{ matrix.target }} --foreign focal /path/to/sysroot http://archive.ubuntu.com/ubuntu
+          
+          # Copy QEMU static binaries to sysroot
+          sudo cp /usr/bin/qemu-${{ matrix.target }}-static /path/to/sysroot/usr/bin/
+          
+          # Enter chroot environment and install required packages
+          sudo chroot /path/to/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
+
+          # Set pkg-config environment variables
+          echo "PKG_CONFIG_SYSROOT_DIR=/path/to/sysroot" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/path/to/sysroot/usr/lib/pkgconfig:/path/to/sysroot/usr/share/pkgconfig" >> $GITHUB_ENV
+
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml
-          # before-script-linux: |
-          #   pacman -S alsa-lib pkgconf
+
       - uses: uraimo/run-on-arch-action@v2.7.2
         if: matrix.target != 'ppc64'
         name: Install built wheel
@@ -125,16 +154,18 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends debootstrap qemu-user-static python3 python3-pip libasound2-dev crossbuild-essential-arm64
+            apt-get install -y --no-install-recommends python3 python3-pip
             pip3 install -U pip
           run: |
             pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
             python3 -c "import rpaudio"
+
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: dist
+
 
   musllinux:
     runs-on: ubuntu-latest
