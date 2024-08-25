@@ -100,10 +100,11 @@ jobs:
           rust-toolchain: stable
           run: |
             # Install required packages
-            yum install -y alsa-lib-devel pkgconfig python3-pip
+            yum install -y alsa-lib-devel pkgconfig python3 python3-pip
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
+            
 
       - uses: actions/setup-python@v4
         with:
