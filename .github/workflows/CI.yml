@@ -101,7 +101,7 @@ jobs:
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
-            pip3 install maturin
+            pip3 install "maturin>=1.0,<2.0"
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist -m Cargo.toml || { echo "Maturin build failed"; exit 1; }
