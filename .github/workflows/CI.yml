@@ -81,6 +81,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: install rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: cache rust
+        uses: Swatinem/rust-cache@v2
         with:
           repository: sockheadrps/rpaudio
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -95,10 +100,6 @@ jobs:
           run: |
             # Install required packages
             yum install -y alsa-lib-devel pkgconfig python3-pip
-
-            # Install Rust and Cargo
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-            source $HOME/.cargo/env
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
