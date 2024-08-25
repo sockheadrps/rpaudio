@@ -78,25 +78,12 @@ jobs:
     steps:
       - name: Install ALSA development libraries
         run: sudo apt-get update && sudo apt-get install -y pkg-config build-essential libasound2-dev
-      - name: Set environment variables
+
+
+      - name: Set PKG_CONFIG_PATH
         run: |
           echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
-      - name: Verify environment variable
-        run: echo "PKG_CONFIG_PATH is $PKG_CONFIG_PATH"
-
-      - name: Debug PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
-
-      - name: Verify pkg-config for ALSA
-        run: |
-          pkg-config --libs --cflags alsa || echo "ALSA not found"
-
-      - name: Verify pkg-config for libasound
-        run: |
-          pkg-config --variable pc_path pkg-config
-          ls /usr/lib/x86_64-linux-gnu/pkgconfig/alsa.pc
-          dpkg -s libasound2-dev
-          sudo ls -l /usr/lib/x86_64-linux-gnu/pkgconfig/alsa.pc
+          echo "PKG_CONFIG_PATH is $PKG_CONFIG_PATH"
 
 
 
@@ -115,6 +102,8 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml --features "alsa-backend" 
+        env:
+          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
