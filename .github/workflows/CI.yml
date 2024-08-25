@@ -84,7 +84,6 @@ jobs:
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
-          yum install -y alsa-lib-devel pkgconfig
           pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Upload wheels
@@ -103,16 +102,14 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
-      - name: Install ALSA dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pkg-config libasound2-dev
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml
+          before-script-linux: |
+            yum install -y alsa-lib-devel pkgconfig
       - uses: uraimo/run-on-arch-action@v2.7.2
         if: matrix.target != 'ppc64'
         name: Install built wheel
@@ -152,6 +149,8 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
+          before-script-linux: |
+            apk add py3-pip pkg-config alsa-lib
       - name: Install built wheel
         if: matrix.target == 'x86_64-unknown-linux-musl'
         uses: addnab/docker-run-action@v3
@@ -189,6 +188,8 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
+          before-script-linux: |
+            apk add py3-pip pkg-config alsa-lib
       - uses: uraimo/run-on-arch-action@v2.7.2
         name: Install built wheel
         with:
