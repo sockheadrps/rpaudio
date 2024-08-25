@@ -93,7 +93,6 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            sudo yum update
             yum install -y alsa-lib-devel pkgconfig python3 python3-pip
 
             # Install Rust and Cargo inside the Docker container
@@ -102,7 +101,8 @@ jobs:
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
-            pip install maturin==1.7.1
+            pip install git+https://github.com/maturin-rs/maturin@v1.7.1
+
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist -m Cargo.toml
