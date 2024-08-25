@@ -14,6 +14,10 @@ jobs:
           python-version: 3.9
           architecture: x64
       - uses: dtolnay/rust-toolchain@stable
+      - name: Install gettext
+        run: |
+          brew install gettext
+          brew link --force gettext
       - name: Build wheels - x86_64
         uses: PyO3/maturin-action@v1
         with:
@@ -79,7 +83,7 @@ jobs:
       - name: Install ALSA dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev
+          sudo apt-get install -y pkg-config libasound2-dev
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -110,7 +114,7 @@ jobs:
       - name: Install ALSA dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev
+          sudo apt-get install -y pkg-config libasound2-dev
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -163,7 +167,7 @@ jobs:
           image: alpine:latest
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
-            apk add py3-pip alsa-lib
+            apk add py3-pip pkg-config alsa-lib
             pip3 install -U pip
             pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3 -c "import rpaudio"
@@ -200,7 +204,7 @@ jobs:
           distro: alpine_latest
           githubToken: ${{ github.token }}
           install: |
-            apk add py3-pip alsa-lib
+            apk add pkg-config py3-pip alsa-lib
             pip3 install -U pip
           run: |
             pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
