@@ -106,7 +106,7 @@ jobs:
             pip3 install maturin
 
             # Build the wheel
-            maturin build --release --out dist -m Cargo.toml --features "alsa-backend"
+            maturin build --release --out dist -m Cargo.toml
 
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
