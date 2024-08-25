@@ -77,18 +77,18 @@ jobs:
         target: [x86_64, i686]
     steps:
       - name: Install ALSA development libraries
-        run: sudo apt-get update && sudo apt-get install -y pkg-config alsa-base librust-alsa-sys-dev libasound2-dev portaudio19-dev build-essential libpulse-dev libdbus-1-dev 
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libasound2-dev libpulse-dev libdbus-1-dev build-essential
+
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
       - name: Debug PKG_CONFIG_PATH
         run: echo $PKG_CONFIG_PATH
-      
+
       - name: Verify pkg-config for ALSA
         run: |
           pkg-config --libs --cflags alsa || echo "ALSA not found"
-      
-        
+
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
@@ -121,9 +121,10 @@ jobs:
     steps:
       - name: Install ALSA development libraries
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
-      
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/lib/arm-linux-gnueabihf/pkgconfig" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
@@ -167,8 +168,9 @@ jobs:
     steps:
       - name: Install ALSA development libraries
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
+
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
         with:
@@ -214,7 +216,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config
 
       - name: Set PKG_CONFIG_PATH
-        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/lib/arm-linux-gnueabihf/pkgconfig" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
         with:
@@ -229,35 +231,17 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
-      - uses: uraimo/run-on-arch-action@v2.7.2
-        name: Install built wheel
+      - uses: addnab/docker-run-action@v3
         with:
-          arch: ${{ matrix.platform.arch }}
-          distro: alpine_latest
-          githubToken: ${{ github.token }}
-          install: |
+          image: alpine:latest
+          options: -v ${{ github.workspace }}:/io -w /io
+          run: |
             apk add py3-pip
             pip3 install -U pip
-          run: |
-            pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
+            pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3 -c "import rpaudio"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: dist
-
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [ macos, windows, linux, linux-cross, musllinux, musllinux-cross ]
-    steps:
-      - name: Print working directory
-        run: pwd
-      - uses: actions/download-artifact@v3
-        with:
-          name: wheels
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
