@@ -98,20 +98,24 @@ jobs:
       
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
-            export PATH="$HOME/.cargo/bin:$PATH"
+            . "$HOME/.cargo/env"  # This loads Cargo into the PATH
       
             # Upgrade pip and install maturin
-            pip3.9 install --upgrade pip
-            pip3.9 install maturin
+            python3.9 -m pip install --upgrade pip
+            python3.9 -m pip install maturin
       
-            # Build the wheel targeting Python 3.9
+            # Build the wheel
             maturin build --release --out /tmp/dist -m Cargo.toml
       
-            # Move the output files back into the GitHub workspace for later steps or artifacts
-            mkdir -p /io/dist/
-
-            mv /tmp/dist/* /io/dist/
+            # Check if /tmp/dist contains files
+            ls /tmp/dist
       
+            # Create the /io/dist directory if it doesn't exist
+            mkdir -p /io/dist/
+      
+            # Move the output files back into the GitHub workspace for later steps or artifacts
+            mv /tmp/dist/* /io/dist/
+    
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
         with:
@@ -120,11 +124,10 @@ jobs:
           run: |
             # Ensure Python 3.9 and pip are installed
             yum install -y python39 python39-pip
-
-            # Install the built wheel directly from the dist directory
+      
+            # Install the built wheel
             python3.9 -m pip install /io/dist/rpaudio-0.0.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl --force-reinstall
             python3.9 -c "import rpaudio"
-  
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
         with:
