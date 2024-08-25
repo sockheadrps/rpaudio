@@ -99,6 +99,16 @@ jobs:
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
             export PATH="$HOME/.cargo/bin:$PATH"
+            source "$HOME/.cargo/env"
+
+            which maturin
+            python3.9 -m pip show maturin
+            which maturin
+            export PATH="$HOME/.local/bin:$PATH"
+            maturin --version
+
+
+
 
             # Upgrade pip and install maturin
             python3.9 -m pip install --upgrade pip
@@ -110,7 +120,7 @@ jobs:
 
             # Debugging: Print contents of /tmp before build
             echo "Contents of /tmp before build:"
-            ls -la /tmp
+            ls -la /tmp/dist
 
             # Build the wheel and specify an output directory
             maturin build --release --out /tmp/dist
