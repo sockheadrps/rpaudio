@@ -9,6 +9,7 @@ id3 = "1.14.0"
 pyo3 = { version = "0.20.0", features = ["full"] }
 rodio = "0.19.0"
 hound = "3.5.1"
+alsa = {version = "0.9.1", optional = true }
 
 
 [lib]
@@ -20,3 +21,4 @@ name = "rpaudio"
 
 [features]
 default = ["pyo3/extension-module"]
+alsa-backend = ["alsa"]

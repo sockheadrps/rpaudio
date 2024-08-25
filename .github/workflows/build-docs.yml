@@ -3,7 +3,7 @@ name: Build and Deploy Sphinx Docs
 on:
   push:
     branches:
-      - docs
+      - main
   workflow_dispatch:
 
 jobs:
@@ -64,8 +64,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/docs' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: docs/build/
+          publish_dir: ./docs/build
