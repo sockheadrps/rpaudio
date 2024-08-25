@@ -77,10 +77,10 @@ jobs:
         target: [x86_64, i686]
     steps:
       - name: Install ALSA development libraries
-        run: sudo apt-get update && sudo apt-get install -y librust-alsa-sys-dev
-
+        run: sudo apt-get update && sudo apt-get install -y librust-alsa-sys-dev pkg-config
+      - name: Set PKG_CONFIG_PATH
+        run: echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
         
-
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
