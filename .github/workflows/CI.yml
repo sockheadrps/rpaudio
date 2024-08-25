@@ -81,7 +81,8 @@ jobs:
       - name: Set environment variables
         run: |
           echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
-          echo $PKG_CONFIG_PATH
+      - name: Verify environment variable
+        run: echo "PKG_CONFIG_PATH is $PKG_CONFIG_PATH"
 
       - name: Debug PKG_CONFIG_PATH
         run: echo "PKG_CONFIG_PATH is set to $PKG_CONFIG_PATH"
