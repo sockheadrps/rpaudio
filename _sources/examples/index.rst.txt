@@ -7,6 +7,6 @@ This section provides example scripts demonstrating the usage of the rpaudio lib
    :maxdepth: 2
    :caption: Example Scripts:
 
-   examples/exaudiosink
-   examples/exaudiochannel
-   examples/exchannelmanager
+   exaudiosink
+   exaudiochannel
+   exchannelmanager
