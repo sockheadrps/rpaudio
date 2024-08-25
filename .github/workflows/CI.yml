@@ -120,17 +120,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pkg-config libssl-dev libasound2-dev debootstrap qemu-user-static
 
-      - name: Set up sysroot and pkg-config
+      - name: Set up sysroot for cross-compilation
         run: |
           # Create a directory for the sysroot
           sudo mkdir -p /path/to/sysroot
 
           # Install the sysroot (adjust command as needed for target platform)
           sudo debootstrap --arch=${{ matrix.target }} --foreign focal /path/to/sysroot http://archive.ubuntu.com/ubuntu
-          
+
           # Copy QEMU static binaries to sysroot
           sudo cp /usr/bin/qemu-${{ matrix.target }}-static /path/to/sysroot/usr/bin/
-          
+
           # Enter chroot environment and install required packages
           sudo chroot /path/to/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
 
