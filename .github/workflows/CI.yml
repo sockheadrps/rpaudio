@@ -16,6 +16,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install gettext
         run: |
+          brew update
           brew install gettext
           brew link --force gettext
       - name: Build wheels - x86_64
@@ -114,8 +115,8 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml
-          before-script-linux: |
-            pacman -S alsa-lib pkgconf
+          # before-script-linux: |
+          #   pacman -S alsa-lib pkgconf
       - uses: uraimo/run-on-arch-action@v2.7.2
         if: matrix.target != 'ppc64'
         name: Install built wheel
@@ -155,8 +156,8 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
-          before-script-linux: |
-            apk add py3-pip pkg-config alsa-lib
+          # before-script-linux: |
+          #   apk add py3-pip pkg-config alsa-lib
       - name: Install built wheel
         if: matrix.target == 'x86_64-unknown-linux-musl'
         uses: addnab/docker-run-action@v3
@@ -194,8 +195,8 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
-          before-script-linux: |
-            apk add py3-pip pkg-config alsa-lib
+          # before-script-linux: |
+          #   apk add py3-pip pkg-config alsa-lib
       - uses: uraimo/run-on-arch-action@v2.7.2
         name: Install built wheel
         with:
