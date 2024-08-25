@@ -130,16 +130,16 @@ jobs:
         run: |
           # Create a directory for the sysroot
           sudo mkdir -p /opt/sysroot
-      
-          # Install the sysroot (adjust command as needed for target platform)
-          sudo debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://archive.ubuntu.com/ubuntu
-      
+
+          # Install the sysroot using a specified mirror
+          sudo debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://httpredir.debian.org/debian
+
           # Copy QEMU static binaries to sysroot
           sudo cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
-      
+
           # Enter chroot environment and install required packages
           sudo chroot /opt/sysroot /bin/bash -c "apt-get update && apt-get install -y build-essential pkg-config"
-      
+
           # Set pkg-config environment variables
           echo "PKG_CONFIG_SYSROOT_DIR=/opt/sysroot" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=/opt/sysroot/usr/lib/pkgconfig:/opt/sysroot/usr/share/pkgconfig" >> $GITHUB_ENV
