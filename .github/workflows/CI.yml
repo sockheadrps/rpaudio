@@ -102,6 +102,7 @@ jobs:
             # Upgrade pip and install maturin
             python3.9 -m pip install --upgrade pip
             python3.9 -m pip install maturin
+            export PATH="$HOME/.local/bin:$PATH"
 
             mkdir -p /tmp/dist
             echo "Contents of /tmp before build:"
