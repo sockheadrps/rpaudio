@@ -111,10 +111,7 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Set up Rust
-        uses: rust-lang/rustup-action@v2
-        with:
-          toolchain: stable
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: Install cross-compilation tools
         run: |
