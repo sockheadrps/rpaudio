@@ -224,8 +224,8 @@ jobs:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
           args: --release --out dist -m Cargo.toml
-          before-script-linux: |
-            yum install pkg-config
+          # before-script-linux: |
+          #   yum install pkg-config
       - uses: uraimo/run-on-arch-action@v2.7.2
         name: Install built wheel
         with:
