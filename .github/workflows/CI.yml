@@ -246,7 +246,7 @@ jobs:
 
   release:
     name: Release
-    # needs: [check-commit-message]
+    needs: [macos, windows, linux]
     # if: needs.check-commit-message.outputs.should-release == 'true'
     runs-on: ubuntu-latest
     steps:
