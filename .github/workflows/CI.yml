@@ -117,7 +117,7 @@ jobs:
             mkdir -p /io/dist/
 
             # Move the output files back into the GitHub workspace for later steps or artifacts
-            mv /tmp/dist/* /io/dist/
+            mv -v /tmp/dist/* /io/dist/
 
             # print the contents of the dist directory
             ls /io/dist/
