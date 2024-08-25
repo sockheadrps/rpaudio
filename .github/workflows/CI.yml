@@ -11,7 +11,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
-          path: rpaudio
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v4
         with:
@@ -77,6 +76,8 @@ jobs:
       matrix:
         target: [x86_64, i686]
     steps:
+      - name: Install ALSA development libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
@@ -107,8 +108,8 @@ jobs:
       matrix:
         target: [aarch64, armv7, s390x, ppc64le, ppc64]
     steps:
-      - name: List files
-        run: ls -al
+      - name: Install ALSA development libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
       
       - uses: actions/checkout@v4
         with:
@@ -151,6 +152,8 @@ jobs:
           - x86_64-unknown-linux-musl
           - i686-unknown-linux-musl
     steps:
+      - name: Install ALSA development libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
@@ -191,6 +194,8 @@ jobs:
           - target: armv7-unknown-linux-musleabihf
             arch: armv7
     steps:
+      - name: Install ALSA development libraries
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
