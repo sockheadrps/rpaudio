@@ -84,7 +84,7 @@ jobs:
         with:
           repository: sockheadrps/rpaudio
           token: ${{ secrets.GITHUB_TOKEN }}
-  
+
       - name: Build wheels
         uses: addnab/docker-run-action@v3
         with:
@@ -95,14 +95,18 @@ jobs:
           run: |
             # Install required packages
             yum install -y alsa-lib-devel pkgconfig python3-pip
-            
+
+            # Install Rust and Cargo
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+            source $HOME/.cargo/env
+
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
             pip3 install maturin
-  
+
             # Build the wheel
             maturin build --release --out dist -m Cargo.toml
-  
+
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
         with:
@@ -113,12 +117,13 @@ jobs:
           run: |
             pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3 -c "import rpaudio"
-  
+
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: dist
+
 
   linux-cross:
     runs-on: ubuntu-latest
