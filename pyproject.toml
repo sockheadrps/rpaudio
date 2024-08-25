@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "rpaudio"
-version = "0.0.4"
+version = "0.0.3"
 authors = [
   { name="Ryan Skiles", email="r.p.skiles@gmail.com" },
   { name="Beaux44"}
