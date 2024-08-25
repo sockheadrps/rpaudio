@@ -105,6 +105,8 @@ jobs:
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist
+            echo "Contents of /tmp/dist after build:"
+            ls -la /tmp/dist || { echo "No files found in /tmp/dist"; exit 1; }
 
             # Create the /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
