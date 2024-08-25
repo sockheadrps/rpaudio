@@ -83,7 +83,7 @@ jobs:
       - name: Set PKG_CONFIG_PATH
         run: |
           find /usr -name alsa.pc
-          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
         with:
@@ -98,8 +98,7 @@ jobs:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml --features "alsa-backend" 
-        env:
-          PKG_CONFIG_PATH: /usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
