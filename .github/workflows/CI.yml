@@ -116,6 +116,8 @@ jobs:
 
             # Create the /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
+            echo "Contents of /tmp/dist before moving:"
+            ls -la /tmp/dist/
 
             # Move the output files back into the GitHub workspace for later steps or artifacts
             mv –f  /tmp/dist/* /io/dist/
