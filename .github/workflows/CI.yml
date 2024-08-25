@@ -104,14 +104,16 @@ jobs:
             pip3 install maturin
 
             # Build the wheel and specify an output directory outside the project directory
-            maturin build --release --out /tmp/dist -m Cargo.toml
+            maturin build --release --out /tmp/dist -m Cargo.toml || { echo "Maturin build failed"; exit 1; }
+
+            # Check if /tmp/dist contains files
+            ls /tmp/dist || { echo "No files in /tmp/dist"; exit 1; }
 
             # Create the /io/dist directory if it doesn't exist
             mkdir -p /io/dist/
 
             # Move the output files back into the GitHub workspace for later steps or artifacts
-            mv /tmp/dist/* /io/dist/
-
+            mv /tmp/dist/* /io/dist/ || { echo "Failed to move files"; exit 1; }
 
             # Install the built wheel
             pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
