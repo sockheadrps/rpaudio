@@ -87,7 +87,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1.44.0
         with:
-          workdir: ./rpaudio
+          working-directory: ./rpaudio
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml
