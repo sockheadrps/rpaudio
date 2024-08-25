@@ -86,13 +86,12 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1.44.0
         with:
+          workdir: ./rpaudio
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml
       - name: Install built wheel
         if: matrix.target == 'x86_64'
-       
-        working-directory: ./rpaudio  
         run: |
           pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
