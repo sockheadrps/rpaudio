@@ -1,7 +1,6 @@
 [build-system]
 requires = ["maturin>=0.12,<2.0"]
 build-backend = "maturin"
-abi3 = true
 
 [project]
 name = "rpaudio"
@@ -12,7 +11,7 @@ authors = [
 ]
 description = "Rust audio api binding for python"
 license = {text = "Apache-2.0"}
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
