@@ -123,7 +123,8 @@ jobs:
             yum install -y python3 python3-pip
   
             # Install the built wheel
-            pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
+            # Install the built wheel directly from the dist directory
+            pip3 install /io/dist/rpaudio-0.0.3-*.whl --force-reinstall
             python3 -c "import rpaudio"
   
       - name: Upload Wheels
