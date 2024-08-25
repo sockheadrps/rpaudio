@@ -103,9 +103,12 @@ jobs:
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
             pip3 install maturin
+            
+            # Build the wheel and specify an output directory outside the project directory
+            maturin build --release --out /tmp/dist -m Cargo.toml
 
-            # Build the wheel
-            maturin build --release --out dist -m Cargo.toml
+            # Move the output files back into the GitHub workspace for later steps or artifacts
+            mv /tmp/dist/* /io/dist/
 
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
