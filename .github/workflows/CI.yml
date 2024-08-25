@@ -101,19 +101,26 @@ jobs:
             export PATH="$HOME/.cargo/bin:$PATH"
             source "$HOME/.cargo/env"
 
-            which maturin
-            python3.9 -m pip show maturin
-            which maturin
-            export PATH="$HOME/.local/bin:$PATH"
-            maturin --version
 
 
 
 
             # Upgrade pip and install maturin
             python3.9 -m pip install --upgrade pip
+
+            # Create a virtual environment
+            python3.9 -m venv venv
+            source venv/bin/activate
+
             python3.9 -m pip install maturin
             export PATH="$HOME/.local/bin:$PATH"
+
+            which maturin
+            python3.9 -m pip show maturin
+            which maturin
+            export PATH="$HOME/.local/bin:$PATH"
+            maturin --version
+
 
             # Create /tmp/dist directory
             mkdir -p /tmp/dist
