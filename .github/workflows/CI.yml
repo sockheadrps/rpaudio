@@ -77,12 +77,6 @@ jobs:
       matrix:
         target: [x86_64, i686]
     steps:
-      - name: Install ALSA development libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y pkg-config build-essential libasound2-dev alsa-source
-
-
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
@@ -95,7 +89,13 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: auto
-          args: --release --out dist -m Cargo.toml --features "alsa-backend" 
+          docker-options: |
+            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
+            --env PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig
+          run: |
+            apt-get update
+            apt-get install -y libasound2-dev pkg-config
+            args: --release --out dist -m Cargo.toml --features "alsa-backend" 
 
       - name: Install built wheel
         if: matrix.target == 'x86_64'
