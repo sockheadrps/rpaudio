@@ -93,15 +93,15 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             # Install required packages
-            yum install -y alsa-lib-devel pkgconfig python3 python3-pip
+            yum install -y alsa-lib-devel pkgconfig python3.9 python3.9-pip
 
             # Install Rust and Cargo inside the Docker container
             curl https://sh.rustup.rs -sSf | sh -s -- -y
             export PATH="$HOME/.cargo/bin:$PATH"
 
             # Upgrade pip and install maturin
-            pip3 install --upgrade pip
-            pip3 install maturin==0.12.0
+            pip3.9 install --upgrade pip
+            pip3.9 install maturin
 
             # Build the wheel and specify an output directory outside the project directory
             maturin build --release --out /tmp/dist
@@ -116,8 +116,8 @@ jobs:
             ls /io/dist/
 
             # Install the built wheel
-            pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
-            python3 -c "import rpaudio"
+            pip3.9 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
+            python3.9 -c "import rpaudio"
   
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
