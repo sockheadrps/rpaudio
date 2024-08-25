@@ -104,14 +104,12 @@ jobs:
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
-            
+            pip3 install maturin
+
 
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1.44.0
-        with:
           target: ${{ matrix.target }}
           manylinux: auto
           args: --release --out dist -m Cargo.toml --features "alsa-backend" 
