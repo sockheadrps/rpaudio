@@ -132,7 +132,7 @@ jobs:
           sudo mkdir -p /opt/sysroot
       
           # Install the sysroot (adjust command as needed for target platform)
-          debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://archive.ubuntu.com/ubuntu
+          sudo debootstrap --arch=${{ matrix.target }} --foreign jammy /opt/sysroot http://archive.ubuntu.com/ubuntu
       
           # Copy QEMU static binaries to sysroot
           sudo cp /usr/bin/qemu-${{ matrix.target }}-static /opt/sysroot/usr/bin/
