@@ -105,7 +105,7 @@ jobs:
             python3.9 -m pip install maturin
             export PATH="$HOME/.local/bin:$PATH"
 
-            mkdir -p /tmp/dist
+            mkdir /tmp/dist
             echo "Contents of /tmp before build:"
             ls -la /tmp/dist
 
