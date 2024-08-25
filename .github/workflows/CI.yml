@@ -82,8 +82,7 @@ jobs:
 
       - name: Set PKG_CONFIG_PATH
         run: |
-          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH is $PKG_CONFIG_PATH"
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
         with:
