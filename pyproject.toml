@@ -23,4 +23,4 @@ Homepage = "https://github.com/sockheadrps/rpaudio"
 Issues = "https://github.com/sockheadrps/rpaudio/issues"
 
 [tool.maturin]
-readme = "README.md"
+sdist-include = ["LICENSE", "README.md"]

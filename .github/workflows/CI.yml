@@ -171,7 +171,6 @@ jobs:
             pip3 install -U pip
             pip3 install rpaudio --no-index --find-links /io/dist/ --force-reinstall
             python3 -c "import rpaudio"
-            cd ..
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
