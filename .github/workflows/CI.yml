@@ -110,7 +110,7 @@ jobs:
             # Move the output files back into the GitHub workspace for later steps or artifacts
             mkdir -p /io/dist/
             mv /tmp/dist/* /io/dist/
-    
+      
       - name: Install built wheel
         uses: addnab/docker-run-action@v3
         with:
@@ -123,7 +123,7 @@ jobs:
             # Install the built wheel directly from the dist directory
             pip3.9 install /io/dist/rpaudio-0.0.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl --force-reinstall
             python3.9 -c "import rpaudio"
-
+  
       - name: Upload Wheels
         uses: actions/upload-artifact@v3
         with:
