@@ -75,33 +75,47 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64, i686]
+        target:
+          - x86_64-unknown-linux-musl
+          - i686-unknown-linux-musl
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
+  
       - name: Build wheels
-        uses: PyO3/maturin-action@v1.44.0
+        uses: addnab/docker-run-action@v3
         with:
-          target: ${{ matrix.target }}
-          manylinux: auto
+          image: quay.io/pypa/manylinux2014_x86_64:latest
+          options: -v ${{ github.workspace }}:/io -w /io
           docker-options: |
             --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
             --env PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig
           run: |
+            # Update and install required packages
             apt-get update
             apt-get install -y libasound2-dev pkg-config
-            args: --release --out dist -m Cargo.toml --features "alsa-backend" 
-
+  
+            # Install maturin
+            pip install maturin
+  
+            # Build the wheel
+            maturin build --release --out dist -m Cargo.toml
+  
       - name: Install built wheel
-        if: matrix.target == 'x86_64'
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
+        uses: addnab/docker-run-action@v3
+        with:
+          image: quay.io/pypa/manylinux2014_x86_64:latest
+          options: -v ${{ github.workspace }}:/io -w /io
+          docker-options: |
+            --env PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
+            --env PKG_CONFIG_LIBDIR=/usr/lib/x86_64-linux-gnu/pkgconfig
+          run: |
+            pip install rpaudio --no-index --find-links /io/dist/ --force-reinstall
+            python -c "import rpaudio"
+  
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
