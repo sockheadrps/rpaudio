@@ -17,7 +17,7 @@ jobs:
           python-version: 3.9
       - uses: dtolnay/rust-toolchain@stable
       - name: Build wheels - x86_64
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: x86_64
           args: --release --out dist --sdist -m Cargo.toml
@@ -26,7 +26,7 @@ jobs:
           pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Build wheels - universal2
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: universal2-apple-darwin
           args: --release --out dist -m Cargo.toml
@@ -56,7 +56,7 @@ jobs:
           architecture: ${{ matrix.target }}
       - uses: dtolnay/rust-toolchain@stable
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist -m Cargo.toml
@@ -84,7 +84,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           manylinux: auto
@@ -114,7 +114,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           manylinux: auto
@@ -155,7 +155,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           manylinux: musllinux_1_2
@@ -195,7 +195,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.platform.target }}
           manylinux: musllinux_1_2
@@ -227,4 +227,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: wheels
-      - uses: actions/setup-python@v
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      # Add your release steps here
