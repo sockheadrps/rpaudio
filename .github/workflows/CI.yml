@@ -89,29 +89,29 @@ jobs:
           pkg-config --libs --cflags alsa || echo "ALSA not found"
       
         
-      # - uses: actions/checkout@v4
-      #   with:
-      #     repository: sockheadrps/rpaudio
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      # - uses: actions/setup-python@v4
-      #   with:
-      #     python-version: 3.9
-      # - name: Build wheels
-      #   uses: PyO3/maturin-action@v1.44.0
-      #   with:
-      #     target: ${{ matrix.target }}
-      #     manylinux: auto
-      #     args: --release --out dist -m Cargo.toml
-      # - name: Install built wheel
-      #   if: matrix.target == 'x86_64'
-      #   run: |
-      #     pip install rpaudio --no-index --find-links dist --force-reinstall
-      #     python -c "import rpaudio"
-      # - name: Upload wheels
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: wheels
-      #     path: dist
+      - uses: actions/checkout@v4
+        with:
+          repository: sockheadrps/rpaudio
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1.44.0
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist -m Cargo.toml
+      - name: Install built wheel
+        if: matrix.target == 'x86_64'
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+          python -c "import rpaudio"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
 
   linux-cross:
     runs-on: ubuntu-latest
