@@ -83,13 +83,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: cargo
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
         with:
           repository: sockheadrps/rpaudio
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -102,6 +95,10 @@ jobs:
           run: |
             # Install required packages
             yum install -y alsa-lib-devel pkgconfig python3 python3-pip
+
+            # Install Rust and Cargo inside the Docker container
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            export PATH="$HOME/.cargo/bin:$PATH"
 
             # Upgrade pip and install maturin
             pip3 install --upgrade pip
