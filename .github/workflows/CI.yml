@@ -89,6 +89,11 @@ jobs:
         run: |
           pkg-config --libs --cflags alsa || echo "ALSA not found"
 
+      - name: Verify pkg-config for libasound
+        run: |
+          ls /usr/lib/pkgconfig
+          ls /usr/local/lib/pkgconfig
+
       - uses: actions/checkout@v4
         with:
           repository: sockheadrps/rpaudio
