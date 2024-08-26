@@ -1,24 +1,22 @@
 # rpaudio
 
-`rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and safety features to offer a robust solution for Python audio applications.
+`rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
 
-## Features
 
-- **Single Audio Access**: Supports simple audio API access.
-- **Audio Queue Management**: Efficient handling and processing of audio files via channels.
-- **Channel Management**: Manage multiple audio channels with the AudioManager.
-- **Safe and Performant**: Built with Rust for optimal performance and concurrency.
-- **Built in access to metadata** Easily access information about audio files
+## API
 
-## Installation
+- **AudioSink**: Simple audio access and control for individual files.
+- **AudioChannel**: Handle and process audio files in a queue via channels.
+- **ChannelManager**: Multi-channel grouping and management.
+- **AudioSink.metadata** Access information about audio files if present.
 
-You can install `rpaudio` via PyPI using pip:
+**Supports: MP3, WAV, Vorbis and Flac (mp4 + AAC will also be supported in a future release)**
 
-```bash
-pip install rpaudio
-```
+**Python 3.8+**
 
-## Getting Started
+
+
+## Getting Started ([Read the Docs](https://sockheadrps.github.io/rpaudio/))
 
 
 ```py
@@ -74,6 +72,48 @@ async def main():
 asyncio.run(main())
 ```
 
-## Documentation
 
-The full documentation is available at [rpaudio's Read the Docs](https://sockheadrps.github.io/rpaudio/).
+## OS Dependency Installation Instructions
+
+
+### Windows
+
+No additional OS-level dependencies are required for `rpaudio` on Windows. Ensure you have the latest version of Python installed, and you can directly use `pip` to install the library:
+
+```bash
+pip install rpaudio
+```
+
+
+### macOS
+
+To install `rpaudio` on macOS, you need to install `gettext`:
+
+
+**Install `gettext`**:
+```bash
+brew install gettext
+brew link gettext --force
+```
+
+### Linux
+
+To install `rpaudio` on Linux, you may need to install some dependencies based on your distribution:
+
+**For Debian/Ubuntu-based distributions**:
+```bash
+sudo apt-get update
+sudo apt-get install -y pkg-config libasound2-dev
+```
+
+**For Red Hat/CentOS-based distributions**:
+```bash
+sudo yum install -y pkg-config alsa-lib-devel
+```
+
+After installing the necessary OS-level dependencies, you can install `rpaudio` using `pip`:
+
+```bash
+pip install rpaudio
+```
+
