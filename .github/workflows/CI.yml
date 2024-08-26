@@ -247,7 +247,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [ macos, windows, linux ]
     steps:
       - uses: actions/download-artifact@v3
@@ -261,14 +261,14 @@ jobs:
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           pip install --upgrade twine
           twine upload --skip-existing *
 
       - name: Increment Tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Fetch existing tags
           git fetch --tags
@@ -281,7 +281,9 @@ jobs:
             new_tag="v0.1.0"
           else
             # Increment the version
-            new_tag=$(echo $latest_tag | awk -F. -v OFS=. '{$NF++;print}')
+            IFS='.' read -r -a version_parts <<< "${latest_tag#v}"
+            ((version_parts[2]++))  # Increment the patch version
+            new_tag="v${version_parts[0]}.${version_parts[1]}.${version_parts[2]}"
           fi
 
           # Create new tag
