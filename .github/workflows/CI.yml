@@ -25,7 +25,7 @@ jobs:
           args: --release --out dist
       - name: Install built wheel - x86_64
         run: |
-          pip install rpaudio --no-index --find-links dist/ --force-reinstall
+          pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Build wheels - universal2
         uses: PyO3/maturin-action@v1
@@ -34,7 +34,7 @@ jobs:
           args: --release --out dist
       - name: Install built wheel - universal2
         run: |
-          pip install rpaudio --no-index --find-links dist/ --force-reinstall
+          pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -60,7 +60,7 @@ jobs:
           args: --release --out dist
       - name: Install built wheel
         run: |
-          pip install rpaudio --no-index --find-links dist/ --force-reinstall
+          pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -90,7 +90,7 @@ jobs:
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
-          pip install rpaudio --no-index --find-links dist/ --force-reinstall
+          pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
