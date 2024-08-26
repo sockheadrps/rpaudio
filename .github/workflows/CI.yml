@@ -266,12 +266,20 @@ jobs:
       
       - uses: actions/download-artifact@v3
         with:
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          name: wheels
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+  
       - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           pip install --upgrade twine
-          twine upload --skip-existing *
-          
+          twine upload --skip-existing dist/*
+
       - name: Increment Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
