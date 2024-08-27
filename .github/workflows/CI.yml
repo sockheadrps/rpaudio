@@ -1,12 +1,12 @@
-name: Python
+name: Release
 
 on:
   push:
   pull_request:
 
 jobs:
-  macos:
-    runs-on: macos-13
+  setup-release:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -244,17 +244,17 @@ jobs:
   #           echo "should-release=false" >> $GITHUB_ENV
   #         fi
 
-  release:
-    name: Release
-    needs: [macos, windows, linux]
-    # if: needs.check-commit-message.outputs.should-release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      # - name: Run commit message check
-      #   id: check_commit_message
-      #   run: ./check_commit_message.sh
-      - uses: actions/download-artifact@v3
-        with:
-          name: wheels
+  # release:
+  #   name: Release
+  #   needs: [macos, windows, linux]
+  #   # if: needs.check-commit-message.outputs.should-release == 'true'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #     # - name: Run commit message check
+  #     #   id: check_commit_message
+  #     #   run: ./check_commit_message.sh
+  #     - uses: actions/download-artifact@v3
+  #       with:
+  #         name: wheels
