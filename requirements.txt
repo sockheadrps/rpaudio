@@ -1,1 +1,7 @@
 maturin>=0.12,<2.0
+sphinx
+sphinx-rtd-theme
+sphinxcontrib-napoleon
+sphinx-autodoc-typehints
+sphinx-autoapi
+ghp-import

@@ -48,3 +48,15 @@ jobs:
           else
             echo 'README.md not found, no changes made.'
           fi
+      - name: Delete requirements.txt
+        run: |
+          if [ -f requirements.txt ]; then
+            rm requirements.txt
+            git config --global user.name 'github-actions'
+            git config --global user.email 'actions@github.com'
+            git add -u requirements.txt
+            git commit -m 'Delete requirements.txt'
+            git push
+          else
+            echo 'requirements.txt not found, no changes made.'
+          fi
