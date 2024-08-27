@@ -15,21 +15,18 @@ on:
 jobs:
   Prepare:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_run' }} # Ensures this job runs only if triggered by `workflow_run`
     steps:
       - uses: actions/checkout@v4
       - name: Prepare release
         run: |
           echo "Current branch or tag: ${GITHUB_REF#refs/heads/}"
-
-      - uses: actions/download-artifact@v3
-        name: Download wheels
-        with:
-          name: wheels
-          path: dist
-
+  
   release:
     runs-on: ubuntu-latest
     needs: ["Prepare"]
+
+    if: ${{ github.event_name == 'workflow_run' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +34,7 @@ jobs:
         run: |
           chmod +x .github/workflows/scripts/set-twine-secret.sh
           .github/workflows/scripts/set-twine-secret.sh
-
+      
       - name: Download all wheels
         uses: actions/download-artifact@v3
         with:
