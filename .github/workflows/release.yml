@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare release
         run: |
+          run: ls -l scripts
           chmod +x scripts/set-twine-secret.sh
           ./set-twine-secret.sh
           echo "Current branch or tag: ${GITHUB_REF#refs/heads/}"
