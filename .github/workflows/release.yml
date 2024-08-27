@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Determine TWINE_PASSWORD
-        run: ./set-twine-secret.sh
+        run: scripts/set-twine-secret.sh
 
       - name: Download all wheels
         uses: actions/download-artifact@v3
