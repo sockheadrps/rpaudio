@@ -8,7 +8,13 @@ on:
     tags:
       - 'v*.*.*'
   workflow_run:
-    workflows: ["Build macOS", "Build Windows", "Build Linux", "Build Linux-Cross", "Build Musllinux", "Build Musllinux-Cross"]
+    workflows: 
+      - "Build macOS"
+      - "Build Windows"
+      - "Build Linux"
+      - "Build Linux-Cross"
+      - "Build Musllinux"
+      - "Build Musllinux-Cross"
     types:
       - completed
 
@@ -21,12 +27,11 @@ jobs:
       - name: Prepare release
         run: |
           echo "Current branch or tag: ${GITHUB_REF#refs/heads/}"
-  
+
   release:
     runs-on: ubuntu-latest
-    needs: ["Prepare"]
-
-    if: ${{ github.event_name == 'workflow_run' }}
+    needs: ["Prepare"]  # The release job will only start after Prepare completes
+    if: ${{ github.event_name == 'workflow_run' }} # Ensures this job runs only if triggered by `workflow_run`
     steps:
       - uses: actions/checkout@v4
 
