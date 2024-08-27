@@ -1,0 +1,46 @@
+name: Build Linux Cross
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux-cross:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [aarch64, armv7, s390x, ppc64le, ppc64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist -m Cargo.toml
+      - name: Install and Test Wheels
+        uses: uraimo/run-on-arch-action@v2.7.2
+        if: matrix.target != 'ppc64'
+        with:
+          before-script-linux: |
+            apt-get update
+            apt-get install -y --no-install-recommends python3 python3-pip pkg-config libssl-dev libasound2-dev librust-alsa-sys-dev
+            apt-get install -y crossbuild-essential-${{ matrix.target }}
+            echo '#!/bin/sh\npkg-config --cross $@' > /usr/local/bin/pkg-config-cross
+            chmod +x /usr/local/bin/pkg-config-cross
+            export PKG_CONFIG=/usr/local/bin/pkg-config-cross
+            pip3 install -U pip
+          arch: ${{ matrix.target }}
+          distro: ubuntu20.04
+          githubToken: ${{ github.token }}
+          run: |
+            pip3 install rpaudio --no-index --find-links dist/ --force-reinstall
+            python3 -c "import rpaudio"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
