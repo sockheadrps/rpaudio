@@ -21,7 +21,7 @@ jobs:
             mv CONTRIBUTING.md README.md
             git config --global user.name 'github-actions'
             git config --global user.email 'actions@github.com'
-            git add README.md
+            git add README.md CONTRIBUTING.md
             git commit -m 'Rename CONTRIBUTING.md to README.md'
             git push
           else
@@ -42,12 +42,13 @@ jobs:
             mv README.md CONTRIBUTING.md
             git config --global user.name 'github-actions'
             git config --global user.email 'actions@github.com'
-            git add CONTRIBUTING.md
+            git add README.md CONTRIBUTING.md
             git commit -m 'Rename README.md to CONTRIBUTING.md'
             git push
           else
             echo 'README.md not found, no changes made.'
           fi
+
       - name: Delete requirements.txt
         run: |
           if [ -f requirements.txt ]; then
