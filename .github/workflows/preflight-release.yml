@@ -3,17 +3,18 @@ name: preflight-release
 on:
   workflow_run:
     workflows:
-      # - Build macOS
+      - Build macOS
       - Build Windows
-      # - Build Linux
-      # - Build Linux-Cross
-      # - Build Musllinux
-      # - Build Musllinux-Cross
-      - Tst
+      - Build Linux
     types:
       - completed
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: echo "Debugging"
   on-success:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
