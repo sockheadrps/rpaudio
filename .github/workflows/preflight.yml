@@ -6,9 +6,9 @@ on:
       - Build macOS
       - Build Windows
       - Build Linux
-      - Build Linux-Cross
-      - Build Musllinux
-      - Build Musllinux-Cross
+      # - Build Linux-Cross
+      # - Build Musllinux
+      # - Build Musllinux-Cross
     types:
       - completed
 
