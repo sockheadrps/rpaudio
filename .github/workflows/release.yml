@@ -8,6 +8,8 @@ on:
       - completed
 
 jobs:
+
+  
   windows:
     runs-on: windows-latest
     strategy:
@@ -114,11 +116,17 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
+      
+      - uses: actions/checkout@v4
+      - name: Determine TWINE_PASSWORD
+        run: |
+          chmod +x .github/workflows/scripts/set-twine-secret.sh
+          .github/workflows/scripts/set-twine-secret.sh
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: |
           pip install --upgrade twine
           twine upload --skip-existing *
