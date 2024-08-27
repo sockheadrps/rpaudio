@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows:
       # - Build macOS
-      # - Build Windows
+      - Build Windows
       # - Build Linux
       # - Build Linux-Cross
       # - Build Musllinux
@@ -14,10 +14,13 @@ on:
       - completed
 
 jobs:
-  preflight-job:
+  on-success:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
+      - name: Success Message
+        run: echo 'The triggering workflows passed'
       - name: Determine TWINE_PASSWORD
         run: |
           chmod +x .github/workflows/scripts/set-twine-secret.sh
