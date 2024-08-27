@@ -10,7 +10,6 @@ on:
 jobs:
   Prepare:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_run' }} # Ensures this job runs only if triggered by `workflow_run`
     steps:
       - uses: actions/checkout@v4
       - name: Prepare release
@@ -19,11 +18,10 @@ jobs:
   
   release:
     runs-on: ubuntu-latest
-    needs: ["Prepare"]
+    needs: 
+      - Prepare
     
     steps:
-      
-      
       - name: Download all wheels
         uses: actions/download-artifact@v3
         with:

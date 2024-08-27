@@ -5,32 +5,42 @@ on:
   pull_request:
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [x86_64, i686]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          architecture: x64
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
-          manylinux: auto
-          args: --release --out dist
-          before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
-      - name: Install built wheel
-        if: matrix.target == 'x86_64'
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: Upload wheels
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: dist
+    linux:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          target: [x86_64, i686]
+      steps:
+        - name: Install ALSA development libraries
+          run: sudo apt-get update && sudo apt-get install -y pkg-config build-essential libasound2-dev
+
+
+        - name: Set PKG_CONFIG_PATH
+          run: |
+            find /usr -name alsa.pc
+            echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+
+        - uses: actions/checkout@v4
+          with:
+            repository: sockheadrps/rpaudio
+            token: ${{ secrets.GITHUB_TOKEN }}
+        - uses: actions/setup-python@v4
+          with:
+            python-version: 3.9
+        - name: Build wheels
+          uses: PyO3/maturin-action@v1.44.0
+          with:
+            target: ${{ matrix.target }}
+            manylinux: auto
+            args: --release --out dist -m Cargo.toml --features "alsa-backend" 
+
+        - name: Install built wheel
+          if: matrix.target == 'x86_64'
+          run: |
+            pip install rpaudio --no-index --find-links dist --force-reinstall
+            python -c "import rpaudio"
+        - name: Upload wheels
+          uses: actions/upload-artifact@v3
+          with:
+            name: wheels
+            path: dist

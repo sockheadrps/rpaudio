@@ -1,19 +1,22 @@
 name: Preflight
 
 on:
-  push:
-    branches:
-      - experimental
-      - main
-    tags:
-      - 'v*.*.*'
+  workflow_run:
+    workflows:
+      - Build macOS
+      - Build Windows
+      - Build Linux
+      - Build Linux-Cross
+      - Build Musllinux
+      - Build Musllinux-Cross
+    types:
+      - completed
 
 jobs:
   preflight-job:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Determine TWINE_PASSWORD
         run: |
           chmod +x .github/workflows/scripts/set-twine-secret.sh
