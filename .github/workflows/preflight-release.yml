@@ -1,0 +1,28 @@
+name: preflight-release
+
+on:
+  workflow_run:
+    workflows:
+      - Build macOS
+      - Build Windows
+      - Build Linux
+    types:
+      - completed
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: echo "Debugging"
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Success Message
+        run: echo 'The triggering workflows passed'
+      - name: Determine TWINE_PASSWORD
+        run: |
+          chmod +x .github/workflows/scripts/set-twine-secret.sh
+          .github/workflows/scripts/set-twine-secret.sh

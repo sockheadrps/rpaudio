@@ -1,0 +1,41 @@
+name: Build macOS
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  macos:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: sockheadrps/rpaudio
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Build wheels - x86_64
+        uses: PyO3/maturin-action@v1.44.0
+        with:
+          target: x86_64
+          args: --release --out dist --sdist -m Cargo.toml
+      - name: Install built wheel - x86_64
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+          python -c "import rpaudio"
+      - name: Build wheels - universal2
+        uses: PyO3/maturin-action@v1.44.0
+        with:
+          target: universal2-apple-darwin
+          args: --release --out dist -m Cargo.toml
+      - name: Install built wheel - universal2
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+          python -c "import rpaudio"
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: wheels
+          path: dist
