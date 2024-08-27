@@ -3,7 +3,7 @@ name: Release
 on:
   workflow_run:
     workflows:
-      - Preflight
+      - preflight-release
     types:
       - completed
 
