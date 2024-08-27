@@ -1,0 +1,27 @@
+name: Rename CONTRIBUTING.md to README.md
+
+on:
+  push:
+    branches:
+      - experimental
+
+jobs:
+  rename-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Rename CONTRIBUTING.md to README.md
+        run: |
+          if [ -f CONTRIBUTING.md ]; then
+            mv CONTRIBUTING.md README.md
+            git config --global user.name 'github-actions'
+            git config --global user.email 'actions@github.com'
+            git add README.md
+            git commit -m 'Rename CONTRIBUTING.md to README.md'
+            git push
+          else
+            echo 'CONTRIBUTING.md not found, no changes made.'
+          fi
