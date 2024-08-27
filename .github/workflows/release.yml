@@ -1,20 +1,9 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - experimental
-      - main
-    tags:
-      - 'v*.*.*'
   workflow_run:
-    workflows: 
-      - "Build macOS"
-      - "Build Windows"
-      - "Build Linux"
-      - "Build Linux-Cross"
-      - "Build Musllinux"
-      - "Build Musllinux-Cross"
+    workflows:
+      - Preflight
     types:
       - completed
 
@@ -27,18 +16,13 @@ jobs:
       - name: Prepare release
         run: |
           echo "Current branch or tag: ${GITHUB_REF#refs/heads/}"
-
+  
   release:
     runs-on: ubuntu-latest
-    needs: ["Prepare"]  # The release job will only start after Prepare completes
-    if: ${{ github.event_name == 'workflow_run' }} # Ensures this job runs only if triggered by `workflow_run`
+    needs: ["Prepare"]
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Determine TWINE_PASSWORD
-        run: |
-          chmod +x .github/workflows/scripts/set-twine-secret.sh
-          .github/workflows/scripts/set-twine-secret.sh
+      
       
       - name: Download all wheels
         uses: actions/download-artifact@v3
