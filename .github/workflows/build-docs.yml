@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - docs
+      - experimental
+      
   workflow_dispatch:
 
 jobs:
