@@ -1,14 +1,15 @@
-name: Preflight
+name: preflight-release
 
 on:
   workflow_run:
     workflows:
-      - Build macOS
-      - Build Windows
-      - Build Linux
+      # - Build macOS
+      # - Build Windows
+      # - Build Linux
       # - Build Linux-Cross
       # - Build Musllinux
       # - Build Musllinux-Cross
+      - Tst
     types:
       - completed
 
