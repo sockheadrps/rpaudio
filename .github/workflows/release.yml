@@ -1,37 +1,27 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - experimental
-      - main
-    tags:
-      - 'v*.*.*'
   workflow_run:
-    workflows: ["Build macOS", "Build Windows", "Build Linux", "Build Linux-Cross", "Build Musllinux", "Build Musllinux-Cross"]
+    workflows:
+      - Preflight
     types:
       - completed
 
 jobs:
-  independent-release:
+  Prepare:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Prepare release
         run: |
-          chmod +x .github/workflows/scripts/set-twine-secret.sh
-          .github/workflows/scripts/set-twine-secret.sh
           echo "Current branch or tag: ${GITHUB_REF#refs/heads/}"
-
+  
   release:
     runs-on: ubuntu-latest
-    needs: ["independent-release"]
+    needs: 
+      - Prepare
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Determine TWINE_PASSWORD
-        run: ./set-twine-secret.sh
-
       - name: Download all wheels
         uses: actions/download-artifact@v3
         with:

@@ -1,0 +1,19 @@
+name: Tst
+on: [push]
+jobs:
+  preflight-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug Workflow
+        run: |
+          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
+          echo "GITHUB_WORKFLOW: ${{ github.workflow }}"
+          echo "GITHUB_REF: ${{ github.ref }}"
+          echo "GITHUB_SHA: ${{ github.sha }}"
+          echo "GITHUB_ACTOR: ${{ github.actor }}"
+          echo "GITHUB_REPOSITORY: ${{ github.repository }}"
+      - name: Determine TWINE_PASSWORD
+        run: |
+          chmod +x .github/workflows/scripts/set-twine-secret.sh
+          .github/workflows/scripts/set-twine-secret.sh
