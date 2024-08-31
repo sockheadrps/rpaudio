@@ -10,84 +10,49 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev pkg-config
+
+      - name: Set up virtual environment
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install maturin
+
+      - name: Install Python dependencies
+        run: |
+          . .venv/bin/activate
+          pip install .[test]
+
+      - name: Build and install package in develop mode
+        run: |
+          . .venv/bin/activate
+          maturin develop
       
-      # - name: Set up Python 3.8
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: 3.8
-          
-      # - uses: actions/cache@v4
-      #   name: Configure pip caching
-      #   with:
-      #     path: ~/.cache/pip
-      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pip-
-            
-      # - name: Set up virtual environment
-      #   run: |
-      #     python -m venv .venv
 
-      # - name: Install Python dependencies
-      #   run: |
-      #     .venv\Scripts\Activate.ps1
-      #     python -m pip install --upgrade pip
-      #     pip install .[test]
-
-      # - name: Install Rust
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: stable
-      #     override: true
-
-      # - name: Build and install package in develop mode
-      #   run: |
-      #     .venv\Scripts\Activate.ps1
-      #     maturin develop
-
-      - name: Install DevCon using Chocolatey
-        shell: powershell
+      - name: Run tests
         run: |
-          choco install devcon.portable -y
-
-      - name: Check DevCon Directory
-        shell: powershell
-        run: |
-          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable -Recurse
-
-      - name: Set Execution Policy
-        shell: powershell
-        run: |
-          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-      - name: Install Scream
-        shell: powershell
-        run: |
-          $currentDir = Get-Location
-          Start-Service audio*
-          Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
-          Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream -Force
-          $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
-          $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
-          $store.Open("ReadWrite")
-          $store.Add($cert)
-          $store.Close()
-          $devconPath = "C:\ProgramData\chocolatey\lib\devcon.portable\devcon64.exe"  # Update this path based on findings
-          & $devconPath install C:\Scream\Install\driver\Scream.inf *Scream
-          Set-Location -Path $currentDir
-
-      - name: Print Audio Device
-        shell: powershell
-        run: Get-CimInstance Win32_SoundDevice | fl *
-
-        
-      - name: Run Tests
-        run: |
-          .venv\Scripts\Activate.ps1
-          pytest --maxfail=1 --disable-warnings -q
+          . .venv/bin/activate
+          pytest -v
 
   windows:
     runs-on: windows-latest
