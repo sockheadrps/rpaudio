@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Callable, Protocol, Union
+from typing import Dict, List, Optional, Callable, Protocol, Union
 
 
 class AudioSink(Protocol):
@@ -133,29 +133,6 @@ class AudioSink(Protocol):
         """
         ...
 
-    @property
-    def get_effects(self) -> dict[str, any]:
-        """
-        NOT IMPLEMENTED YET
-
-        Get current effect settings.
-        
-        :return: A dictionary containing the current effect settings.
-        :rtype: dict[str, any]
-        """
-        ...
-
-    @get_effects.setter
-    def set_effects(self, effect: dict[str, any]) -> None:
-        """
-        NOT IMPLEMENTED YET
-
-        Apply an effect to the audio.
-
-        :param effect: A dictionary containing the effect settings.
-        :type effect: dict[str, any]
-        """
-        raise NotImplementedError("This method is not implemented yet.")
 
     @property
     def metadata(self) -> dict[str, any]:
@@ -437,7 +414,10 @@ class AudioChannel(Protocol):
     """
 
     def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
-        ...
+        self.channel_id = channel_id
+        self.channel_callback = channel_callback
+        self._auto_consume = False
+        self.queue = []
 
     def push(self, audio: AudioSink) -> None:
         """
@@ -455,7 +435,7 @@ class AudioChannel(Protocol):
         
         :rtype: bool
         """
-        ...
+        return self._auto_consume
 
     @auto_consume.setter
     def auto_consume(self, value: bool) -> None:
@@ -488,7 +468,17 @@ class AudioChannel(Protocol):
         auto-consume, and callback execution. Not meant for python access
         """
         ...
+    
+    @property
+    def queue_contents(self) -> List[AudioSink]:
+        """
+        Returns the list of AudioSink objects currently in the queue.
+        
+        :rtype: List[AudioSink]
+        """
+        ...
 
+        
 class ChannelManager(Protocol):
     """
     Manages multiple audio channels and provides an API to control them.
@@ -527,4 +517,45 @@ class ChannelManager(Protocol):
     :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
     :vartype channels: dict
     """
-
+    channels: dict[str, AudioChannel]
+    def __init__(self) -> None:
+        """
+        Initializes a new instance of ChannelManager.
+        """
+        ...
+    def add_channel(self, name: str, channel: AudioChannel) -> None:
+        """
+        Adds a new audio channel to the manager.
+        :param name: The unique identifier for the channel.
+        :type name: str
+        :param channel: The audio channel to add.
+        :type channel: AudioChannel
+        """
+        ...
+    def drop_channel(self, name: str) -> None:
+        """
+        Drops an audio channel from the manager.
+        :param name: The unique identifier of the channel to drop.
+        :type name: str
+        :raises RuntimeError: If the channel is not found.
+        """
+        ...
+    def channel(self, name: str) -> Optional[AudioChannel]:
+        """
+        Retrieves a channel by its identifier.
+        :param name: The unique identifier of the channel.
+        :type name: str
+        :return: The corresponding AudioChannel instance, or None if not found.
+        :rtype: Optional[AudioChannel]
+        """
+        ...
+    def start_all(self) -> None:
+        """
+        Starts auto-consuming audio on all channels.
+        """
+        ...
+    def stop_all(self) -> None:
+        """
+        Stops auto-consuming audio on all channels.
+        """
+        ...

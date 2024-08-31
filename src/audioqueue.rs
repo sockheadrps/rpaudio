@@ -51,15 +51,28 @@ impl AudioChannel {
     }
 
     #[getter]
+    pub fn auto_consume(&self) -> bool {
+        *self.auto_consume.lock().unwrap()
+    }
+
+    #[getter]
     pub fn current_audio(&self) -> Option<AudioSink> {
         let playing_guard = self.currently_playing.lock().unwrap();
-        playing_guard.clone() // Return the currently playing sink if it exists
+        playing_guard.clone()
     }
+
+    pub fn drop_current_audio(&mut self) {
+        let mut currently_playing_guard = self.currently_playing.lock().unwrap();
+        if let Some(mut sink) = currently_playing_guard.take() {
+            let _ = sink.stop();
+        }
+    }
+
 
     #[getter]
     pub fn queue_contents(&self) -> Vec<AudioSink> {
         let queue_guard = self.queue.lock().unwrap();
-        queue_guard.clone()  // Ensure AudioSink implements Clone
+        queue_guard.clone() 
     }
 
     pub fn set_queue_contents(&mut self, new_queue: Vec<AudioSink>) {

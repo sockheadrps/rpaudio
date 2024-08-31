@@ -1,4 +1,4 @@
-use pyo3::prelude::*;
+use pyo3::{prelude::*};
 use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};
 use std::{fs::File, path::Path};
@@ -163,20 +163,36 @@ impl AudioTag for Id3v2Tag {
     }
 }
 
-pub fn metadata(file_path: &str) -> PyResult<MetaData> {
-    let path = Path::new(file_path);
 
+pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("mp3") | Some("m4a") | Some("mp4") | Some("flac") => {
-            let tag = Tag::new()
+            let tag_result = Tag::new()
                 .read_from_path(path)
-                .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-            let id3_tag = Id3v2Tag::from(tag);
-            let metadata = id3_tag.metadata_fields();
-            Ok(metadata)
+                .map_err(|e| PyRuntimeError::new_err(format!("Failed to read tag: {}", e)));
+
+            match tag_result {
+                Ok(tag) => {
+                    let id3_tag_result: Result<Id3v2Tag, Box<dyn std::error::Error>> = Ok(Id3v2Tag::from(tag));
+                    match id3_tag_result {
+                        Ok(id3_tag) => {
+                            let metadata = id3_tag.metadata_fields();
+                            Ok(metadata) 
+                        },
+                        Err(e) => {
+                            eprintln!("Failed to convert tag to Id3v2Tag: {}. Returning empty metadata.", e);
+                            Ok(MetaData::default()) 
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
+                    Ok(MetaData::default())  
+                }
+            }
         },
         Some("wav") => {
-            let file = File::open(file_path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+            let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
             let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
             let sample_rate = source.sample_rate();
             let channels = source.channels();
@@ -187,8 +203,8 @@ pub fn metadata(file_path: &str) -> PyResult<MetaData> {
                 duration: Some(duration),
                 ..MetaData::default()
             };
-            Ok(metadata)
+            Ok(metadata)  // Return metadata wrapped in Ok
         },
-        _ => Err(PyRuntimeError::new_err("Unsupported file format")),
+        _ => Ok(MetaData::default()),  // Handle unsupported file extensions and return empty metadata wrapped in Ok
     }
 }

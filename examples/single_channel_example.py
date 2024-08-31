@@ -78,7 +78,7 @@ async def main() -> None:
     print(f"Channels: {channels}, Duration: {duration}")
 
     audio_2: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_2.load_audio("Acrylic.mp3")
+    audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
     channel_1 = rpaudio.AudioChannel()
     channel_1.auto_consume = True
