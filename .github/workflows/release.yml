@@ -10,43 +10,49 @@ on:
 
 jobs:
   test:
-      runs-on: windows-latest
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Set up Python
-          uses: actions/setup-python@v4
-          with:
-            python-version: 3.8
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
 
-        - name: Set up Rust
-          uses: actions-rs/toolchain@v1
-          with:
-            toolchain: stable
-            override: true
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
-        - name: Set up virtual environment
-          run: |
-            python -m venv .venv
-            .venv\Scripts\activate
-            pip install --upgrade pip
-            pip install maturin
+      - name: Install system dependencies
+        run: |
+          choco install portaudio
+          choco install alsa-lib
 
-        - name: Install Python dependencies
-          run: |
-            .venv\Scripts\activate
-            pip install .[test]
+      - name: Set up virtual environment
+        run: |
+          if (Test-Path .venv) { Remove-Item -Recurse -Force .venv }
+          python -m venv .venv
+          .venv\Scripts\activate
+          python -m pip install --upgrade pip
+          pip install maturin
 
-        - name: Build and install package in develop mode
-          run: |
-            .venv\Scripts\activate
-            maturin develop
+      - name: Install Python dependencies
+        run: |
+          .venv\Scripts\activate
+          pip install .[test]
 
-        - name: Run tests
-          run: |
-            .venv\Scripts\activate
-            pytest -v
+      - name: Build and install package in develop mode
+        run: |
+          .venv\Scripts\activate
+          maturin develop
+
+      - name: Run tests
+        run: |
+          .venv\Scripts\activate
+          pytest -v
 
   windows:
     runs-on: windows-latest
