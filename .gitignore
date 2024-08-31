@@ -37,3 +37,5 @@ Acrylic.mp3
 .pypirc
 
 dockerfile
+
+__pycache__/

@@ -47,7 +47,7 @@ async def main():
     audio_1 = AudioSink(callback=on_audio_stop)
     audio_1.load_audio("ex.wav")
     audio_2 = AudioSink(callback=on_audio_stop)
-    audio_2.load_audio("Acrylic.mp3")
+    audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
     print(audio_1.metadata)
 
     # Intializing 1st audio channel
@@ -59,7 +59,7 @@ async def main():
     audio_3 = AudioSink(callback=on_audio_stop)
     audio_3.load_audio("ex.wav")
     audio_4 = AudioSink(callback=on_audio_stop)
-    audio_4.load_audio("Acrylic.mp3")
+    audio_4.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
     # Intializing 2nd audio channel
     channel_2 = AudioChannel()
     channel_2.push(audio_3)
