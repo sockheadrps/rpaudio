@@ -10,50 +10,44 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        python-version: [3.8]
-        os: [windows-latest]
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      # - uses: actions/checkout@v4
       
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+      # - name: Set up Python 3.8
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: 3.8
           
-      - uses: actions/cache@v4
-        name: Configure pip caching
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      
-      - name: Set up virtual environment
-        run: |
-          python -m venv .venv
+      # - uses: actions/cache@v4
+      #   name: Configure pip caching
+      #   with:
+      #     path: ~/.cache/pip
+      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pip-
             
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .[test]
+      # - name: Set up virtual environment
+      #   run: |
+      #     python -m venv .venv
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      # - name: Install Python dependencies
+      #   run: |
+      #     .venv\Scripts\Activate.ps1
+      #     python -m pip install --upgrade pip
+      #     pip install .[test]
 
-      - name: Build and install package in develop mode
-        run: |
-          .venv/Scripts/activate
-          maturin develop
+      # - name: Install Rust
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     toolchain: stable
+      #     override: true
 
-      - name: Print device
-        run: Get-CimInstance Win32_SoundDevice | fl *
-        
+      # - name: Build and install package in develop mode
+      #   run: |
+      #     .venv\Scripts\Activate.ps1
+      #     maturin develop
+
       - name: Install Scream
         shell: powershell
         run: |
@@ -65,16 +59,24 @@ jobs:
           $store.Open("ReadWrite")
           $store.Add($cert)
           $store.Close()
-          cd C:\Scream\Install\driver
-          .\devcon.exe install Scream.inf *Scream
+          
+      - name: Install Scream Driver
+        shell: powershell
+        run: |
+          $devconPath = "C:\Scream\Install\driver\devcon.exe"
+          if (Test-Path $devconPath) {
+            & $devconPath install "C:\Scream\Install\driver\Scream.inf" *Scream
+          } else {
+            Write-Error "devcon.exe not found at $devconPath"
+          }
           
       - name: Print Audio Device
         run: Get-CimInstance Win32_SoundDevice | fl *
         
       - name: Run Tests
         run: |
-          .venv/Scripts/activate
-          pytest -v
+          .venv\Scripts\Activate.ps1
+          pytest --maxfail=1 --disable-warnings -q
 
   windows:
     runs-on: windows-latest
