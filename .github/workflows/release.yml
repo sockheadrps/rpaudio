@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,30 +28,32 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          choco install portaudio
-          choco install alsa-lib
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev pkg-config pulseaudio
+          pulseaudio --check || pulseaudio --start
+          pactl load-module module-null-sink sink_name=vspeaker sink_properties=device.description=virtual_speaker
+          pactl load-module module-remap-source master=vspeaker.monitor source_name=vmic source_properties=device.description=virtual_mic
 
       - name: Set up virtual environment
         run: |
-          if (Test-Path .venv) { Remove-Item -Recurse -Force .venv }
           python -m venv .venv
-          .venv\Scripts\activate
-          python -m pip install --upgrade pip
+          . .venv/bin/activate
+          pip install --upgrade pip
           pip install maturin
 
       - name: Install Python dependencies
         run: |
-          .venv\Scripts\activate
+          . .venv/bin/activate
           pip install .[test]
 
       - name: Build and install package in develop mode
         run: |
-          .venv\Scripts\activate
+          . .venv/bin/activate
           maturin develop
-
+      
       - name: Run tests
         run: |
-          .venv\Scripts\activate
+          . .venv/bin/activate
           pytest -v
 
   windows:
