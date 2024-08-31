@@ -44,7 +44,7 @@ jobs:
 
       - name: Build and install package in develop mode
         run: |
-          . .venv/Scripts/activate
+          .venv/Scripts/activate
           maturin develop
 
       - name: Print device
