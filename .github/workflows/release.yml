@@ -9,45 +9,45 @@ on:
       - 'v*'
 
 jobs:
-test:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.8
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
 
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libasound2-dev pkg-config
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev pkg-config
 
-    - name: Set up virtual environment
-      run: |
-        python -m venv .venv
-        source .venv/bin/activate
-        pip install --upgrade pip
+      - name: Set up virtual environment
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
 
-    - name: Install Python dependencies
-      run: |
-        source .venv/bin/activate
-        pip install .[dev]
+      - name: Install Python dependencies
+        run: |
+          source .venv/bin/activate
+          pip install .[dev]
 
-    - name: Build and install package in develop mode
-      run: |
-        source .venv/bin/activate
-        maturin develop
+      - name: Build and install package in develop mode
+        run: |
+          source .venv/bin/activate
+          maturin develop
 
-    - name: Run tests
-      run: |
-        source .venv/bin/activate
-        pytest
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          pytest
 
   windows:
     runs-on: windows-latest
