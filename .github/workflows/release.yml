@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-      runs-on: ubuntu-latest
+      runs-on: windows-latest
       steps:
         - name: Checkout repository
           uses: actions/checkout@v4
@@ -26,36 +26,26 @@ jobs:
             toolchain: stable
             override: true
 
-        - name: Install system dependencies
-          run: |
-            sudo apt-get update
-            sudo apt-get install -y libasound2-dev pkg-config
-
-        - name: Run dummy sound script
-          run: |
-            chmod +x .github/workflows/scripts/dummy-sound.sh
-            sudo .github/workflows/scripts/dummy-sound.sh
-
         - name: Set up virtual environment
           run: |
             python -m venv .venv
-            . .venv/bin/activate
+            .venv\Scripts\activate
             pip install --upgrade pip
             pip install maturin
 
         - name: Install Python dependencies
           run: |
-            . .venv/bin/activate
+            .venv\Scripts\activate
             pip install .[test]
 
         - name: Build and install package in develop mode
           run: |
-            . .venv/bin/activate
+            .venv\Scripts\activate
             maturin develop
-        
+
         - name: Run tests
           run: |
-            . .venv/bin/activate
+            .venv\Scripts\activate
             pytest -v
 
   windows:
