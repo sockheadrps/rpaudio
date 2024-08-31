@@ -11,7 +11,7 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\ex.wav")
+    audio_1.load_audio(r"examples\ex.wav")
     
     channel = rpaudio.AudioChannel()
     channel.auto_consume = True
@@ -35,7 +35,7 @@ async def test_push_audio(audio_channel):
     initial_len = len(channel.queue_contents)
     
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    audio_2.load_audio(r"examples\ex.wav")
     channel.push(audio_2)
     
     assert len(channel.queue_contents) == initial_len + 1
@@ -80,19 +80,19 @@ async def test_autoplay_second_song():
     mock_callback_4 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\ex.wav")
+    audio_1.load_audio(r"examples\ex.wav")
     channel.push(audio_1)
 
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    audio_2.load_audio(r"examples\ex.wav")
     channel.push(audio_2)
 
     audio_3 = rpaudio.AudioSink(callback=mock_callback_3)
-    audio_3.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    audio_3.load_audio(r"examples\ex.wav")
     channel.push(audio_3)
 
     audio_4 = rpaudio.AudioSink(callback=mock_callback_4)
-    audio_4.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    audio_4.load_audio(r"examples\ex.wav")
     channel.push(audio_4)
 
     await asyncio.sleep(0.5)
