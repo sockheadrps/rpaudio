@@ -164,7 +164,7 @@ impl AudioTag for Id3v2Tag {
 }
 
 
-fn extract_metadata(path: &Path) -> PyResult<MetaData> {
+pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
     match path.extension().and_then(|ext| ext.to_str()) {
         Some("mp3") | Some("m4a") | Some("mp4") | Some("flac") => {
             let tag_result = Tag::new()
