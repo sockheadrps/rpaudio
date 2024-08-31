@@ -26,6 +26,7 @@ Issues = "https://github.com/sockheadrps/rpaudio/issues"
 [project.optional-dependencies]
 dev = [
   "pytest <= 8.3.2",
+  "pytest-asyncio",
   "sphinx",
   "sphinx-rtd-theme",
   "sphinxcontrib-napoleon",
