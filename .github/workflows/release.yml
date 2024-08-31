@@ -34,7 +34,7 @@ jobs:
         - name: Run dummy sound script
           run: |
             chmod +x scripts/dummy-sound.sh
-            sudo ./scripts/dummy-sound.sh
+            sudo ./.github/workflows/scripts/dummy-sound.sh
 
         - name: Set up virtual environment
           run: |
