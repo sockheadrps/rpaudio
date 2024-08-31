@@ -11,7 +11,7 @@ use std::thread;
 mod exmetadata;
 mod mixer;
 mod audioqueue;
-pub use exmetadata::{MetaData, metadata};
+pub use exmetadata::MetaData;
 unsafe impl Send for AudioSink {}
 use pyo3::types::PyModule;
 
@@ -90,7 +90,7 @@ impl AudioSink {
             return Ok(self.clone()); 
         }
 
-        let metadata = metadata(&file_path)?;
+        let metadata = exmetadata::extract_metadata(file_path.as_ref())?;
         self.metadata = metadata;
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();

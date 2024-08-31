@@ -95,6 +95,19 @@ async def test_stop(audio_handler):
     assert handler.is_playing is False
 
 @pytest.mark.asyncio
+async def test_metadata(audio_handler):
+    handler, _ = audio_handler
+    handler.play()
+    await asyncio.sleep(0.1)
+    metadata = handler.metadata
+    assert isinstance(metadata, dict)
+    assert 'album_artist' in metadata
+    assert 'album_title' in metadata
+    assert 'artist' in metadata
+    assert 'duration' in metadata
+    assert 'channels' in metadata
+
+@pytest.mark.asyncio
 async def test_callback_called(audio_handler):
     handler, mock_callback = audio_handler
     handler.play()
