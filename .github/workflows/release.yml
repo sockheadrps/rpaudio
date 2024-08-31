@@ -10,50 +10,65 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [3.8]
+        os: [windows-latest]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.python-version }}
+          
+      - uses: actions/cache@v4
+        name: Configure pip caching
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[test]
 
-      - name: Set up Rust
+      - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config pulseaudio
-          pulseaudio --check || pulseaudio --start
-          pactl load-module module-null-sink sink_name=vspeaker sink_properties=device.description=virtual_speaker
-          pactl load-module module-remap-source master=vspeaker.monitor source_name=vmic source_properties=device.description=virtual_mic
-
-      - name: Set up virtual environment
-        run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install maturin
-
-      - name: Install Python dependencies
-        run: |
-          . .venv/bin/activate
-          pip install .[test]
-
       - name: Build and install package in develop mode
         run: |
-          . .venv/bin/activate
+          . .venv/Scripts/activate
           maturin develop
-      
-      - name: Run tests
+
+      - name: Print device
+        run: Get-CimInstance Win32_SoundDevice | fl *
+        
+      - name: Install Scream
+        shell: powershell
         run: |
-          . .venv/bin/activate
+          Start-Service audio*
+          Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
+          Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream
+          $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
+          $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
+          $store.Open("ReadWrite")
+          $store.Add($cert)
+          $store.Close()
+          cd C:\Scream\Install\driver
+          .\devcon.exe install Scream.inf *Scream
+          
+      - name: Print Audio Device
+        run: Get-CimInstance Win32_SoundDevice | fl *
+        
+      - name: Run Tests
+        run: |
           pytest -v
 
   windows:
