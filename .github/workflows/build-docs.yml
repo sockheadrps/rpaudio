@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - docs
+      
   workflow_dispatch:
 
 jobs:
@@ -47,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e git+https://github.com/Beaux44/rpaudio.git@4a199a3b430f6c6f8209b3dbc9041bdaa04a7b3d#egg=rpaudio
+          pip install rpaudio
           pip install sphinx
           pip install sphinx-rtd-theme
           pip install sphinxcontrib-napoleon
