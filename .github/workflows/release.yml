@@ -75,7 +75,7 @@ jobs:
           $store.Open("ReadWrite")
           $store.Add($cert)
           $store.Close()
-          $devconPath = "C:\Path\To\DevConExecutable\devcon.exe"  # Update this path based on findings
+          $devconPath = "C:\ProgramData\chocolatey\lib\devcon.portable"  # Update this path based on findings
           & $devconPath install C:\Scream\Install\driver\Scream.inf *Scream
           Set-Location -Path $currentDir
 
