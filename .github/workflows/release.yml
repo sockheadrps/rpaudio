@@ -47,11 +47,18 @@ jobs:
         run: |
           . .venv/bin/activate
           maturin develop
+      
+      - name: Print working directory and list contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
 
       - name: Run tests
         run: |
           . .venv/bin/activate
-          pytest
+          pytest -v
 
   windows:
     runs-on: windows-latest
