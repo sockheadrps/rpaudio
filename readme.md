@@ -1,123 +1,135 @@
-# rpaudio
+## Development Setup
 
-`rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
+To contribute to this project, you'll need to set up your development environment and ensure you can build and test the project locally. Follow the instructions below to get started.
 
+### Prerequisites
 
-## API
+- **Python**: Make sure Python 3.8 is installed on your system. You can download it from [python.org](https://www.python.org/downloads/).
+- **Rust**: Install Rust using [rustup](https://rustup.rs/). This is required for building the Rust components of the project.
+- **Python Package Manager**: Ensure you have `pip` installed. This is typically included with Python.
 
-- **AudioSink**: Simple audio access and control for individual files.
-- **AudioChannel**: Handle and process audio files in a queue via channels.
-- **ChannelManager**: Multi-channel grouping and management.
-- **AudioSink.metadata** Access information about audio files if present.
+### Setting Up the Environment
 
-**Supports: MP3, WAV, Vorbis and Flac (mp4 + AAC will also be supported in a future release)**
+1. **Fork the Repository**:
+   - Go to the repository on GitHub and click the **Fork** button in the top right corner. This will create a copy of the repository in your own GitHub account.
 
-**Python 3.8+**
+2. **Clone Your Fork**:
+   - Clone the repository from your fork to your local machine:
+     ```bash
+     git clone https://github.com/your-username/repository.git
+     cd repository
+     ```
 
+3. **Create and Activate a Virtual Environment**:
+   - Create a virtual environment:
+     ```bash
+     python -m venv .venv
+     ```
+   - Activate the virtual environment:
+     - **Windows**:
+       ```bash
+       .\.venv\Scripts\activate
+       ```
+     - **Linux/macOS**:
+       ```bash
+       source .venv/bin/activate
+       ```
 
+4. **Install Python Dependencies**:
+   - Install the required Python packages:
+     ```bash
+     pip install -r requirements.txt
+     ```
 
-## Getting Started ([Read the Docs](https://sockheadrps.github.io/rpaudio/))
-
-
-```py
-import rpaudio
-import asyncio
-
-def on_audio_stop():
-    print("Audio has stopped")
-
-async def play_audio():
-    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
-
-    handler.play()
-    count = 0
-    while True:
-        await asyncio.sleep(1)
-        count += 1
-
-        if count == 4:
-            # Pause the audio for 2 seconds
-            print ("Pausing audio")
-            handler.pause()
-
-        if count == 6:
-            # Resume the audio, but turn down the volume
-            print("Resuming audio, lowering volume")
-            handler.set_volume(0.5)
-            handler.play()
-
-        if count == 8:
-            # Seek to 10 seconds
-            print(f"Current position: {handler.get_pos()}")
-            handler.try_seek(10.) 
-            await asyncio.sleep(1)
-            print(f"Position after seek: {handler.get_pos()}")
-
-        if count == 10:
-            # Change the playback speed to 1.5
-            handler.set_speed(1.5) 
-            print(f"Playback speed: {handler.get_speed()}")
-            await asyncio.sleep(1)
-            handler.stop()
-
-
-async def sleep_loop():
-    for i in range(10):
-        print(f"Sleeping {i}")
-        await asyncio.sleep(1)
-
-async def main():
-    await asyncio.gather(play_audio(), sleep_loop())
-
-asyncio.run(main())
-```
-
-
-## OS Dependency Installation Instructions
-
-
-### Windows
-
-No additional OS-level dependencies are required for `rpaudio` on Windows. Ensure you have the latest version of Python installed, and you can directly use `pip` to install the library:
-
+5. **Install Rust Toolchain**:
+   - Ensure you have the required Rust toolchain installed. You can use [Rustup](https://www.rust-lang.org/tools/install) to install the stable toolchain:
+   - Install Rust dependencies
 ```bash
-pip install rpaudio
+cd src
+cargo fetch
 ```
 
 
-### macOS
-
-To install `rpaudio` on macOS, you need to install `gettext`:
-
-
-**Install `gettext`**:
+6. **Build the Project**:
+   - If you need to build the Rust components manually, you can use the following command:
 ```bash
-brew install gettext
-brew link gettext --force
+maturin develop
 ```
 
-### Linux
-
-To install `rpaudio` on Linux, you may need to install some dependencies based on your distribution:
-
-**For Debian/Ubuntu-based distributions**:
+7. **Verify Installation**:
+   - To ensure that the Python package can be imported correctly, install the built wheel locally and test it:
 ```bash
-sudo apt-get update
-sudo apt-get install -y pkg-config libasound2-dev
+python -c "import rpaudio"
+```
+If the package is installed correctly, this command will complete without any output or errors. Otherwise it will error something like:
+```
+ModuleNotFoundError: No module named 'rpaudio'
 ```
 
-**For Red Hat/CentOS-based distributions**:
+### Making Changes and Testing
+
+1. **Fork the Repository**:
+   - Go to the repository on GitHub and click the **Fork** button in the top right corner. This creates a copy of the repository in your own GitHub account.
+
+2. **Clone Your Fork**:
+   - Clone the repository from your fork to your local machine:
 ```bash
-sudo yum install -y pkg-config alsa-lib-devel
+git clone https://github.com/your-username/repository.git
+cd repository
 ```
 
-After installing the necessary OS-level dependencies, you can install `rpaudio` using `pip`:
-
+3. **Checkout the Experimental Branch**:
+   - Create and switch to a new branch for your changes based on the `experimental` branch in your fork:
 ```bash
-pip install rpaudio
+git fetch origin
+git checkout -b feature/your-feature origin/experimental
+```
+
+4. **Make Your Changes**:
+   - Edit or add files as needed for your feature or fix.
+
+5. **Build and Test Locally**:
+   - Build the project and run tests to ensure everything works as expected. This may include running specific build commands and test scripts relevant to your project.
+
+6. **Push Your Changes to Your Fork**:
+   - Push your feature branch to your fork:
+```bash
+git add .
+git commit -m "Describe your changes"
+git push origin feature/your-feature
+```
+
+7. **Create a feature Branch**:
+   - Create a test branch in your fork to test the changes before creating a pull request:
+```bash
+git checkout -b feature/your-feature
+git push origin feature/your-feature
 ```
 
 
-# Contributing
+9. **Merge into Experimental Branch**:
+   - Merge your feature branch into the `experimental` branch in your fork to run the test workflows to build the python ab3i wheels. This is done so you can test your code locally before ensuring it builds with the workflows, which can sometimes take a few minutes.
+     ```bash
+     git checkout experimental
+     git merge feature/your-feature
+     git push origin experimental
+     ```
+     [Please also update the docs with the changes you made.](docs\source)
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
+10. **Create a Pull Request**:
+    - If your builds all succeed open a pull request from your `experimental` branch in your fork to the `experimental` branch of the original repository on GitHub. Provide a clear description of your changes and any relevant details. 
+
+    - To do this:
+      - Go to the original repository on GitHub.
+      - Click on **Pull Requests**.
+      - Click the **New Pull Request** button.
+      - Set the base branch to `experimental` and the compare branch to `experimental` in your fork.
+      - Review your changes and submit the pull request.
+
+### Additional Notes
+
+- **Dependencies**: If your changes require additional dependencies, update the `requirements.txt` or relevant configuration files and ensure they are included in your pull request.
+- **Documentation**: Update any relevant documentation to reflect your changes.
+- **Workflow**: The GitHub Actions workflow will automatically build and test the project. Ensure your changes do not break the build or tests before submitting the pull request.
+
+For any issues or questions, feel free to open an issue or ask for help in the project's discussions.
