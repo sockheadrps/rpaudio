@@ -12,7 +12,7 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
-      # - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
       # - name: Set up Python 3.8
       #   uses: actions/setup-python@v4
@@ -53,15 +53,15 @@ jobs:
         run: |
           choco install devcon.portable -y
 
-      - name: Add devcon to PATH
-        shell: powershell
-        run: |
-          $env:PATH += ";C:\ProgramData\chocolatey\lib\devcon.portable\tools"
-
       - name: Check DevCon Installation
         shell: powershell
         run: |
-          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable\tools
+          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable
+
+      - name: Check DevCon Directory
+        shell: powershell
+        run: |
+          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable -Recurse
 
       - name: Set Execution Policy
         shell: powershell
@@ -80,13 +80,14 @@ jobs:
           $store.Open("ReadWrite")
           $store.Add($cert)
           $store.Close()
-          $devconPath = "C:\ProgramData\chocolatey\lib\devcon.portable\tools\devcon64.exe"
+          $devconPath = "C:\Path\To\DevConExecutable\devcon.exe"  # Update this path based on findings
           & $devconPath install C:\Scream\Install\driver\Scream.inf *Scream
           Set-Location -Path $currentDir
 
       - name: Print Audio Device
         shell: powershell
         run: Get-CimInstance Win32_SoundDevice | fl *
+
         
       - name: Run Tests
         run: |
