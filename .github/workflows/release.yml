@@ -10,59 +10,61 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: 3.8
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        - name: Set up Rust
+          uses: actions-rs/toolchain@v1
+          with:
+            toolchain: stable
+            override: true
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libasound2-dev pkg-config alsa-utils portaudio19-dev
+        - name: Install system dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libasound2-dev pkg-config alsa-utils portaudio19-dev
 
-      - name: Configure ALSA for dummy sound card
-        run: |
-          echo "pcm.dummy {" | sudo tee /etc/asound.conf
-          echo "  type hw" | sudo tee -a /etc/asound.conf
-          echo "  card 0" | sudo tee -a /etc/asound.conf
-          echo "}" | sudo tee -a /etc/asound.conf
-          echo "ctl.dummy {" | sudo tee -a /etc/asound.conf
-          echo "  type hw" | sudo tee -a /etc/asound.conf
-          echo "  card 0" | sudo tee -a /etc/asound.conf
-          echo "}" | sudo tee -a /etc/asound.conf
+        - name: Configure ALSA for dummy sound card
+          run: |
+            echo "pcm.dummy {" | sudo tee /etc/asound.conf
+            echo "  type hw" | sudo tee -a /etc/asound.conf
+            echo "  card 0" | sudo tee -a /etc/asound.conf
+            echo "}" | sudo tee -a /etc/asound.conf
+            echo "ctl.dummy {" | sudo tee -a /etc/asound.conf
+            echo "  type hw" | sudo tee -a /etc/asound.conf
+            echo "  card 0" | sudo tee -a /etc/asound.conf
+            echo "}" | sudo tee -a /etc/asound.conf
+            echo "defaults.pcm.card 0" | sudo tee -a /etc/asound.conf
+            echo "defaults.ctl.card 0" | sudo tee -a /etc/asound.conf
 
-      - name: Set up virtual environment
-        run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install maturin
+        - name: Set up virtual environment
+          run: |
+            python -m venv .venv
+            . .venv/bin/activate
+            pip install --upgrade pip
+            pip install maturin
 
-      - name: Install Python dependencies
-        run: |
-          . .venv/bin/activate
-          pip install .[test]
+        - name: Install Python dependencies
+          run: |
+            . .venv/bin/activate
+            pip install .[test]
 
-      - name: Build and install package in develop mode
-        run: |
-          . .venv/bin/activate
-          maturin develop
+        - name: Build and install package in develop mode
+          run: |
+            . .venv/bin/activate
+            maturin develop
 
-      - name: Run tests
-        run: |
-          . .venv/bin/activate
-          pytest -v
+        - name: Run tests
+          run: |
+            . .venv/bin/activate
+            pytest -v
 
   windows:
     runs-on: windows-latest
