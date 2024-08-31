@@ -64,6 +64,11 @@ jobs:
         shell: powershell
         run: Get-ChildItem -Recurse -Path C:\Scream\Install\driver
 
+      - name: Download devcon.exe
+        run: |
+          Invoke-WebRequest -Uri https://example.com/path/to/devcon.exe -OutFile C:\Scream\Install\driver\devcon.exe
+        shell: powershell
+
       - name: Install Scream Driver
         shell: powershell
         run: |
