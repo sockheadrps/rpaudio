@@ -48,44 +48,44 @@ jobs:
       #     .venv\Scripts\Activate.ps1
       #     maturin develop
 
-      - name: Install Scream
-        shell: powershell
-        run: |
-          Start-Service audio*
-          Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
-          Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream
-          $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
-          $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
-          $store.Open("ReadWrite")
-          $store.Add($cert)
-          $store.Close()
-
       - name: Install DevCon using Chocolatey
         shell: powershell
         run: |
           choco install devcon.portable -y
+
       - name: Add devcon to PATH
         shell: powershell
         run: |
           $env:PATH += ";C:\ProgramData\chocolatey\lib\devcon.portable\tools"
-      
+
+      - name: Check DevCon Installation
+        shell: powershell
+        run: |
+          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable\tools
+
+      - name: Set Execution Policy
+        shell: powershell
+        run: |
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
       - name: Install Scream
         shell: powershell
         run: |
           $currentDir = Get-Location
           Start-Service audio*
           Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
-          Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream -Force  # Use -Force to overwrite
+          Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream -Force
           $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
           $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
           $store.Open("ReadWrite")
           $store.Add($cert)
           $store.Close()
-          cd C:\Scream\Install\driver
-          devcon install Scream.inf *Scream
+          $devconPath = "C:\ProgramData\chocolatey\lib\devcon.portable\tools\devcon64.exe"
+          & $devconPath install C:\Scream\Install\driver\Scream.inf *Scream
           Set-Location -Path $currentDir
 
       - name: Print Audio Device
+        shell: powershell
         run: Get-CimInstance Win32_SoundDevice | fl *
         
       - name: Run Tests
