@@ -8,7 +8,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples\ex.wav")
+    handler.load_audio(r"examples/ex.wav")
 
     return handler, mock_callback
 
