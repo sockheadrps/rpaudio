@@ -17,7 +17,7 @@ jobs:
         with:
           target: x86_64
           manylinux: auto
-          args: --develop
+          args: develop
           before-script-linux: |
             yum install -y alsa-lib-devel pkgconfig
       - uses: actions/checkout@v4
