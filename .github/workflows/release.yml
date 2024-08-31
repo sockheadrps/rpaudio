@@ -12,6 +12,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Build dev
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --develop
+          before-script-linux: |
+            yum install -y alsa-lib-devel pkgconfig
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
@@ -19,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: |
           pip install .[dev]
+      - name: Build and install package in develop mode
+        run: |
+          maturin develop
       - name: Run tests
         run: |
           pytest
