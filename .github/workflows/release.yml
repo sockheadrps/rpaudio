@@ -41,19 +41,13 @@ jobs:
       - name: Install Python dependencies
         run: |
           . .venv/bin/activate
-          pip install .[dev]
+          pip install .[test]
 
       - name: Build and install package in develop mode
         run: |
           . .venv/bin/activate
           maturin develop
       
-      - name: Print working directory and list contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
 
       - name: Run tests
         run: |

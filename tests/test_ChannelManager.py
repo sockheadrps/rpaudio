@@ -25,7 +25,7 @@ def test_add_channel(setup_channel_manager):
     new_channel = AudioChannel()
     mock_callback = MagicMock()
     audio = AudioSink(callback=mock_callback)
-    audio.load_audio(r"examples\ex.wav")
+    audio.load_audio(r"examples/ex.wav")
     new_channel.push(audio)
 
     manager.add_channel("Channel3", new_channel)
@@ -39,7 +39,7 @@ def test_channel_retrieval(setup_channel_manager):
     manager, _, _ = setup_channel_manager
     mock_callback = MagicMock()
     audio = AudioSink(callback=mock_callback)
-    audio.load_audio(r"examples\ex.wav")
+    audio.load_audio(r"examples/ex.wav")
     channel_1 = manager.channel("Channel1")
     channel_1.push(audio)
 
@@ -60,9 +60,9 @@ async def test_start_all(setup_channel_manager):
     manager, channel_1, channel_2 = setup_channel_manager
 
     audio_1 = AudioSink()
-    audio_1.load_audio(r"examples\ex.wav")
+    audio_1.load_audio(r"examples/ex.wav")
     audio_2 = AudioSink()
-    audio_2.load_audio(r"examples\ex.wav")
+    audio_2.load_audio(r"examples/ex.wav")
 
     channel_1.push(audio_1)
     channel_2.push(audio_2)
@@ -82,9 +82,9 @@ async def test_stop_all(setup_channel_manager):
     manager, channel_1, channel_2 = setup_channel_manager
 
     audio_1 = AudioSink()
-    audio_1.load_audio(r"examples\ex.wav")
+    audio_1.load_audio(r"examples/ex.wav")
     audio_2 = AudioSink()
-    audio_2.load_audio(r"examples\ex.wav")
+    audio_2.load_audio(r"examples/ex.wav")
 
     channel_1.push(audio_1)
     channel_2.push(audio_2)
