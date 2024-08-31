@@ -72,6 +72,7 @@ jobs:
       - name: Install Scream
         shell: powershell
         run: |
+          $currentDir = Get-Location
           Start-Service audio*
           Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
           Expand-Archive -Path C:\Scream3.6.zip -DestinationPath C:\Scream -Force  # Use -Force to overwrite
@@ -82,6 +83,7 @@ jobs:
           $store.Close()
           cd C:\Scream\Install\driver
           devcon install Scream.inf *Scream
+          Set-Location -Path $currentDir
 
       - name: Print Audio Device
         run: Get-CimInstance Win32_SoundDevice | fl *
