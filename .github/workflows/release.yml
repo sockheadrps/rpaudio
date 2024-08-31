@@ -8,12 +8,26 @@ on:
       - 'v*'
 
 jobs:
-  
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install .[dev]
+      - name: Run tests
+        run: |
+          pytest
+
   windows:
     runs-on: windows-latest
     strategy:
       matrix:
         target: [x64, x86]
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -41,6 +55,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64, i686]
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
@@ -68,12 +83,12 @@ jobs:
 
   macos:
     runs-on: macos-13
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-
       - name: Build wheels - x86_64
         uses: PyO3/maturin-action@v1.44.0
         with:
