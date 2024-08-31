@@ -12,6 +12,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print working directory and list contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -27,32 +37,27 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libasound2-dev pkg-config
-      - name: Print working directory and list contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Directory contents:"
-          ls -la
 
       - name: Set up virtual environment
         run: |
-          cd ..
           python -m venv .venv
-          source .venv/bin/activate
+          . .venv/bin/activate
           pip install --upgrade pip
-          echo ls
-          echo pwd
+          pip install maturin
 
       - name: Install Python dependencies
         run: |
+          . .venv/bin/activate
           pip install .[dev]
 
       - name: Build and install package in develop mode
         run: |
+          . .venv/bin/activate
           maturin develop
 
       - name: Run tests
         run: |
+          . .venv/bin/activate
           pytest
 
   windows:
