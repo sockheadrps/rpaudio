@@ -27,14 +27,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libasound2-dev pkg-config
+      - name: Print working directory and list contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
 
       - name: Set up virtual environment
         run: |
           python -m venv .venv
           source .venv/bin/activate
           pip install --upgrade pip
-          ls
-          pwd
+          echo ls
+          echo pwd
 
       - name: Install Python dependencies
         run: |
