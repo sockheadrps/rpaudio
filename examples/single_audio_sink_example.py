@@ -5,7 +5,7 @@ def on_audio_stop():
     print("Audio has stopped")
 
 async def play_audio():
-    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
+    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
     handler.play()
     count = 0
