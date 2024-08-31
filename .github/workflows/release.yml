@@ -50,6 +50,7 @@ jobs:
       
       - name: Run tests
         run: |
+          sudo modprobe snd-dummy
           . .venv/bin/activate
           pytest -v
 
