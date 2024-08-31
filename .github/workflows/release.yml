@@ -53,11 +53,6 @@ jobs:
         run: |
           choco install devcon.portable -y
 
-      - name: Check DevCon Installation
-        shell: powershell
-        run: |
-          Get-ChildItem -Path C:\ProgramData\chocolatey\lib\devcon.portable
-
       - name: Check DevCon Directory
         shell: powershell
         run: |
