@@ -60,14 +60,14 @@ jobs:
           $store.Add($cert)
           $store.Close()
 
-      - name: List Scream Install Directory
-        shell: powershell
-        run: Get-ChildItem -Recurse -Path C:\Scream\Install\driver
-
       - name: Install DevCon using Chocolatey
         shell: powershell
         run: |
           choco install devcon.portable -y
+      - name: Add devcon to PATH
+        shell: powershell
+        run: |
+          $env:PATH += ";C:\ProgramData\chocolatey\lib\devcon.portable\tools"
       
       - name: Install Scream
         shell: powershell
