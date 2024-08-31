@@ -479,7 +479,6 @@ class AudioChannel(Protocol):
         ...
 
         
-
 class ChannelManager(Protocol):
     """
     Manages multiple audio channels and provides an API to control them.
@@ -518,4 +517,45 @@ class ChannelManager(Protocol):
     :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
     :vartype channels: dict
     """
-
+    channels: dict[str, AudioChannel]
+    def __init__(self) -> None:
+        """
+        Initializes a new instance of ChannelManager.
+        """
+        ...
+    def add_channel(self, name: str, channel: AudioChannel) -> None:
+        """
+        Adds a new audio channel to the manager.
+        :param name: The unique identifier for the channel.
+        :type name: str
+        :param channel: The audio channel to add.
+        :type channel: AudioChannel
+        """
+        ...
+    def drop_channel(self, name: str) -> None:
+        """
+        Drops an audio channel from the manager.
+        :param name: The unique identifier of the channel to drop.
+        :type name: str
+        :raises RuntimeError: If the channel is not found.
+        """
+        ...
+    def channel(self, name: str) -> Optional[AudioChannel]:
+        """
+        Retrieves a channel by its identifier.
+        :param name: The unique identifier of the channel.
+        :type name: str
+        :return: The corresponding AudioChannel instance, or None if not found.
+        :rtype: Optional[AudioChannel]
+        """
+        ...
+    def start_all(self) -> None:
+        """
+        Starts auto-consuming audio on all channels.
+        """
+        ...
+    def stop_all(self) -> None:
+        """
+        Stops auto-consuming audio on all channels.
+        """
+        ...

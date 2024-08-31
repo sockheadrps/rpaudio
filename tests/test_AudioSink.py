@@ -5,14 +5,11 @@ import rpaudio
 
 @pytest.fixture
 def audio_handler():
-    # Create a mock callback function
     mock_callback = MagicMock()
 
-    # Pass the mock callback to AudioSink
     handler = rpaudio.AudioSink(callback=mock_callback)
     handler.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
-    # Return both handler and mock_callback
     return handler, mock_callback
 
 @pytest.mark.asyncio
