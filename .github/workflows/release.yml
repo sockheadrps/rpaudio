@@ -13,11 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build dev
-        uses: PyO3/maturin-action@v1
-        with:
-          args: --develop
-          before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev pkg-config
+          uses: PyO3/maturin-action@v1
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
         with:
