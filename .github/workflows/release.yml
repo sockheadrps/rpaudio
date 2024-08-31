@@ -59,7 +59,11 @@ jobs:
           $store.Open("ReadWrite")
           $store.Add($cert)
           $store.Close()
-          
+
+      - name: List Scream Install Directory
+        shell: powershell
+        run: Get-ChildItem -Recurse -Path C:\Scream\Install\driver
+
       - name: Install Scream Driver
         shell: powershell
         run: |
@@ -69,7 +73,7 @@ jobs:
           } else {
             Write-Error "devcon.exe not found at $devconPath"
           }
-          
+
       - name: Print Audio Device
         run: Get-CimInstance Win32_SoundDevice | fl *
         
