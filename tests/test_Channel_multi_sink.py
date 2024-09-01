@@ -12,7 +12,7 @@ def audio_channel():
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
     audio_1.load_audio(r"examples/ex.wav")
-    
+
     channel = rpaudio.AudioChannel()
     channel.auto_consume = True
     channel.push(audio_1)
@@ -33,11 +33,11 @@ async def test_push_audio(audio_channel):
     """Test pushing audio into AudioChannel."""
     channel, _, mock_callback_2 = audio_channel
     initial_len = len(channel.queue_contents)
-    
+
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
     audio_2.load_audio(r"examples/ex.wav")
     channel.push(audio_2)
-    
+
     assert len(channel.queue_contents) == initial_len + 1
 
 

@@ -28,7 +28,6 @@ test = [
   "pytest <= 8.3.2",
   "pytest-asyncio",
   "maturin",
-  "pre-commit"
 ]
 
 docs = [

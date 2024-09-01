@@ -12,7 +12,7 @@ def audio_channel():
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
     audio_1.load_audio(r"examples/ex.wav")
-    
+
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
     audio_2.load_audio(r"examples/ex.wav")
 

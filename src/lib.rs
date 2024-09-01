@@ -20,7 +20,7 @@ use pyo3::types::PyModule;
 pub struct AudioSink {
     is_playing: Arc<Mutex<bool>>,
     callback: Arc<Mutex<Option<Py<PyAny>>>>,
-    cancel_callback: Arc<Mutex<bool>>, 
+    cancel_callback: Arc<Mutex<bool>>,
     sink: Option<Arc<Mutex<Sink>>>,
     stream: Option<Arc<Mutex<OutputStream>>>,
     pub metadata: MetaData,
@@ -70,7 +70,7 @@ impl AudioSink {
         dict.insert("duration", self.metadata.duration.map(|duration| duration.to_string()));
 
         let py_dict = PyDict::new_bound(py);
-    
+
         // Insert items into the Python dictionary
         for (key, value) in dict {
             py_dict.set_item(key, value)?;
@@ -89,7 +89,7 @@ impl AudioSink {
             eprintln!("Sink already exists, unload it first"); // Log a warning
             return Ok(self.clone()); // Return the current state
         }
-    
+
         let metadata = match exmetadata::extract_metadata(file_path.as_ref()) {
             Ok(meta) => meta,
             Err(e) => {
@@ -98,7 +98,7 @@ impl AudioSink {
             }
         };
         self.metadata = metadata;
-    
+
         let (new_stream, stream_handle) = match OutputStream::try_default() {
             Ok(stream) => stream,
             Err(e) => {
@@ -106,7 +106,7 @@ impl AudioSink {
                 return Err(PyRuntimeError::new_err("Failed to create output stream"));
             }
         };
-    
+
         let sink_result = Sink::try_new(&stream_handle);
         let sink = match sink_result {
             Ok(s) => Arc::new(Mutex::new(s)),
@@ -115,7 +115,7 @@ impl AudioSink {
                 return Err(PyRuntimeError::new_err(format!("Failed to create sink: {}", e)));
             }
         };
-    
+
         let file_path_clone = file_path.clone();
         let file = match File::open(file_path_clone) {
             Ok(f) => f,
@@ -124,7 +124,7 @@ impl AudioSink {
                 return Err(PyRuntimeError::new_err(format!("Failed to open file: {}", e)));
             }
         };
-    
+
         let source = match Decoder::new(BufReader::new(file)) {
             Ok(src) => src,
             Err(e) => {
@@ -132,31 +132,31 @@ impl AudioSink {
                 return Err(PyRuntimeError::new_err(format!("Failed to decode audio file: {}", e)));
             }
         };
-    
+
         sink.lock().unwrap().append(source);
-    
+
         self.stream = Some(Arc::new(Mutex::new(new_stream)));
         self.sink = Some(sink.clone());
-    
+
         if let Some(sink) = &self.sink {
             (*sink.lock().unwrap()).pause();
         }
-    
+
         let is_playing = self.is_playing.clone();
         let callback = self.callback.clone();
         let cancel_callback = self.cancel_callback.clone();
         let sink_clone = sink.clone();
         let start_time = self.start_time.clone();
         let speed = self.speed.clone();
-    
+
         thread::spawn(move || {
             let mut start_time_guard = start_time.lock().unwrap();
             *start_time_guard = Some(Instant::now());
-    
+
             loop {
                 let mut is_playing_guard = is_playing.lock().unwrap();
                 let sink = sink_clone.lock().unwrap();
-    
+
                 if sink.empty() {
                     *is_playing_guard = false;
                     drop(is_playing_guard);
@@ -165,7 +165,7 @@ impl AudioSink {
                     }
                     break;
                 }
-    
+
                 if sink.is_paused() {
                     *is_playing_guard = false;
                 } else {
@@ -173,17 +173,17 @@ impl AudioSink {
                 }
                 let speed = speed.lock().unwrap();
                 sink.set_speed(*speed);
-    
+
                 thread::sleep(Duration::from_millis(100));
             }
-    
+
             let mut is_playing_guard = is_playing.lock().unwrap();
             *is_playing_guard = false;
         });
-    
+
         Ok(self.clone())
     }
-    
+
     pub fn play(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
             sink.lock().unwrap().play();
@@ -258,11 +258,11 @@ impl AudioSink {
         if position < 0.0 {
             return Err(PyValueError::new_err("Position must be non-negative."));
         }
-    
+
         if let Some(sink) = &self.sink {
             let duration = Duration::from_secs_f32(position);
             eprintln!("Attempting to seek to position: {:?}", duration);
-    
+
             let result = sink.lock().unwrap().try_seek(duration);
             match result {
                 Ok(_) => {
