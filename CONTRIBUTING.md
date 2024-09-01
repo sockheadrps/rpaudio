@@ -91,7 +91,13 @@ git checkout -b feature/your-feature origin/experimental
 5. **Build and Test Locally**:
    - Build the project and run tests to ensure everything works as expected. This may include running specific build commands and test scripts relevant to your project.
 
-6. **Push Your Changes to Your Fork**:
+6. **Run pytest and update the pytest_output.txt**
+```bash
+pytest -v > pytest_output.txt
+```
+   - There is an action that checks to make sure you ran these tests, and will fail otherwise when you merge. 
+
+7. **Push Your Changes to Your Fork**:
    - Push your feature branch to your fork:
 ```bash
 git add .
