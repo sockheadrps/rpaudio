@@ -165,4 +165,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: |
           pip install --upgrade twine
-          twine upload --skip-existing *
+          find dist -type f -name '*.whl' -o -name '*.tar.gz' | xargs twine upload --skip-existing
