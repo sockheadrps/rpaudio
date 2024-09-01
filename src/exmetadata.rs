@@ -154,11 +154,11 @@ impl AudioTag for Id3v2Tag {
             disc_number: data_to_string(self.disc_number()),
             total_discs: data_to_string(self.total_discs()),
             genre: data_to_string(self.genre()),
-            composer: data_to_string(self.composer()),   
-            comment: data_to_string(self.comment()),  
+            composer: data_to_string(self.composer()),
+            comment: data_to_string(self.comment()),
             sample_rate: None,
             channels: None,
-            duration: None,       
+            duration: None,
         }
     }
 }
@@ -177,17 +177,17 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                     match id3_tag_result {
                         Ok(id3_tag) => {
                             let metadata = id3_tag.metadata_fields();
-                            Ok(metadata) 
+                            Ok(metadata)
                         },
                         Err(e) => {
                             eprintln!("Failed to convert tag to Id3v2Tag: {}. Returning empty metadata.", e);
-                            Ok(MetaData::default()) 
+                            Ok(MetaData::default())
                         }
                     }
                 },
                 Err(e) => {
                     eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
-                    Ok(MetaData::default())  
+                    Ok(MetaData::default())
                 }
             }
         },

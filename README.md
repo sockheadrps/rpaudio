@@ -49,13 +49,13 @@ async def play_audio():
         if count == 8:
             # Seek to 10 seconds
             print(f"Current position: {handler.get_pos()}")
-            handler.try_seek(10.) 
+            handler.try_seek(10.)
             await asyncio.sleep(1)
             print(f"Position after seek: {handler.get_pos()}")
 
         if count == 10:
             # Change the playback speed to 1.5
-            handler.set_speed(1.5) 
+            handler.set_speed(1.5)
             print(f"Playback speed: {handler.get_speed()}")
             await asyncio.sleep(1)
             handler.stop()
@@ -121,4 +121,3 @@ pip install rpaudio
 # Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute.
-

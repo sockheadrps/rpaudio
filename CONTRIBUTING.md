@@ -117,7 +117,7 @@ git push origin feature/your-feature
      [Please also update the docs with the changes you made.](docs\source)
 
 10. **Create a Pull Request**:
-    - If your builds all succeed open a pull request from your `experimental` branch in your fork to the `experimental` branch of the original repository on GitHub. Provide a clear description of your changes and any relevant details. 
+    - If your builds all succeed open a pull request from your `experimental` branch in your fork to the `experimental` branch of the original repository on GitHub. Provide a clear description of your changes and any relevant details.
 
     - To do this:
       - Go to the original repository on GitHub.

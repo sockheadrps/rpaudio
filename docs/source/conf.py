@@ -33,7 +33,7 @@ templates_path = ['_templates']
 
 
 # AutoAPI configuration
-autoapi_dirs = ['../../']  
+autoapi_dirs = ['../../']
 autoapi_generate_api_docs = True
 autoapi_root = 'autoapi'
 autoapi_type = 'python'

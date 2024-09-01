@@ -10,7 +10,7 @@ class AudioSink(Protocol):
     the audio stops playing.
 
     Example:
-    
+
     .. code-block:: python
 
         handler = AudioHandler(callback=my_callback)
@@ -39,7 +39,7 @@ class AudioSink(Protocol):
             None: This method does not return any value.
 
         Example:
-        
+
         .. code-block:: python
 
             def on_audio_end():
@@ -58,7 +58,7 @@ class AudioSink(Protocol):
             bool: True if the audio is playing, False otherwise.
 
         Example:
-        
+
         .. code-block:: python
 
             handler = AudioHandler(callback=my_callback)
@@ -71,7 +71,7 @@ class AudioSink(Protocol):
     def load_audio(self, filename: str) -> None:
         """
         Load an audio file for playback.
-        
+
         :param filename: The path to the audio file to load.
         :type filename: str
         """
@@ -88,7 +88,7 @@ class AudioSink(Protocol):
             RuntimeError: If no audio has been loaded.
 
         Example:
-        
+
         .. code-block:: python
 
             handler = AudioHandler(callback=my_callback)
@@ -105,7 +105,7 @@ class AudioSink(Protocol):
             RuntimeError: If no audio has been loaded.
 
         Example:
-        
+
         .. code-block:: python
 
             handler = AudioHandler(callback=my_callback)
@@ -123,7 +123,7 @@ class AudioSink(Protocol):
             RuntimeError: If no audio has been loaded.
 
         Example:
-        
+
         .. code-block:: python
 
             handler = AudioHandler(callback=my_callback)
@@ -142,7 +142,7 @@ class AudioSink(Protocol):
         Example:
 
         .. code-block:: python
-        
+
             audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
             audio_1.load_audio("ex.wav")
             data = audio_1.metadata
@@ -221,7 +221,7 @@ class MetaData:
     def __init__(self, audio_sink: 'AudioSink') -> None:
         """
         Initializes an instance of MetaData with values from the audio_sink.
-        
+
         :param audio_sink: The source of metadata for the audio file.
         :type audio_sink: AudioSink
         """
@@ -422,7 +422,7 @@ class AudioChannel(Protocol):
     def push(self, audio: AudioSink) -> None:
         """
         Adds an AudioSink to the channel queue.
-        
+
         :param audio: The audio object to add to the queue.
         :type audio: AudioSink
         """
@@ -432,7 +432,7 @@ class AudioChannel(Protocol):
     def auto_consume(self) -> bool:
         """
         Returns whether the channel automatically consumes the queue.
-        
+
         :rtype: bool
         """
         return self._auto_consume
@@ -441,7 +441,7 @@ class AudioChannel(Protocol):
     def auto_consume(self, value: bool) -> None:
         """
         Sets the auto-consume behavior of the channel.
-        
+
         :param value: True to enable auto-consume, False to disable.
         :type value: bool
         """
@@ -457,34 +457,34 @@ class AudioChannel(Protocol):
     def current_audio(self) -> AudioSink:
         """
         Returns the currently playing AudioSink object.
-        
+
         :rtype: AudioSink
         """
         ...
 
     async def _control_loop(self) -> None:
         """
-        Continuously monitors the queue and handles playback, 
+        Continuously monitors the queue and handles playback,
         auto-consume, and callback execution. Not meant for python access
         """
         ...
-    
+
     @property
     def queue_contents(self) -> List[AudioSink]:
         """
         Returns the list of AudioSink objects currently in the queue.
-        
+
         :rtype: List[AudioSink]
         """
         ...
 
-        
+
 class ChannelManager(Protocol):
     """
     Manages multiple audio channels and provides an API to control them.
 
         Example:
-        
+
         .. code-block:: python
 
             # Intializing 2 audio sinks

@@ -84,7 +84,7 @@ async def main() -> None:
     channel_1.auto_consume = True
     channel_1.push(audio_1)
     channel_1.push(audio_2)
-    
+
     await asyncio.gather(play_audio(channel_1), sleep_loop())
 
 asyncio.run(main())
