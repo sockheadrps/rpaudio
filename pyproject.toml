@@ -24,12 +24,21 @@ Issues = "https://github.com/sockheadrps/rpaudio/issues"
 
 
 [project.optional-dependencies]
-dev = [
+test = [
   "pytest <= 8.3.2",
+  "pytest-asyncio",
+  "maturin",
+]
+
+docs = [
   "sphinx",
   "sphinx-rtd-theme",
   "sphinxcontrib-napoleon",
   "sphinx-autodoc-typehints",
   "sphinx-autoapi",
   "maturin"
+]
+
+dev = [
+  "maturin",
 ]

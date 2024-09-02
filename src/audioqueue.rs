@@ -27,7 +27,7 @@ impl AudioChannel {
             auto_consume: Arc::new(Mutex::new(false)),
             currently_playing: Arc::new(Mutex::new(None)),
         };
-        channel._channel_loop(); 
+        channel._channel_loop();
         channel
     }
 
@@ -44,7 +44,7 @@ impl AudioChannel {
             let _ = sink.play();
         }
     }
-    
+
     #[setter]
     pub fn set_auto_consume(&mut self, value: bool) {
         *self.auto_consume.lock().unwrap() = value;
@@ -72,7 +72,7 @@ impl AudioChannel {
     #[getter]
     pub fn queue_contents(&self) -> Vec<AudioSink> {
         let queue_guard = self.queue.lock().unwrap();
-        queue_guard.clone() 
+        queue_guard.clone()
     }
 
     pub fn set_queue_contents(&mut self, new_queue: Vec<AudioSink>) {
@@ -94,7 +94,7 @@ impl AudioChannel {
         let queue = Arc::clone(&self.queue);
         let auto_consume = Arc::clone(&self.auto_consume);
         let currently_playing = Arc::clone(&self.currently_playing);
-    
+
         thread::spawn(move || {
             loop {
                 {
@@ -102,57 +102,56 @@ impl AudioChannel {
                     if !should_consume {
                         // println!("Auto consume is turned off, sleeping and waiting for it to turn on");
                         thread::sleep(Duration::from_millis(500));
-                        continue; 
+                        continue;
                     }
                 }
-    
+
                 {
                     let mut playing_guard = currently_playing.lock().unwrap();
                     let mut queue_guard = queue.lock().unwrap();
-    
+
                     if playing_guard.is_none() && !queue_guard.is_empty() {
                         let mut next_sink = queue_guard.remove(0);
                         *playing_guard = Some(next_sink.clone());
-    
+
                         // println!("Playing new sink");
-    
+
                         if let Err(e) = next_sink.play() {
                             eprintln!("Failed to play sink: {}", e);
                             *playing_guard = None;
                         }
                     }
                 }
-    
+
                 thread::sleep(Duration::from_millis(100));
-    
+
                 {
                     let mut playing_guard = currently_playing.lock().unwrap();
-    
+
                     if let Some(ref sink) = *playing_guard {
                         let is_playing = sink.is_playing();
-    
+
                         if !is_playing && sink.empty() {
                             // println!("Finished playing current sink");
                             *playing_guard = None;
                         }
                     }
                 }
-    
+
                 {
                     let queue_empty = queue.lock().unwrap().is_empty();
                     let playing_empty = currently_playing.lock().unwrap().is_none();
-    
+
                     if playing_empty && queue_empty {
                         // println!("Queue is empty, stopping channel loop after audio has finished");
                         break;
                     }
                 }
             }
-    
+
             // println!("Channel loop finished");
         });
-    
+
         // println!("Channel loop started");
     }
-}    
-
+}

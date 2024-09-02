@@ -11,10 +11,10 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\ex.wav")
-    
+    audio_1.load_audio(r"examples/ex.wav")
+
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    audio_2.load_audio(r"examples/ex.wav")
 
     channel_1 = rpaudio.AudioChannel()
     channel_1.auto_consume = True
@@ -74,7 +74,7 @@ async def test_try_seek(audio_channel):
     channel, _, _ = audio_channel
     channel.current_audio.play()
     await asyncio.sleep(0.1)
-    channel.current_audio.try_seek(2)
+    channel.current_audio.try_seek(4)
     await asyncio.sleep(0.1)
     assert channel.current_audio.get_pos() >= 2
 

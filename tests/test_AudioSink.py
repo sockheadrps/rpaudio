@@ -8,7 +8,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
+    handler.load_audio(r"examples/ex.wav")
 
     return handler, mock_callback
 
@@ -53,9 +53,9 @@ async def test_try_seek(audio_handler):
     handler, _ = audio_handler
     handler.play()
     await asyncio.sleep(0.1)
-    handler.try_seek(33.5)
+    handler.try_seek(4)
     await asyncio.sleep(0.1)
-    assert handler.get_pos() >= 33.5
+    assert handler.get_pos() >= 4
 
 @pytest.mark.asyncio
 async def test_get_pos(audio_handler):

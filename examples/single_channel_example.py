@@ -72,7 +72,7 @@ async def sleep_loop() -> None:
 
 async def main() -> None:
     audio_1 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_1.load_audio("ex.wav")
+    audio_1.load_audio("examples\ex.wav")
     channels = audio_1.metadata["channels"]
     duration = audio_1.metadata["duration"]
     print(f"Channels: {channels}, Duration: {duration}")
@@ -84,7 +84,7 @@ async def main() -> None:
     channel_1.auto_consume = True
     channel_1.push(audio_1)
     channel_1.push(audio_2)
-    
+
     await asyncio.gather(play_audio(channel_1), sleep_loop())
 
 asyncio.run(main())

@@ -39,3 +39,4 @@ Acrylic.mp3
 dockerfile
 
 __pycache__/
+.pytest_cache/

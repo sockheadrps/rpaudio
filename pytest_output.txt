@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.4, pytest-8.3.2, pluggy-1.5.0 -- C:\Users\16145\Desktop\code_24\frpaudio\rpaudio\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\16145\Desktop\code_24\frpaudio\rpaudio
+configfile: pyproject.toml
+plugins: asyncio-0.24.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 34 items
+
+tests/test_AudioSink.py::test_play_audio PASSED                          [  2%]
+tests/test_AudioSink.py::test_pause PASSED                               [  5%]
+tests/test_AudioSink.py::test_resume PASSED                              [  8%]
+tests/test_AudioSink.py::test_set_volume PASSED                          [ 11%]
+tests/test_AudioSink.py::test_try_seek PASSED                            [ 14%]
+tests/test_AudioSink.py::test_get_pos PASSED                             [ 17%]
+tests/test_AudioSink.py::test_set_speed PASSED                           [ 20%]
+tests/test_AudioSink.py::test_get_speed PASSED                           [ 23%]
+tests/test_AudioSink.py::test_stop PASSED                                [ 26%]
+tests/test_AudioSink.py::test_metadata PASSED                            [ 29%]
+tests/test_AudioSink.py::test_callback_called PASSED                     [ 32%]
+tests/test_ChannelManager.py::test_add_channel PASSED                    [ 35%]
+tests/test_ChannelManager.py::test_channel_retrieval PASSED              [ 38%]
+tests/test_ChannelManager.py::test_channel_retrieval_not_found PASSED    [ 41%]
+tests/test_ChannelManager.py::test_start_all PASSED                      [ 44%]
+tests/test_ChannelManager.py::test_stop_all PASSED                       [ 47%]
+tests/test_ChannelManager.py::test_drop_channel PASSED                   [ 50%]
+tests/test_ChannelManager.py::test_drop_channel_not_found PASSED         [ 52%]
+tests/test_Channel_multi_sink.py::test_initialization PASSED             [ 55%]
+tests/test_Channel_multi_sink.py::test_push_audio PASSED                 [ 58%]
+tests/test_Channel_multi_sink.py::test_auto_consume PASSED               [ 61%]
+tests/test_Channel_multi_sink.py::test_drop_current_audio PASSED         [ 64%]
+tests/test_Channel_multi_sink.py::test_current_audio PASSED              [ 67%]
+tests/test_Channel_multi_sink.py::test_autoplay_second_song PASSED       [ 70%]
+tests/test_Channel_single_sink.py::test_play_audio PASSED                [ 73%]
+tests/test_Channel_single_sink.py::test_pause PASSED                     [ 76%]
+tests/test_Channel_single_sink.py::test_resume PASSED                    [ 79%]
+tests/test_Channel_single_sink.py::test_set_volume PASSED                [ 82%]
+tests/test_Channel_single_sink.py::test_try_seek PASSED                  [ 85%]
+tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 88%]
+tests/test_Channel_single_sink.py::test_set_speed PASSED                 [ 91%]
+tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 94%]
+tests/test_Channel_single_sink.py::test_stop PASSED                      [ 97%]
+tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
+ 2024-09-02 19:19:07 - All tests completed.
+
+
+============================= 34 passed in 9.36s ==============================
