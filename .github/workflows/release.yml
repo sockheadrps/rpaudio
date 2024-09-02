@@ -142,7 +142,9 @@ jobs:
       - name: Download all wheels
         uses: actions/download-artifact@v3
         with:
-          name: wheels
+          path: dist
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - uses: actions/setup-python@v4
         with:
