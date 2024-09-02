@@ -6,6 +6,7 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    print(handler.metadata)
 
     handler.set_fade_in(15.0, 0.1, 0.2)
 
