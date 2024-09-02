@@ -33,7 +33,7 @@ jobs:
           fi
           one_hour_ago=$(($now - 3600))
 
-          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -gt "$one_hour_ago" ]; then
+          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
@@ -99,7 +99,6 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
           path: dist
 
   # macos:
