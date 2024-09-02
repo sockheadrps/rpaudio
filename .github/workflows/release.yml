@@ -81,7 +81,7 @@ jobs:
           python-version: 3.9
           architecture: x64
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           manylinux: auto
@@ -94,7 +94,7 @@ jobs:
           pip install rpaudio --no-index --find-links dist --force-reinstall
           python -c "import rpaudio"
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -144,7 +144,7 @@ jobs:
       - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
-          name: wheels
+          path: dist/
       - name: Display structure of downloaded files
         run: | 
           ls -R dist/ 
