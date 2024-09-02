@@ -37,6 +37,8 @@ jobs:
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
+          echo $pytest_timestamp
+          echo $one_hour_ago
 
       - name: Success message
         if: success()
@@ -143,8 +145,7 @@ jobs:
         run: ls -a
       - name: Download all wheels
         uses: actions/download-artifact@v4
-        with:
-          name: wheels
+
       - name: Display structure of downloaded files
         run: | 
           ls -R dist/ 
