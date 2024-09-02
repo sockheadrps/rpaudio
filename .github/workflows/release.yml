@@ -150,15 +150,23 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist
+      - name: Print working directory
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Listing contents:"
+          ls -R
       - name: Flatten wheel directory structure
         run: |
           # Find and move all .whl files to the root dist directory
           find dist -type f -name "*.whl" -exec mv {} dist/ \;
           # Optionally remove now empty subdirectories
           find dist -type d -empty -delete
+
       - name: Display structure of downloaded files
         run: |
           ls -a
+          
       - name: List contents of dist/
         run: ls -R dist/
 
@@ -176,10 +184,8 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        working-directory: ./dist
         run: |
           pip install --upgrade twine
           ls -a
-          echo "Files in dist/ directory:"
-          ls -la dist/
-          echo "Uploading files from dist/"
-          twine upload --skip-existing dist/*.whl
+          twine upload --skip-existing *.whl
