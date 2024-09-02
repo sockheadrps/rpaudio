@@ -46,6 +46,8 @@ jobs:
 
   # windows:
   #   runs-on: windows-latest
+    # needs: check-output-date
+
   #   strategy:
   #     matrix:
   #       target: [x64, x86]
@@ -57,7 +59,7 @@ jobs:
   #         architecture: ${{ matrix.target }}
   #     - uses: dtolnay/rust-toolchain@stable
   #     - name: Build wheels
-  #       uses: PyO3/maturin-action@v1.44.0
+  #       uses: PyO3/maturin-action@v1
   #       with:
   #         target: ${{ matrix.target }}
   #         args: --release --out dist -m Cargo.toml
@@ -105,6 +107,7 @@ jobs:
           path: dist/
   # macos:
   #   runs-on: macos-13
+  #   needs: check-output-date
   #   steps:
   #     - uses: actions/checkout@v4
   #     - uses: actions/setup-python@v4
@@ -112,7 +115,7 @@ jobs:
   #         python-version: 3.8
 
   #     - name: Build wheels - x86_64
-  #       uses: PyO3/maturin-action@v1.44.0
+  #       uses: PyO3/maturin-action@v1
   #       with:
   #         target: x86_64
   #         args: --release --out dist --sdist -m Cargo.toml
@@ -121,7 +124,7 @@ jobs:
   #         pip install rpaudio --no-index --find-links dist --force-reinstall
   #         python -c "import rpaudio"
   #     - name: Build wheels - universal2
-  #       uses: PyO3/maturin-action@v1.44.0
+  #       uses: PyO3/maturin-action@v1
   #       with:
   #         target: universal2-apple-darwin
   #         args: --release --out dist -m Cargo.toml
@@ -175,6 +178,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
         run: |
           pip install --upgrade twine
+          ls -a
           echo "Files in dist/ directory:"
           ls -la dist/
           echo "Uploading files from dist/"
