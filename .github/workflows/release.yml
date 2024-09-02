@@ -148,7 +148,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: wheels
-          path: dist
 
       - uses: actions/setup-python@v4
         with:
@@ -160,8 +159,8 @@ jobs:
           chmod +x .github/workflows/scripts/set-twine-secret.sh
           .github/workflows/scripts/set-twine-secret.sh
 
-      - name: List dist directory contents
-        run: ls -la dist
+      - name: List current directory contents
+        run: ls -la
 
       - name: Publish to PyPI
         env:
