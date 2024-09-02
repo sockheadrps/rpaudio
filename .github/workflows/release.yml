@@ -97,7 +97,6 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}
           path: dist/
 
   # macos:
@@ -145,9 +144,9 @@ jobs:
       - name: Download all wheels
         uses: actions/download-artifact@v4
         with:
-          path: ./dist
+          path: dist/
       - name: Display structure of downloaded files
-        run: ls -R
+        run: ls -R dist/
 
       - uses: actions/setup-python@v4
         with:
@@ -166,4 +165,4 @@ jobs:
         run: |
           pip install --upgrade twine
           echo "Uploading files from dist:"
-          twine upload --skip-existing ./dist/*
+          twine upload --skip-existing dist/*
