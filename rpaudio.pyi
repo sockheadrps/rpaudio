@@ -26,7 +26,7 @@ class AudioSink(Protocol):
         is_playing (bool): Flag indicating whether the audio is currently playing.
     """
 
-    def __init__(self, callback: Optional[Callable[[], None]] = None) -> None:
+    def __init__(self, callback: Optional[Callable[[], None]] = None) -> 'AudioSink':
         """
         Constructor method.
 
@@ -68,7 +68,7 @@ class AudioSink(Protocol):
         """
         ...
 
-    def load_audio(self, filename: str) -> None:
+    def load_audio(self, filename: str) -> AudioSink:
         """
         Load an audio file for playback.
 
@@ -211,6 +211,21 @@ class AudioSink(Protocol):
 
         :return: The current volume level.
         :rtype: float
+        """
+        ...
+    
+    def set_fade_in(self, dur: float, start_vol: float, end_vol: float) -> None:
+        """
+        Set the fade-in effect for the audio playback.
+
+        :param duration: The duration of the fade-in effect in seconds. Must be non-negative.
+        :type duration: float
+        :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0.
+        :type start_vol: float
+        :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0.
+        :type end_vol: float
+
+        :raises ValueError: If duration is negative or volumes are out of range.
         """
         ...
 
