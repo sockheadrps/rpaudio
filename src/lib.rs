@@ -86,14 +86,12 @@ impl AudioSink {
 
     pub fn load_audio(&mut self, file_path: String) -> PyResult<Self> {
         if self.sink.is_some() {
-            println!("Sink already exists, unload it first");
             return Ok(self.clone()); 
         }
 
         let metadata = match exmetadata::extract_metadata(file_path.as_ref()) {
             Ok(meta) => meta,
-            Err(e) => {
-                eprintln!("Failed to extract metadata: {}", e); // Log the error
+            Err(_e) => {
                 return Err(PyRuntimeError::new_err("Failed to extract metadata"));
             }
         };
@@ -215,7 +213,7 @@ impl AudioSink {
 
         if let Some(sink) = &self.sink {
             sink.lock().unwrap().set_volume(volume);
-            *self.volume.lock().unwrap() = volume; // Update internal volume state
+            *self.volume.lock().unwrap() = volume; 
             Ok(())
         } else {
             Err(PyRuntimeError::new_err("No sink available to set volume. Load audio first."))
@@ -249,18 +247,15 @@ impl AudioSink {
     
         if let Some(sink) = &self.sink {
             let duration = Duration::from_secs_f32(position);
-            eprintln!("Attempting to seek to position: {:?}", duration);
     
             let result = sink.lock().unwrap().try_seek(duration);
             match result {
                 Ok(_) => {
-                    eprintln!("Seek successful, updating internal position to {:?}", duration); // Debug output
                     *self.position.lock().unwrap() = Duration::from_secs_f64(self.get_pos().unwrap());
                     *self.start_time.lock().unwrap() = Some(Instant::now());
                     Ok(())
                 }
                 Err(e) => {
-                    eprintln!("Seek failed: {:?}", e); 
                     Err(PyRuntimeError::new_err(format!("Seek failed: {:?}", e)))
                 }
             }
@@ -294,7 +289,7 @@ impl AudioSink {
         let end_volume = end_vol;
 
         if let Some(sink) = &self.sink {
-            let sink = Arc::clone(sink); // Clone the Arc to share ownership
+            let sink = Arc::clone(sink);
 
             thread::spawn(move || {
                 let start_time = Instant::now();
@@ -309,15 +304,15 @@ impl AudioSink {
 
                     let current_volume = start_volume + volume_step * elapsed.as_secs_f32();
 
-                    if let Ok(mut sink_lock) = sink.lock() {
+                    if let Ok(sink_lock) = sink.lock() {
                         sink_lock.set_volume(current_volume);
                     }
 
-                    thread::sleep(Duration::from_millis(50)); // Adjusted sleep time for more frequent updates
+                    thread::sleep(Duration::from_millis(100)); 
                 }
 
                 // Ensure the final volume is set
-                if let Ok(mut sink_lock) = sink.lock() {
+                if let Ok(sink_lock) = sink.lock() {
                     sink_lock.set_volume(end_volume);
                 }
             });
