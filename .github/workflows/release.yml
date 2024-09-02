@@ -66,8 +66,8 @@ jobs:
   #     - name: Upload wheels
   #       uses: actions/upload-artifact@v4
   #       with:
-            # name: ${{ matrix.target }}
-  #         path: dist
+            # name: windows-${{ matrix.target }}
+  #         path: dist/
 
   linux:
     runs-on: ubuntu-latest
@@ -130,7 +130,7 @@ jobs:
   #       uses: actions/upload-artifact@v4
   #       with:
   #         name: mac-${{ matrix.target }}
-  #         path: dist
+  #         path: dist/
   
   release:
     runs-on: ubuntu-latest
@@ -146,6 +146,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: dist/
+          name: wheels
       - name: Display structure of downloaded files
         run: ls -R dist/
 
