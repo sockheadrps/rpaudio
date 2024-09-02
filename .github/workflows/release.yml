@@ -86,7 +86,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: auto
-          args: --release --out dist -m Cargo.toml
+          args: --release --out dist/ -m Cargo.toml
           before-script-linux: |
             yum install -y alsa-lib-devel pkgconfig
       - name: Install built wheel
