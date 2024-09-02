@@ -99,7 +99,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          path: dist
+          path: dist/
 
   # macos:
   #   runs-on: macos-13
