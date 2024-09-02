@@ -97,6 +97,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
+          name: wheels-${{ matrix.target }}-${{ github.run_number }}-${{ github.run_id }}
           path: dist/
 
   # macos:
