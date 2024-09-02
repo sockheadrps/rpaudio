@@ -166,7 +166,7 @@ jobs:
       - name: Display structure of downloaded files
         run: |
           ls -a
-          
+
       - name: List contents of dist/
         run: ls -R dist/
 
@@ -184,7 +184,7 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        working-directory: ./dist
+        working-directory: /dist
         run: |
           pip install --upgrade twine
           ls -a
