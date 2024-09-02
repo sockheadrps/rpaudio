@@ -28,6 +28,9 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
+    
+    # Set a fade in on the audio sink
+    handler.set_fade_in(5.0, 0.1, 0.2)
 
     handler.play()
     count = 0

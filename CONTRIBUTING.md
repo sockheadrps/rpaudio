@@ -38,7 +38,7 @@ To contribute to this project, you'll need to set up your development environmen
 4. **Install Python Dependencies**:
    - Install the required Python packages:
      ```bash
-     pip install -r requirements.txt
+     pip install .[dev]
      ```
 
 5. **Install Rust Toolchain**:
