@@ -18,35 +18,34 @@ jobs:
 
       - name: Check output date
         run: |
+          # Extract the last line containing the time
           last_line=$(tail -n 4 pytest_output.txt | head -n 1)
           
-          # Extract date and time from the last line
-          pytest_date=$(echo "$last_line" | grep -oP "\d{4}-\d{2}-\d{2}")
+          # Extract the time from the last line
           pytest_time=$(echo "$last_line" | grep -oP "\d{2}:\d{2}:\d{2}")
 
+          # Get the current date
           today=$(date +%Y-%m-%d)
           now=$(date +%s)
 
-          # Convert pytest_date and pytest_time to a timestamp
-          pytest_timestamp=$(date -d "$pytest_date $pytest_time" +%s 2>/dev/null)
+          # Combine current date with extracted time
+          datetime="$today $pytest_time"
+
+          # Convert combined datetime to Unix timestamp
+          pytest_timestamp=$(date -d "$datetime" +%s 2>/dev/null)
           if [ $? -ne 0 ]; then
             echo "Error: Invalid date or time format"
             exit 1
           fi
           
           one_hour_ago=$(($now - 3600))
-          echo "Pytest output date: $pytest_date"
-          echo "Pytest output time: $pytest_time"
-          echo "Pytest output timestamp: $pytest_timestamp"
-          # Check if pytest_date is not today or pytest_timestamp is older than one hour
-          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -gt "$one_hour_ago" ]; then
+
+          # Check if pytest_timestamp is older than one hour
+          if [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
 
-      - name: Success message
-        if: success()
-        run: echo "Pytest output is recent and valid."
 
   windows:
     runs-on: windows-latest
