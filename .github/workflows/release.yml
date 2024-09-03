@@ -19,25 +19,28 @@ jobs:
       - name: Check output date
         run: |
           last_line=$(tail -n 4 pytest_output.txt | head -n 1)
-
+          
+          # Extract date and time from the last line
           pytest_date=$(echo "$last_line" | grep -oP "\d{4}-\d{2}-\d{2}")
           pytest_time=$(echo "$last_line" | grep -oP "\d{2}:\d{2}:\d{2}")
 
           today=$(date +%Y-%m-%d)
           now=$(date +%s)
 
+          # Convert pytest_date and pytest_time to a timestamp
           pytest_timestamp=$(date -d "$pytest_date $pytest_time" +%s 2>/dev/null)
           if [ $? -ne 0 ]; then
             echo "Error: Invalid date or time format"
             exit 1
           fi
+          
           one_hour_ago=$(($now - 3600))
 
+          # Check if pytest_date is not today or pytest_timestamp is older than one hour
           if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
-
 
       - name: Success message
         if: success()
