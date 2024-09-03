@@ -35,9 +35,11 @@ jobs:
           fi
           
           one_hour_ago=$(($now - 3600))
-
+          echo "Pytest output date: $pytest_date"
+          echo "Pytest output time: $pytest_time"
+          echo "Pytest output timestamp: $pytest_timestamp"
           # Check if pytest_date is not today or pytest_timestamp is older than one hour
-          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
+          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -gt "$one_hour_ago" ]; then
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
