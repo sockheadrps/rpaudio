@@ -182,7 +182,7 @@ jobs:
 
       - name: Publish to PyPI
         env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         working-directory: dist
         run: |
           pip install --upgrade twine
