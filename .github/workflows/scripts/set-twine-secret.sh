@@ -8,4 +8,4 @@ if [ "${GITHUB_REF#refs/heads/}" == "main" ]; then
 else
   echo TWINE_PASSWORD="secrets.TEST_PYPI_API_TOKEN" >> $GITHUB_ENV
   echo "Release to Test PyPI"
-fi
+fi 
