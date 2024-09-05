@@ -213,21 +213,21 @@ class AudioSink(Protocol):
         :rtype: float
         """
         ...
-    
-    def set_fade_in(self, dur: float, start_vol: float, end_vol: float) -> None:
-        """
-        Set the fade-in effect for the audio playback.
 
-        :param duration: The duration of the fade-in effect in seconds. Must be non-negative.
-        :type duration: float
-        :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type start_vol: float
-        :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type end_vol: float
-
-        :raises ValueError: If duration is negative or volumes are out of range.
+    def set_effects(self, effect_list: list) -> None:
         """
+        Apply effects from a list to the audio playback.
+
+        :param effect_list: A list of effect objects to be applied to the audio playback. 
+                            The list may contain instances of `FadeIn`, `FadeOut`, and `ChangeSpeed`.
+        :type effect_list: list
+
+        :raises TypeError: If an unknown effect type is encountered in the list.
+        """
+
         ...
+    
+
 
 class MetaData:
     """
@@ -572,5 +572,39 @@ class ChannelManager(Protocol):
     def stop_all(self) -> None:
         """
         Stops auto-consuming audio on all channels.
+        """
+        ...
+
+
+class FadeIn:
+    """
+    Represents a fade-in effect for audio playback.
+
+    :param duration: The duration of the fade-in effect in seconds. Defaults to 12.0 seconds.
+    :type duration: float, optional
+    :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 0.1.
+    :type start_vol: float, optional
+    :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 1.0.
+    :type end_vol: float, optional
+
+    :raises ValueError: If duration is negative or volumes are out of range.
+    """
+
+    duration: float
+    start_vol: float
+    end_vol: float
+
+    def __init__(self, duration: float = 12.0, start_vol: float = 0.1, end_vol: float = 1.0) -> None:
+        """
+        Initialize the FadeIn effect with specified duration, start volume, and end volume.
+
+        :param duration: The duration of the fade-in effect in seconds. Must be non-negative.
+        :type duration: float
+        :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0.
+        :type start_vol: float
+        :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0.
+        :type end_vol: float
+
+        :raises ValueError: If duration is negative or volumes are out of range.
         """
         ...
