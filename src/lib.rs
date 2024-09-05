@@ -1,6 +1,7 @@
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use core::time;
+use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyList};
 use rodio::{Decoder, OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::fs::File;
@@ -8,14 +9,16 @@ use std::io::BufReader;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
-use timesync::{ActionType, EffectActionData, TimeSyncEffect, TimeSyncEffects};
+use timesync::{
+    ActionType, ChangeSpeed, EffectActionData, FadeIn, FadeOut, TimeSyncEffect, TimeSyncEffects,
+};
 mod audioqueue;
 mod exmetadata;
 mod mixer;
+mod timesync;
 pub use exmetadata::MetaData;
 unsafe impl Send for AudioSink {}
 use pyo3::types::PyModule;
-mod timesync;
 
 #[derive(Clone)]
 #[pyclass]
@@ -31,7 +34,7 @@ pub struct AudioSink {
     speed: Arc<Mutex<f32>>,
     position: Arc<Mutex<Duration>>,
     time_remaining: Arc<Mutex<Option<f32>>>,
-    time_sync_effects: Arc<Mutex<TimeSyncEffects>>, 
+    time_sync_effects: Arc<Mutex<TimeSyncEffects>>,
 }
 
 #[pymethods]
@@ -51,7 +54,7 @@ impl AudioSink {
             speed: Arc::new(Mutex::new(1.0)),
             position: Mutex::new(Duration::from_secs(0)).into(),
             time_remaining: Mutex::new(None).into(),
-            time_sync_effects: Arc::new(Mutex::new(TimeSyncEffects::new())), // Initialize TimeSyncEffects
+            time_sync_effects: Arc::new(Mutex::new(TimeSyncEffects::new())),
         }
     }
 
@@ -83,7 +86,6 @@ impl AudioSink {
 
         let py_dict = PyDict::new_bound(py);
 
-        // Insert items into the Python dictionary
         for (key, value) in dict {
             py_dict.set_item(key, value)?;
         }
@@ -100,7 +102,6 @@ impl AudioSink {
         if self.sink.is_some() {
             return Ok(self.clone());
         }
-        // let mut time_sync_effects = timesync::TimeSyncEffects::new();
 
         let metadata = match exmetadata::extract_metadata(file_path.as_ref()) {
             Ok(meta) => meta,
@@ -109,8 +110,6 @@ impl AudioSink {
             }
         };
         self.metadata = metadata;
-
-        // let mut effects = TimeSyncEffects::new();
 
         let (new_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink_result = Sink::try_new(&stream_handle);
@@ -142,28 +141,16 @@ impl AudioSink {
             (*sink.lock().unwrap()).pause();
         }
 
-        let effects = Arc::clone(&self.time_sync_effects);
-        {
-            let mut effects_lock = effects.lock().unwrap();
-            effects_lock.add_effect(TimeSyncEffect::new(
-                Duration::from_secs(10),
-                |audio_sink| {
-                    audio_sink.set_fade(5.0, 1.0, 0.1).unwrap();
-                },
-            ));
-        }
         let is_playing = self.is_playing.clone();
         let callback = self.callback.clone();
         let cancel_callback = self.cancel_callback.clone();
         let sink_clone = sink.clone();
         let speed = self.speed.clone();
-        let mut time_remaining = *self.time_remaining.lock().unwrap();
-        let time_sync_effects_clone = Arc::clone(&self.time_sync_effects);
-        let self_lock = Arc::new(Mutex::new(self.clone()));
+
+        let mut time_remaining_guard = self.time_remaining.lock().unwrap();
+        *time_remaining_guard = Some(total_duration - sink.lock().unwrap().get_pos().as_secs_f32());
 
         thread::spawn(move || {
-                let mut last_check_time = Instant::now();
-
             loop {
                 {
                     let mut is_playing_guard = is_playing.lock().unwrap();
@@ -182,16 +169,18 @@ impl AudioSink {
                         *is_playing_guard = false;
                     } else {
                         *is_playing_guard = true;
-                        time_remaining = Some(total_duration - sink.get_pos().as_secs_f32());
+
+                        // *time_remaining_guard = Some(total_duration - sink.get_pos().as_secs_f32());
+                        // time_remaining
                     }
                     let speed = speed.lock().unwrap();
                     sink.set_speed(*speed);
-                    let current_time = Instant::now() - last_check_time;
-                    time_sync_effects_clone.lock().unwrap().apply_due_effects(&self_lock.lock().unwrap(), sink.get_pos());
-                    last_check_time = Instant::now();
-
+                    // time_sync_effects_clone.lock().unwrap().apply_due_effects(
+                    //     &self_lock.lock().unwrap(),
+                    //     sink.get_pos(),
+                    //     Duration::from_secs_f32(total_duration),
+                    // );
                 }
-
                 thread::sleep(Duration::from_millis(100));
             }
 
@@ -328,7 +317,6 @@ impl AudioSink {
     }
 
     pub fn set_fade(&self, duration: f32, start_vol: f32, end_vol: f32) -> PyResult<()> {
-        eprint!("Setting fade");
         if duration < 0.0 {
             return Err(PyValueError::new_err("Duration must be non-negative."));
         }
@@ -347,15 +335,18 @@ impl AudioSink {
                 let start_time = Instant::now();
 
                 loop {
-                    if let Ok(is_playing_guard) = is_playing.lock() {
-                        if !*is_playing_guard {
-                            break;
-                        }
+                    // if let Ok(is_playing_guard) = is_playing.lock() {
+                    //     if !*is_playing_guard {
+                    //         break;
+                    //     }
+                    // }
+                    if sink.lock().unwrap().empty() {
+                        break;
                     }
-
                     let elapsed = Instant::now() - start_time;
 
                     if elapsed >= fade_duration {
+                        println!("Fade complete");
                         break;
                     }
 
@@ -399,6 +390,33 @@ impl AudioSink {
             ))
         }
     }
+
+    pub fn set_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
+        Python::with_gil(|py| {
+            let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
+
+            for effect in _effect_list {
+                let effect = effect.downcast_bound(py)?;
+
+                if effect.is_instance_of::<FadeIn>() {
+                    let fade_in = effect.extract::<FadeIn>()?;
+                    self.set_fade(fade_in.duration, fade_in.start_vol, fade_in.end_vol)
+                        .unwrap();
+                } else if effect.is_instance_of::<FadeOut>() {
+                    let fade_out = effect.extract::<FadeOut>()?;
+                    // Handle FadeOut effect
+                    println!("FadeOut effect: {:?}", fade_out);
+                } else if effect.is_instance_of::<ChangeSpeed>() {
+                    let change_speed = effect.extract::<ChangeSpeed>()?;
+                    println!("ChangeSpeed effect: {:?}", change_speed);
+                } else {
+                    return Err(PyTypeError::new_err("Unknown effect type"));
+                }
+            }
+
+            Ok(())
+        })
+    }
 }
 
 impl AudioSink {
@@ -419,12 +437,7 @@ fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
     m.add_class::<audioqueue::AudioChannel>()?;
+    m.add_class::<ActionType>()?;
+    m.add_class::<FadeIn>()?;
     Ok(())
 }
-// fn rpaudio(_py: Python, m: &PyModule) -> PyResult<()> {
-//     m.add_class::<AudioSink>()?;
-//     m.add_class::<MetaData>()?;
-//     m.add_class::<mixer::ChannelManager>()?;
-//     m.add_class::<audioqueue::AudioChannel>()?;
-//     Ok(())
-// }
