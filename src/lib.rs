@@ -167,11 +167,9 @@ impl AudioSink {
                         *is_playing_guard = false;
                     } else {
                         *is_playing_guard = true;
-
                     }
                     let speed = speed.lock().unwrap();
                     sink.set_speed(*speed);
-
                 }
                 thread::sleep(Duration::from_millis(100));
             }
@@ -441,50 +439,52 @@ impl AudioSink {
     }
 
     pub fn schedule_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
+        let scheduled_effects = Arc::clone(&self.scheduled_effects);
+
         Python::with_gil(|py| {
             let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
-            let mut rust_effect_list: Vec<ActionType> = vec![];
 
-            for effect in _effect_list {
-                let effect = effect.downcast_bound(py)?;
-            
-                if effect.is_instance_of::<FadeIn>() {
-                    let fade_in = effect.extract::<FadeIn>()?;
-                    let mut rust_effect_list = vec![];
-                    rust_effect_list.push(ActionType::FadeIn(fade_in));
-                    self.scheduled_effects
-                        .lock()
-                        .unwrap()
-                        .extend(rust_effect_list);
-                } else if effect.is_instance_of::<FadeOut>() {
-                    let fade_out = effect.extract::<FadeOut>()?;
-                } else if effect.is_instance_of::<ChangeSpeed>() {
-                    let change_speed = effect.extract::<ChangeSpeed>()?;
-                } else {
-                    return Err(PyTypeError::new_err("Unknown effect type"));
+            let rust_effect_list: Vec<ActionType> = _effect_list
+                .into_iter()
+                .map(|effect| {
+                    let effect = effect.downcast_bound(py).unwrap();
+                    if let Ok(fade_in) = effect.extract::<FadeIn>() {
+                        Ok(ActionType::FadeIn(fade_in))
+                    } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
+                        Ok(ActionType::FadeOut(fade_out))
+                    } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
+                        Ok(ActionType::ChangeSpeed(change_speed))
+                    } else {
+                        Err(PyTypeError::new_err("Unknown effect type"))
+                    }
+                })
+                .collect::<Result<Vec<ActionType>, PyErr>>()?;
+
+            drop(py);
+
+            scheduled_effects.lock().unwrap().extend(rust_effect_list);
+
+            for effect in self.scheduled_effects.lock().unwrap().iter() {
+                match effect {
+                    ActionType::FadeIn(fade_in) => {
+                        self.set_fade(
+                            fade_in.apply_after,
+                            fade_in.duration,
+                            fade_in.start_vol,
+                            fade_in.end_vol,
+                        )
+                        .unwrap();
+                        println!("FadeIn effect: {:?}", fade_in);
+                    }
+                    ActionType::FadeOut(fade_out) => {
+                        println!("FadeOut effect: {:?}", fade_out);
+                    }
+                    ActionType::ChangeSpeed(_) => todo!(),
                 }
-                self.execute_scheduled_effects(); 
             }
 
             Ok(())
         })
-    }
-
-    pub fn execute_scheduled_effects(&self) {
-        println!("Executing scheduled effects");
-        for effect in self.scheduled_effects.lock().unwrap().iter() {
-            match effect {
-                ActionType::FadeIn(fade_in) => {
-                    self.set_fade(fade_in.apply_after, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
-                        .unwrap();
-                    println!("FadeIn effect: {:?}", fade_in);
-                }
-                ActionType::FadeOut(fade_out) => {
-                    println!("FadeOut effect: {:?}", fade_out);
-                }
-                ActionType::ChangeSpeed(_) => todo!(),
-            }
-        }
     }
 }
 
