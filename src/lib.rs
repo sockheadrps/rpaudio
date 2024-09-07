@@ -32,7 +32,6 @@ pub struct AudioSink {
     speed: Arc<Mutex<f32>>,
     position: Arc<Mutex<Duration>>,
     time_remaining: Arc<Mutex<Option<f32>>>,
-    scheduled_effects: Arc<Mutex<Vec<ActionType>>>,
 }
 
 #[pymethods]
@@ -52,7 +51,6 @@ impl AudioSink {
             speed: Arc::new(Mutex::new(1.0)),
             position: Mutex::new(Duration::from_secs(0)).into(),
             time_remaining: Mutex::new(None).into(),
-            scheduled_effects: Mutex::new(vec![]).into(),
         }
     }
 
@@ -439,7 +437,7 @@ impl AudioSink {
     }
 
     pub fn schedule_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
-        let scheduled_effects = Arc::clone(&self.scheduled_effects);
+        let mut sched_vec = <Vec<ActionType>>::new();
 
         Python::with_gil(|py| {
             let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
@@ -462,9 +460,9 @@ impl AudioSink {
 
             drop(py);
 
-            scheduled_effects.lock().unwrap().extend(rust_effect_list);
+            sched_vec.extend(rust_effect_list);
 
-            for effect in self.scheduled_effects.lock().unwrap().iter() {
+            for effect in sched_vec.iter() {
                 match effect {
                     ActionType::FadeIn(fade_in) => {
                         self.set_fade(
