@@ -594,7 +594,7 @@ class FadeIn:
     start_vol: float
     end_vol: float
 
-    def __init__(self, duration: float = 12.0, start_vol: float = 0.1, end_vol: float = 1.0) -> None:
+    def __init__(self, duration: float = 5.0, start_vol: float = 0.1, end_vol: float = 1.0) -> None:
         """
         Initialize the FadeIn effect with specified duration, start volume, and end volume.
 
