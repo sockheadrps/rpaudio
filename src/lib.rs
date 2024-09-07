@@ -1,17 +1,15 @@
 use core::time;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::{PyDict, PyList, PyTuple};
 use rodio::{Decoder, OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{sink, BufReader};
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::{Duration, Instant};
-use timesync::{
-    ActionType, ChangeSpeed, EffectActionData, FadeIn, FadeOut, TimeSyncEffect, TimeSyncEffects,
-};
+use std::{clone, thread};
+use timesync::{ActionType, ChangeSpeed, FadeIn, FadeOut};
 mod audioqueue;
 mod exmetadata;
 mod mixer;
@@ -34,7 +32,7 @@ pub struct AudioSink {
     speed: Arc<Mutex<f32>>,
     position: Arc<Mutex<Duration>>,
     time_remaining: Arc<Mutex<Option<f32>>>,
-    time_sync_effects: Arc<Mutex<TimeSyncEffects>>,
+    scheduled_effects: Arc<Mutex<Vec<ActionType>>>,
 }
 
 #[pymethods]
@@ -54,7 +52,7 @@ impl AudioSink {
             speed: Arc::new(Mutex::new(1.0)),
             position: Mutex::new(Duration::from_secs(0)).into(),
             time_remaining: Mutex::new(None).into(),
-            time_sync_effects: Arc::new(Mutex::new(TimeSyncEffects::new())),
+            scheduled_effects: Mutex::new(vec![]).into(),
         }
     }
 
@@ -170,16 +168,10 @@ impl AudioSink {
                     } else {
                         *is_playing_guard = true;
 
-                        // *time_remaining_guard = Some(total_duration - sink.get_pos().as_secs_f32());
-                        // time_remaining
                     }
                     let speed = speed.lock().unwrap();
                     sink.set_speed(*speed);
-                    // time_sync_effects_clone.lock().unwrap().apply_due_effects(
-                    //     &self_lock.lock().unwrap(),
-                    //     sink.get_pos(),
-                    //     Duration::from_secs_f32(total_duration),
-                    // );
+
                 }
                 thread::sleep(Duration::from_millis(100));
             }
@@ -315,8 +307,19 @@ impl AudioSink {
     pub fn get_speed(&self) -> f32 {
         *self.speed.lock().unwrap()
     }
-
-    pub fn set_fade(&self, duration: f32, start_vol: f32, end_vol: f32) -> PyResult<()> {
+    #[pyo3(signature = (
+        apply_after=None,
+        duration=0.0,
+        start_vol=0.0,
+        end_vol=1.0
+    ))]
+    pub fn set_fade(
+        &self,
+        apply_after: Option<f32>,
+        duration: f32,
+        start_vol: f32,
+        end_vol: f32,
+    ) -> PyResult<()> {
         if duration < 0.0 {
             return Err(PyValueError::new_err("Duration must be non-negative."));
         }
@@ -325,43 +328,61 @@ impl AudioSink {
         }
 
         let fade_duration = Duration::from_secs_f32(duration);
-        let volume_step = (end_vol - start_vol) / fade_duration.as_secs_f32();
+        let volume_step = (end_vol - start_vol) / duration;
 
         if let Some(sink) = &self.sink {
             let sink = Arc::clone(sink);
-            let is_playing = Arc::clone(&self.is_playing);
+            let remaining_time = self.get_remaining_time().unwrap_or(0.0);
+            let sink_dur = self.metadata.duration.unwrap_or(0.0);
 
-            thread::spawn(move || {
-                let start_time = Instant::now();
+            let scheduled = Arc::new(Mutex::new(false));
 
-                loop {
-                    // if let Ok(is_playing_guard) = is_playing.lock() {
-                    //     if !*is_playing_guard {
-                    //         break;
-                    //     }
-                    // }
-                    if sink.lock().unwrap().empty() {
-                        break;
-                    }
-                    let elapsed = Instant::now() - start_time;
+            // Compute start time for fade
+            let scheduled_start_time =
+                remaining_time as f32 - sink_dur as f32 + apply_after.unwrap_or(0.0);
 
-                    if elapsed >= fade_duration {
-                        println!("Fade complete");
-                        break;
-                    }
-
-                    let current_volume = start_vol + volume_step * elapsed.as_secs_f32();
-                    let clamped_volume = current_volume.clamp(0.0, 1.0);
-
-                    if let Ok(sink_lock) = sink.lock() {
-                        sink_lock.set_volume(clamped_volume);
+            thread::spawn({
+                let sink = sink.clone();
+                let scheduled = scheduled.clone();
+                move || {
+                    let mut scheduled_guard = scheduled.lock().unwrap();
+                    if apply_after.is_some() {
+                        *scheduled_guard = true;
+                        let wait_until =
+                            Instant::now() + Duration::from_secs_f64(scheduled_start_time as f64);
+                        while Instant::now() < wait_until {
+                            if sink.lock().unwrap().empty() {
+                                return;
+                            }
+                            thread::sleep(Duration::from_millis(100));
+                        }
                     }
 
-                    thread::sleep(Duration::from_millis(100));
-                }
+                    let start_instant = Instant::now();
+                    while start_instant.elapsed() < fade_duration {
+                        let elapsed = start_instant.elapsed().as_secs_f32();
+                        let current_volume = start_vol + volume_step * elapsed;
+                        let clamped_volume = current_volume.clamp(0.0, 1.0);
 
-                if let Ok(sink_lock) = sink.lock() {
-                    sink_lock.set_volume(end_vol.clamp(0.0, 1.0));
+                        {
+                            let mut sink_lock = sink.lock().unwrap();
+                            if sink_lock.empty() {
+                                return;
+                            }
+                            sink_lock.set_volume(clamped_volume);
+                        }
+
+                        println!("volume is: {:?}", clamped_volume);
+                        thread::sleep(Duration::from_millis(100));
+                    }
+
+                    {
+                        let mut sink_lock = sink.lock().unwrap();
+                        if !sink_lock.empty() {
+                            sink_lock.set_volume(end_vol);
+                        }
+                    }
+                    println!("Fade complete");
                 }
             });
 
@@ -380,6 +401,7 @@ impl AudioSink {
 
             if let Some(duration) = self.metadata.duration {
                 let remaining = duration - position.as_secs_f64();
+                print!("remaining: {:?}", remaining);
                 Ok((remaining * 100.0).round() / 100.0)
             } else {
                 Err(PyRuntimeError::new_err("Audio duration is not available."))
@@ -391,7 +413,7 @@ impl AudioSink {
         }
     }
 
-    pub fn set_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
+    pub fn apply_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
         Python::with_gil(|py| {
             let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
 
@@ -400,7 +422,7 @@ impl AudioSink {
 
                 if effect.is_instance_of::<FadeIn>() {
                     let fade_in = effect.extract::<FadeIn>()?;
-                    self.set_fade(fade_in.duration, fade_in.start_vol, fade_in.end_vol)
+                    self.set_fade(None, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
                         .unwrap();
                 } else if effect.is_instance_of::<FadeOut>() {
                     let fade_out = effect.extract::<FadeOut>()?;
@@ -416,6 +438,53 @@ impl AudioSink {
 
             Ok(())
         })
+    }
+
+    pub fn schedule_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
+        Python::with_gil(|py| {
+            let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
+            let mut rust_effect_list: Vec<ActionType> = vec![];
+
+            for effect in _effect_list {
+                let effect = effect.downcast_bound(py)?;
+            
+                if effect.is_instance_of::<FadeIn>() {
+                    let fade_in = effect.extract::<FadeIn>()?;
+                    let mut rust_effect_list = vec![];
+                    rust_effect_list.push(ActionType::FadeIn(fade_in));
+                    self.scheduled_effects
+                        .lock()
+                        .unwrap()
+                        .extend(rust_effect_list);
+                } else if effect.is_instance_of::<FadeOut>() {
+                    let fade_out = effect.extract::<FadeOut>()?;
+                } else if effect.is_instance_of::<ChangeSpeed>() {
+                    let change_speed = effect.extract::<ChangeSpeed>()?;
+                } else {
+                    return Err(PyTypeError::new_err("Unknown effect type"));
+                }
+                self.execute_scheduled_effects(); 
+            }
+
+            Ok(())
+        })
+    }
+
+    pub fn execute_scheduled_effects(&self) {
+        println!("Executing scheduled effects");
+        for effect in self.scheduled_effects.lock().unwrap().iter() {
+            match effect {
+                ActionType::FadeIn(fade_in) => {
+                    self.set_fade(fade_in.apply_after, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
+                        .unwrap();
+                    println!("FadeIn effect: {:?}", fade_in);
+                }
+                ActionType::FadeOut(fade_out) => {
+                    println!("FadeOut effect: {:?}", fade_out);
+                }
+                ActionType::ChangeSpeed(_) => todo!(),
+            }
+        }
     }
 }
 
