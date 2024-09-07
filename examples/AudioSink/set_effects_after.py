@@ -14,9 +14,10 @@ async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
     handler.set_volume(0.1)
 
-
-    effects_list = [FadeIn(apply_after=15.0, duration=2.0, end_vol=1.0, start_vol=handler.get_volume())]
-    handler.schedule_effects(effects_list)
+    initial_fade = FadeIn()
+    delayed_fade = FadeIn(apply_after=10.0, duration=6.0, end_vol=1.0, start_vol=handler.get_volume())
+    effects_list = [initial_fade, delayed_fade]
+    # handler.apply_effects(effects_list)
     handler.play()
 
     while not kill_audio:

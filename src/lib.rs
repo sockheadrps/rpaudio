@@ -409,34 +409,8 @@ impl AudioSink {
         }
     }
 
+
     pub fn apply_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
-        Python::with_gil(|py| {
-            let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
-
-            for effect in _effect_list {
-                let effect = effect.downcast_bound(py)?;
-
-                if effect.is_instance_of::<FadeIn>() {
-                    let fade_in = effect.extract::<FadeIn>()?;
-                    self.set_fade(None, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
-                        .unwrap();
-                } else if effect.is_instance_of::<FadeOut>() {
-                    let fade_out = effect.extract::<FadeOut>()?;
-                    // Handle FadeOut effect
-                    println!("FadeOut effect: {:?}", fade_out);
-                } else if effect.is_instance_of::<ChangeSpeed>() {
-                    let change_speed = effect.extract::<ChangeSpeed>()?;
-                    println!("ChangeSpeed effect: {:?}", change_speed);
-                } else {
-                    return Err(PyTypeError::new_err("Unknown effect type"));
-                }
-            }
-
-            Ok(())
-        })
-    }
-
-    pub fn schedule_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
         let mut sched_vec = <Vec<ActionType>>::new();
 
         Python::with_gil(|py| {
@@ -462,27 +436,27 @@ impl AudioSink {
 
             sched_vec.extend(rust_effect_list);
 
-            for effect in sched_vec.iter() {
-                match effect {
-                    ActionType::FadeIn(fade_in) => {
-                        self.set_fade(
-                            fade_in.apply_after,
-                            fade_in.duration,
-                            fade_in.start_vol,
-                            fade_in.end_vol,
-                        )
-                        .unwrap();
-                        println!("FadeIn effect: {:?}", fade_in);
-                    }
-                    ActionType::FadeOut(fade_out) => {
-                        println!("FadeOut effect: {:?}", fade_out);
-                    }
-                    ActionType::ChangeSpeed(_) => todo!(),
-                }
-            }
+            self.execute_scheduled_effects(sched_vec);
 
             Ok(())
         })
+    }
+
+    pub fn execute_scheduled_effects(&self, effect_list: Vec<ActionType>) {
+        println!("Executing scheduled effects");
+        for effect in effect_list.iter() {
+            match effect {
+                ActionType::FadeIn(fade_in) => {
+                    self.set_fade(fade_in.apply_after, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
+                        .unwrap();
+                    println!("FadeIn effect: {:?}", fade_in);
+                }
+                ActionType::FadeOut(fade_out) => {
+                    println!("FadeOut effect: {:?}", fade_out);
+                }
+                ActionType::ChangeSpeed(_) => todo!(),
+            }
+        }
     }
 }
 
