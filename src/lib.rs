@@ -409,7 +409,6 @@ impl AudioSink {
         }
     }
 
-
     pub fn apply_effects(&self, effect_list: Py<PyList>) -> PyResult<()> {
         let mut sched_vec = <Vec<ActionType>>::new();
 
@@ -447,11 +446,23 @@ impl AudioSink {
         for effect in effect_list.iter() {
             match effect {
                 ActionType::FadeIn(fade_in) => {
-                    self.set_fade(fade_in.apply_after, fade_in.duration, fade_in.start_vol, fade_in.end_vol)
-                        .unwrap();
+                    self.set_fade(
+                        fade_in.apply_after,
+                        fade_in.duration,
+                        fade_in.start_vol,
+                        fade_in.end_vol,
+                    )
+                    .unwrap();
                     println!("FadeIn effect: {:?}", fade_in);
                 }
                 ActionType::FadeOut(fade_out) => {
+                    self.set_fade(
+                        fade_out.apply_after,
+                        fade_out.duration,
+                        fade_out.start_vol,
+                        fade_out.end_vol,
+                    )
+                    .unwrap();
                     println!("FadeOut effect: {:?}", fade_out);
                 }
                 ActionType::ChangeSpeed(_) => todo!(),
@@ -480,5 +491,7 @@ fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<audioqueue::AudioChannel>()?;
     m.add_class::<ActionType>()?;
     m.add_class::<FadeIn>()?;
+    m.add_class::<FadeOut>()?;
+
     Ok(())
 }

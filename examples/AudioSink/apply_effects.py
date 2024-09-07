@@ -1,6 +1,6 @@
 import rpaudio
 import asyncio
-from rpaudio import FadeIn
+from rpaudio import FadeIn, FadeOut
 
 kill_audio = False
 AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"
@@ -13,17 +13,17 @@ def on_audio_stop():
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
     handler.set_volume(0.1)
+    handler.try_seek(100)
 
-    initial_fade = FadeIn()
-    delayed_fade = FadeIn(apply_after=10.0, duration=6.0, end_vol=1.0, start_vol=handler.get_volume())
-    effects_list = [initial_fade, delayed_fade]
-    # handler.apply_effects(effects_list)
+    delayed_fade_in = FadeIn(apply_after=5.0, duration=6.0, end_vol=1.0, start_vol=handler.get_volume())
+    delayed_fade_out = FadeOut(apply_after=10.0, duration=6.0, end_vol=0.0, start_vol=1.0)
+
+    effects_list = [delayed_fade_in, delayed_fade_out]
+    handler.apply_effects(effects_list)
     handler.play()
 
     while not kill_audio:
         await asyncio.sleep(1)
-        print(f"FROM PYTHON: {handler.get_volume()}")
-        
 
 async def sleep_loop():
     global kill_audio
