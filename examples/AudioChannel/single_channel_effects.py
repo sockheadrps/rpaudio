@@ -1,4 +1,5 @@
 import rpaudio
+from rpaudio import FadeIn, FadeOut
 import asyncio
 from datetime import datetime, timedelta
 
@@ -15,51 +16,19 @@ def on_audio_stop() -> None:
 
 async def play_audio(channel) -> None:
     global complete_1, complete_2
-    start_time: datetime = datetime.now()
-    paused_once: bool = False
-    channel.auto_consume = True
 
     while not complete_1:
         await asyncio.sleep(1)
 
-        if channel.current_audio is not None:
-            if datetime.now() - start_time > timedelta(seconds=5) and not paused_once:
-                print("Pause audio after 5 seconds")
-                channel.current_audio.pause()
-                await asyncio.sleep(1)
-                channel.current_audio.play()
-                paused_once = True
-                start_time = datetime.now()
-            elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
-                channel.current_audio.stop()
-                paused_once = False
-                start_time = datetime.now()
-        
-        # Check if the current audio has stopped
         await asyncio.sleep(1)
 
         if channel.current_audio is None or not channel.current_audio.is_playing:
             complete_1 = True
 
-    # Wait until complete_1 is True before starting the second phase
-    start_time = datetime.now()
-    paused_once = False
+
     while complete_1 and not complete_2:
         await asyncio.sleep(1)
 
-        if channel.current_audio is not None:
-            if datetime.now() - start_time > timedelta(seconds=5) and not paused_once:
-                print("Pause audio after 5 seconds")
-                channel.current_audio.pause()
-                await asyncio.sleep(1)
-                channel.current_audio.play()
-                paused_once = True
-                start_time = datetime.now()
-            elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
-                channel.current_audio.stop()
-                paused_once = False
-                start_time = datetime.now()
-        
         # Check if the current audio has stopped
         if channel.current_audio is None or not channel.current_audio.is_playing:
             complete_2 = True
@@ -85,6 +54,12 @@ async def main() -> None:
     audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
     channel_1 = rpaudio.AudioChannel()
+    fade_in_effect = FadeIn(start_vol=0.0, end_vol=1.0, duration=2.0)
+    fade_out_effect = FadeOut(end_vol=0.0, duration=2.0)
+    audio_1.try_seek(8)
+
+    effects = [fade_in_effect,fade_out_effect]
+    channel_1.set_effects_chain(effects)
     channel_1.auto_consume = True
     channel_1.push(audio_1)
     channel_1.push(audio_2)

@@ -7,7 +7,7 @@ pub struct FadeIn {
     #[pyo3(get, set)]
     pub duration: f32,
     #[pyo3(get, set)]
-    pub start_vol: f32,
+    pub start_vol: Option<f32>,
     #[pyo3(get, set)]
     pub end_vol: f32,
     #[pyo3(get, set)]
@@ -15,7 +15,7 @@ pub struct FadeIn {
 }
 
 const DEFAULT_FADE_IN_DURATION: f32 = 5.0;
-const DEFAULT_FADE_IN_START_VOL: f32 = 0.1;
+const DEFAULT_FADE_IN_START_VOL: Option<f32> = None;
 const DEFAULT_FADE_IN_END_VOL: f32 = 1.0;
 
 #[pymethods]
@@ -35,7 +35,7 @@ impl FadeIn {
     ) -> PyResult<Self> {
         Ok(FadeIn {
             duration: duration.unwrap_or(DEFAULT_FADE_IN_DURATION),
-            start_vol: start_vol.unwrap_or(DEFAULT_FADE_IN_START_VOL),
+            start_vol,
             end_vol: end_vol.unwrap_or(DEFAULT_FADE_IN_END_VOL),
             apply_after,
         })
@@ -83,23 +83,47 @@ impl FadeOut {
         })
     }
 }
-#[derive(Debug)]
-#[derive(Clone)]
+
+
+pub const DEFAULT_SPEED_CHANGE_DURATION: f32 = 5.0;  // Example default duration
+pub const DEFAULT_START_SPEED: f32 = 1.0;            // Example default start speed (normal)
+pub const DEFAULT_END_SPEED: f32 = 1.5;   
+#[derive(Debug, Clone)]
 #[pyclass]
 pub struct ChangeSpeed {
     #[pyo3(get, set)]
-    pub speed: f32,
+    pub duration: f32,
+    #[pyo3(get, set)]
+    pub start_speed: Option<f32>,
+    #[pyo3(get, set)]
+    pub end_speed: f32,
+    #[pyo3(get, set)]
+    pub apply_after: Option<f32>,
 }
 
 #[pymethods]
 impl ChangeSpeed {
     #[new]
-    pub fn new(speed: f32) -> Self {
-        ChangeSpeed { speed }
+    #[pyo3(signature = (
+        duration=DEFAULT_SPEED_CHANGE_DURATION,
+        start_speed=DEFAULT_START_SPEED,
+        end_speed=DEFAULT_END_SPEED,
+        apply_after=None
+    ))]
+    pub fn new(
+        duration: Option<f32>,
+        start_speed: Option<f32>,
+        end_speed: Option<f32>,
+        apply_after: Option<f32>
+    ) -> PyResult<Self> {
+        Ok(ChangeSpeed {
+            duration: duration.unwrap_or(DEFAULT_SPEED_CHANGE_DURATION),
+            start_speed: Some(start_speed.unwrap_or(DEFAULT_START_SPEED)),
+            end_speed: end_speed.unwrap_or(DEFAULT_END_SPEED),
+            apply_after,
+        })
     }
 }
-
-
 
 #[derive(Clone)]
 #[derive(Debug)]
