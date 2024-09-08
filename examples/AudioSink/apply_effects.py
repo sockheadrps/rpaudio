@@ -1,6 +1,6 @@
 import rpaudio
 import asyncio
-from rpaudio import FadeIn, FadeOut
+from rpaudio import FadeIn, FadeOut, ChangeSpeed
 
 kill_audio = False
 AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"
@@ -15,10 +15,11 @@ async def play_audio():
     handler.set_volume(0.1)
     handler.try_seek(100)
 
-    delayed_fade_in = FadeIn(apply_after=5.0, duration=6.0, end_vol=1.0, start_vol=handler.get_volume())
-    delayed_fade_out = FadeOut(apply_after=10.0, duration=6.0, end_vol=0.0, start_vol=1.0)
+    delayed_fade_in = FadeIn(apply_after=5.0, duration=6.0, end_vol=0.9)
+    delayed_fade_out = FadeOut(apply_after=11.0, duration=6.0, end_vol=0.0, start_vol=1.0)
+    speed_up = ChangeSpeed(apply_after=5.0, duration=6.0, end_speed=1.4)
 
-    effects_list = [delayed_fade_in, delayed_fade_out]
+    effects_list = [delayed_fade_in, delayed_fade_out, speed_up]
     handler.apply_effects(effects_list)
     handler.play()
 

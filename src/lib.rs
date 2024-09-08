@@ -1,14 +1,13 @@
-use core::time;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList, PyTuple};
+use pyo3::types::{PyDict, PyList};
 use rodio::{Decoder, OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{sink, BufReader};
+use std::io::BufReader;
 use std::sync::{Arc, Mutex};
+use std::thread;
 use std::time::{Duration, Instant};
-use std::{clone, thread};
 use timesync::{ActionType, ChangeSpeed, FadeIn, FadeOut};
 mod audioqueue;
 mod exmetadata;
@@ -124,6 +123,7 @@ impl AudioSink {
         let source = Decoder::new(BufReader::new(file))
             .map_err(|e| format!("Failed to decode audio file: {}", e))
             .unwrap();
+
         let total_duration = match source.total_duration() {
             Some(duration) => duration.as_secs_f32(),
             None => 0.0,
@@ -166,8 +166,6 @@ impl AudioSink {
                     } else {
                         *is_playing_guard = true;
                     }
-                    let speed = speed.lock().unwrap();
-                    sink.set_speed(*speed);
                 }
                 thread::sleep(Duration::from_millis(100));
             }
@@ -292,14 +290,6 @@ impl AudioSink {
         }
     }
 
-    pub fn set_speed(&mut self, speed: f32) -> PyResult<()> {
-        if speed <= 0.0 {
-            return Err(PyValueError::new_err("Speed must be greater than 0."));
-        }
-        *self.speed.lock().unwrap() = speed;
-        Ok(())
-    }
-
     pub fn get_speed(&self) -> f32 {
         *self.speed.lock().unwrap()
     }
@@ -313,9 +303,14 @@ impl AudioSink {
         &self,
         apply_after: Option<f32>,
         duration: f32,
-        start_vol: f32,
+        mut start_vol: Option<f32>,
         end_vol: f32,
     ) -> PyResult<()> {
+        if start_vol == None {
+            start_vol = Some(self.get_volume().unwrap());
+            println!("start_vol is: {:?}", start_vol);
+        }
+        let start_vol = start_vol.unwrap();
         if duration < 0.0 {
             return Err(PyValueError::new_err("Duration must be non-negative."));
         }
@@ -348,6 +343,7 @@ impl AudioSink {
                             Instant::now() + Duration::from_secs_f64(scheduled_start_time as f64);
                         while Instant::now() < wait_until {
                             if sink.lock().unwrap().empty() {
+                                println!("sink is empty");
                                 return;
                             }
                             thread::sleep(Duration::from_millis(100));
@@ -361,7 +357,7 @@ impl AudioSink {
                         let clamped_volume = current_volume.clamp(0.0, 1.0);
 
                         {
-                            let mut sink_lock = sink.lock().unwrap();
+                            let sink_lock = sink.lock().unwrap();
                             if sink_lock.empty() {
                                 return;
                             }
@@ -373,7 +369,7 @@ impl AudioSink {
                     }
 
                     {
-                        let mut sink_lock = sink.lock().unwrap();
+                        let sink_lock = sink.lock().unwrap();
                         if !sink_lock.empty() {
                             sink_lock.set_volume(end_vol);
                         }
@@ -381,11 +377,116 @@ impl AudioSink {
                     println!("Fade complete");
                 }
             });
+            println!("thread complete");
 
             Ok(())
         } else {
             Err(PyRuntimeError::new_err(
                 "No sink available to set fade. Load audio first.",
+            ))
+        }
+    }
+
+    #[pyo3(signature = (
+        apply_after=None,
+        duration=0.0,
+        start_speed=None,
+        end_speed=1.0
+    ))]
+    pub fn set_speed(
+        &self,
+        apply_after: Option<f32>,
+        duration: f32,
+        mut start_speed: Option<f32>,
+        end_speed: f32,
+    ) -> PyResult<()> {
+        // print current speed
+        println!("current speed is: {:?}", self.get_speed());
+        // Use the current speed if start_speed is not provided
+        if start_speed == None {
+            start_speed = Some(self.get_speed());
+            println!("start_speed is: {:?}", self.get_speed());
+        }
+        let start_speed = start_speed.unwrap();
+
+        // Validate duration and speed values
+        if duration < 0.0 {
+            return Err(PyValueError::new_err("Duration must be non-negative."));
+        }
+        if start_speed < 0.1 || start_speed > 4.0 || end_speed < 0.1 || end_speed > 4.0 {
+            return Err(PyValueError::new_err("Speed must be between 0.1 and 4.0."));
+        }
+
+        let speed_duration = Duration::from_secs_f32(duration);
+        let speed_step = (end_speed - start_speed) / duration;
+
+        if let Some(sink) = &self.sink {
+            let sink = Arc::clone(sink);
+            let remaining_time = self.get_remaining_time().unwrap_or(0.0);
+            let sink_dur = self.metadata.duration.unwrap_or(0.0);
+
+            let scheduled = Arc::new(Mutex::new(false));
+
+            // Compute start time for speed change
+            let scheduled_start_time =
+                remaining_time as f32 - sink_dur as f32 + apply_after.unwrap_or(0.0);
+
+            // Print debug information
+            println!("remaining_time is: {:?}", remaining_time);
+            println!("sink_dur is: {:?}", sink_dur);
+            println!("apply_after is: {:?}", apply_after.unwrap_or(0.0));
+            println!("scheduled_start_time is: {:?}", scheduled_start_time);
+            println!("start_speed is: {:?}", start_speed);
+
+            thread::spawn({
+                let sink = sink.clone();
+                let scheduled = scheduled.clone();
+                move || {
+                    let mut scheduled_guard = scheduled.lock().unwrap();
+                    if apply_after.is_some() {
+                        *scheduled_guard = true;
+                        let wait_until =
+                            Instant::now() + Duration::from_secs_f64(scheduled_start_time as f64);
+                        while Instant::now() < wait_until {
+                            if sink.lock().unwrap().empty() {
+                                return;
+                            }
+                            thread::sleep(Duration::from_millis(100));
+                        }
+                    }
+
+                    let start_instant = Instant::now();
+                    while start_instant.elapsed() < speed_duration {
+                        let elapsed = start_instant.elapsed().as_secs_f32();
+                        let current_speed = start_speed + speed_step * elapsed;
+                        let clamped_speed = current_speed.clamp(0.1, 4.0); // Ensure speed stays in bounds
+
+                        {
+                            let mut sink_lock = sink.lock().unwrap();
+                            if sink_lock.empty() {
+                                return;
+                            }
+                            sink_lock.set_speed(clamped_speed);
+                        }
+
+                        println!("speed is: {:?}", clamped_speed);
+                        thread::sleep(Duration::from_millis(100));
+                    }
+
+                    {
+                        let mut sink_lock = sink.lock().unwrap();
+                        if !sink_lock.empty() {
+                            sink_lock.set_speed(end_speed);
+                        }
+                    }
+                    println!("Speed change complete");
+                }
+            });
+
+            Ok(())
+        } else {
+            Err(PyRuntimeError::new_err(
+                "No sink available to set speed. Load audio first.",
             ))
         }
     }
@@ -431,7 +532,7 @@ impl AudioSink {
                 })
                 .collect::<Result<Vec<ActionType>, PyErr>>()?;
 
-            drop(py);
+            let _ = py;
 
             sched_vec.extend(rust_effect_list);
 
@@ -442,10 +543,13 @@ impl AudioSink {
     }
 
     pub fn execute_scheduled_effects(&self, effect_list: Vec<ActionType>) {
-        println!("Executing scheduled effects");
         for effect in effect_list.iter() {
             match effect {
                 ActionType::FadeIn(fade_in) => {
+                    println!(
+                        "Executing FadeIn: start_vol={:?}, end_vol={}, duration={}, apply_after={:?}",
+                        fade_in.start_vol, fade_in.end_vol, fade_in.duration, fade_in.apply_after
+                    );
                     self.set_fade(
                         fade_in.apply_after,
                         fade_in.duration,
@@ -453,19 +557,53 @@ impl AudioSink {
                         fade_in.end_vol,
                     )
                     .unwrap();
-                    println!("FadeIn effect: {:?}", fade_in);
                 }
                 ActionType::FadeOut(fade_out) => {
+                    let total_duration = match self.time_remaining.lock().unwrap().as_ref() {
+                        Some(duration) => *duration,
+                        None => {
+                            eprintln!("Error: Audio duration is not available.");
+                            return;
+                        }
+                    };
+                    let apply_after = match fade_out.apply_after {
+                        Some(time) => time,
+                        None => total_duration - fade_out.duration,
+                    };
+                    println!("total_duration is: {:?}", total_duration);
+                    println!("apply_after is: {:?}", apply_after);
+
+                    // Ensure apply_after is within valid range
+                    if apply_after < 0.0 {
+                        eprintln!(
+                            "Error: Calculated apply_after is negative. Skipping FadeOut effect."
+                        );
+                        continue;
+                    }
+
+                    println!(
+                        "Executing FadeOut: start_vol={:?}, end_vol={}, duration={}, apply_after={}",
+                        fade_out.start_vol, fade_out.end_vol, fade_out.duration, apply_after
+                    );
+
                     self.set_fade(
-                        fade_out.apply_after,
+                        Some(apply_after),
                         fade_out.duration,
-                        fade_out.start_vol,
+                        Some(fade_out.start_vol),
                         fade_out.end_vol,
                     )
                     .unwrap();
-                    println!("FadeOut effect: {:?}", fade_out);
                 }
-                ActionType::ChangeSpeed(_) => todo!(),
+                ActionType::ChangeSpeed(set_speed) => {
+                    self.set_speed(
+                        set_speed.apply_after,
+                        set_speed.duration,
+                        Some(set_speed.start_speed.unwrap() as f32),
+                        set_speed.end_speed,
+                    )
+                    .unwrap();
+                    println!("ChangeSpeed effect: {:?}", set_speed);
+                }
             }
         }
     }
@@ -492,6 +630,7 @@ fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ActionType>()?;
     m.add_class::<FadeIn>()?;
     m.add_class::<FadeOut>()?;
+    m.add_class::<ChangeSpeed>()?;
 
     Ok(())
 }
