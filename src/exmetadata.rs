@@ -177,6 +177,9 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                         let mut metadata = id3_tag.metadata_fields();
                         if metadata.duration.is_none() {
                             let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                            
+
+
                             let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
                             let duration = source.total_duration().map_or(0.0, |d| d.as_secs_f64());
                             metadata.duration = Some(duration);
