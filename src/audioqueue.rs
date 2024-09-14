@@ -1,13 +1,12 @@
 use crate::timesync::{self, ActionType};
 use crate::AudioSink;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{fmt, thread};
 use timesync::{ChangeSpeed, FadeIn, FadeOut};
-
 
 #[derive(Debug, Clone)]
 #[pyclass]
@@ -38,16 +37,111 @@ impl AudioChannel {
             currently_playing: Arc::new(Mutex::new(None)),
             effects_chain: Arc::new(Mutex::new(Vec::new())),
         };
-        channel._channel_loop();
-        channel
+        let channel_arc = Arc::new(Mutex::new(channel));
+        let channel_clone = Arc::clone(&channel_arc);
+
+        thread::spawn(move || {
+            let mut backoff = 10; // Initial backoff time for retrying failed locks
+            loop {
+                let channel = channel_clone.lock().unwrap();
+
+                // println!("Channel loop running");
+
+                // Step 1: Try to acquire lock on auto_consume with backoff
+                let should_consume = {
+                    let auto_consume_guard = match channel.auto_consume.lock() {
+                        Ok(guard) => guard,
+                        Err(_) => {
+                            println!(
+                                "Failed to acquire lock on auto_consume, retrying after backoff"
+                            );
+                            thread::sleep(Duration::from_millis(backoff));
+                            backoff = std::cmp::min(backoff * 2, 1000); // Exponential backoff up to 1 second
+                            continue;
+                        }
+                    };
+                    *auto_consume_guard
+                };
+
+                if !should_consume {
+                    thread::sleep(Duration::from_millis(500));
+                    continue;
+                }
+
+                // Step 2: Handle playing and queue logic with minimal lock duration
+                if let (Ok(mut playing_guard), Ok(mut queue_guard)) =
+                    (channel.currently_playing.lock(), channel.queue.lock())
+                {
+                    if playing_guard.is_none() && !queue_guard.is_empty() {
+                        let mut next_sink = queue_guard.remove(0);
+                        *playing_guard = Some(next_sink.clone());
+                        println!("Playing next sink: {:?}", next_sink);
+
+                        // Step 3: Handle effects chain with error logging
+                        let effects_guard = match channel.effects_chain.lock() {
+                            Ok(guard) => guard,
+                            Err(_) => {
+                                eprintln!("Failed to acquire lock on effects_chain");
+                                continue;
+                            }
+                        };
+
+                        if let Some(sender) = next_sink.action_sender.take() {
+                            // Handle effects sending here
+                            for effect in effects_guard.iter() {
+                                sender.send(effect.clone()).unwrap();
+                            }
+                        } else {
+                            eprintln!("Action sender is None");
+                        }
+
+                        if let Err(e) = next_sink.play() {
+                            eprintln!("Failed to play sink: {}", e);
+                            *playing_guard = None;
+                        }
+                    }
+                } else {
+                    eprintln!("Failed to acquire locks on currently_playing or queue");
+                }
+
+                // Step 4: Check if current audio is playing and handle errors
+                if let Ok(mut playing_guard) = channel.currently_playing.lock() {
+                    if let Some(ref mut sink) = *playing_guard {
+                        if !sink.is_playing() {
+                            println!("Sink is not playing, stopping it");
+                            if let Err(e) = sink.stop() {
+                                eprintln!("Failed to stop sink: {}", e);
+                            }
+                            *playing_guard = None;
+                        }
+                    }
+                } else {
+                    eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
+                }
+
+                thread::sleep(Duration::from_millis(100)); // Sleep for a while to reduce CPU usage
+            }
+        });
+
+        let x = channel_arc.lock().unwrap().clone();
+        x
     }
 
     pub fn push(&mut self, sink: AudioSink) {
-        self.queue.lock().unwrap().push(sink);
+        if let Ok(mut queue_guard) = self.queue.lock() {
+            queue_guard.push(sink);
+        } else {
+            eprintln!("Failed to acquire lock on queue in push()");
+        }
     }
 
     pub fn pop(&mut self) -> Option<AudioSink> {
-        self.queue.lock().unwrap().pop()
+        if let Ok(mut queue_guard) = self.queue.lock() {
+            queue_guard.pop()
+        } else {
+            eprintln!("Failed to acquire lock on queue in pop()");
+            None
+        }
     }
 
     pub fn consume(&mut self) {
@@ -58,12 +152,22 @@ impl AudioChannel {
 
     #[setter]
     pub fn set_auto_consume(&mut self, value: bool) {
-        *self.auto_consume.lock().unwrap() = value;
+        if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
+            *auto_consume_guard = value;
+            println!("Successfully set auto_consume to {}", value);
+        } else {
+            eprintln!("Failed to acquire lock on auto_consume in set_auto_consume()");
+        }
     }
 
     #[getter]
     pub fn auto_consume(&self) -> bool {
-        *self.auto_consume.lock().unwrap()
+        if let Ok(auto_consume_guard) = self.auto_consume.lock() {
+            *auto_consume_guard
+        } else {
+            eprintln!("Failed to acquire lock on auto_consume in auto_consume()");
+            false
+        }
     }
 
     #[getter]
@@ -73,42 +177,68 @@ impl AudioChannel {
     }
 
     pub fn drop_current_audio(&mut self) {
-        let mut currently_playing_guard = self.currently_playing.lock().unwrap();
-        if let Some(mut sink) = currently_playing_guard.take() {
-            let _ = sink.stop();
+        if let Ok(mut currently_playing_guard) = self.currently_playing.lock() {
+            if let Some(mut sink) = currently_playing_guard.take() {
+                let _ = sink.stop();
+            }
+        } else {
+            eprintln!("Failed to acquire lock on currently_playing in drop_current_audio()");
         }
     }
 
     #[getter]
     pub fn queue_contents(&self) -> Vec<AudioSink> {
-        let queue_guard = self.queue.lock().unwrap();
-        queue_guard.clone()
+        if let Ok(queue_guard) = self.queue.lock() {
+            queue_guard.clone()
+        } else {
+            eprintln!("Failed to acquire lock on queue in queue_contents()");
+            Vec::new()
+        }
     }
 
     pub fn set_queue_contents(&mut self, new_queue: Vec<AudioSink>) {
-        let mut queue_guard = self.queue.lock().unwrap();
-        *queue_guard = new_queue;
+        if let Ok(mut queue_guard) = self.queue.lock() {
+            *queue_guard = new_queue;
+        } else {
+            eprintln!("Failed to acquire lock on queue in set_queue_contents()");
+        }
     }
 
     #[getter]
     pub fn is_playing(&self) -> bool {
-        let currently_playing_guard = self.currently_playing.lock().unwrap();
-        if let Some(ref sink) = *currently_playing_guard {
-            sink.is_playing()
+        if let Ok(currently_playing_guard) = self.currently_playing.lock() {
+            if let Some(ref sink) = *currently_playing_guard {
+                sink.is_playing()
+            } else {
+                false
+            }
         } else {
+            eprintln!("Failed to acquire lock on currently_playing in is_playing()");
             false
         }
     }
 
     #[getter]
     pub fn effects_chain(&self) -> Vec<ActionType> {
-        let effects_guard = self.effects_chain.lock().unwrap();
-        effects_guard.clone()
+        if let Ok(effects_guard) = self.effects_chain.lock() {
+            effects_guard.clone()
+        } else {
+            eprintln!("Failed to acquire lock on effects_chain in effects_chain()");
+            Vec::new()
+        }
     }
 
     pub fn set_effects_chain(&mut self, effect_list: Py<PyList>) -> PyResult<()> {
-        let mut effects_guard = self.effects_chain.lock().unwrap();
         Python::with_gil(|py| {
+            let mut effects_guard = match self.effects_chain.lock() {
+                Ok(guard) => guard,
+                Err(_) => {
+                    return Err(PyRuntimeError::new_err(
+                        "Failed to acquire lock on effects_chain",
+                    ))
+                }
+            };
+
             let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
 
             let rust_effect_list: Vec<ActionType> = _effect_list
@@ -127,122 +257,9 @@ impl AudioChannel {
                 })
                 .collect::<Result<Vec<ActionType>, PyErr>>()?;
 
-            let _ = py;
-
             *effects_guard = rust_effect_list;
-
 
             Ok(())
         })
     }
-
-    fn apply_effects(&self, sink: &mut AudioSink) {
-        println!("Applying effects to sink");
-        let effects_guard = self.effects_chain.lock().unwrap();
-        for effect in effects_guard.iter() {
-            match effect {
-                ActionType::FadeIn(fade_in) => {
-                    println!(
-                        "Executing FadeIn: start_vol={:?}, end_vol={}, duration={}, apply_after={:?}",
-                        fade_in.start_vol, fade_in.end_vol, fade_in.duration, fade_in.apply_after
-                    );
-                    sink.set_fade(
-                        fade_in.apply_after,
-                        fade_in.duration,
-                        fade_in.start_vol,
-                        fade_in.end_vol,
-                    )
-                    .unwrap();
-                }
-                ActionType::FadeOut(fade_out) => {
-                    sink.set_fade(
-                        fade_out.apply_after,
-                        fade_out.duration,
-                        Some(fade_out.start_vol),
-                        fade_out.end_vol,
-                    )
-                    .unwrap();
-                    println!("FadeOut effect: {:?}", fade_out);
-                }
-                ActionType::ChangeSpeed(set_speed) => {
-                    sink.set_speed(
-                        set_speed.apply_after,
-                        set_speed.duration,
-                        Some(set_speed.start_speed.unwrap() as f32),
-                        set_speed.end_speed,
-                    )
-                    .unwrap();
-                    println!("ChangeSpeed effect: {:?}", set_speed);
-                }
-            }
-        }
-    }
-
-    fn _channel_loop(&self) {
-        let queue = Arc::clone(&self.queue);
-        let auto_consume = Arc::clone(&self.auto_consume);
-        let currently_playing = Arc::clone(&self.currently_playing);
-        let effects_chain = Arc::clone(&self.effects_chain);
-    
-        thread::spawn(move || {
-            loop {
-                {
-                    let should_consume = *auto_consume.lock().unwrap();
-                    if !should_consume {
-                        thread::sleep(Duration::from_millis(500));
-                        continue;
-                    }
-                }
-    
-                {
-                    let mut playing_guard = currently_playing.lock().unwrap();
-                    let mut queue_guard = queue.lock().unwrap();
-
-                    if playing_guard.is_none() && !queue_guard.is_empty() {
-                        let mut next_sink = queue_guard.remove(0);
-                        *playing_guard = Some(next_sink.clone());
-
-                        let effects_chain = Arc::clone(&effects_chain);
-    
-                        {
-                            let effects_guard = effects_chain.lock().unwrap();
-                            next_sink.execute_scheduled_effects(effects_guard.to_vec());
-
-                        }
-
-                        if let Err(e) = next_sink.play() {
-                            eprintln!("Failed to play sink: {}", e);
-                            *playing_guard = None;
-                        }
-                    }
-                }
-    
-                thread::sleep(Duration::from_millis(100));
-    
-                {
-                    let mut playing_guard = currently_playing.lock().unwrap();
-
-                    if let Some(ref sink) = *playing_guard {
-                        let is_playing = sink.is_playing();
-
-                        if !is_playing && sink.empty() {
-                            // println!("Finished playing current sink");
-                            *playing_guard = None;
-                        }
-                    }
-                }
-
-                {
-                    let queue_empty = queue.lock().unwrap().is_empty();
-                    let playing_empty = currently_playing.lock().unwrap().is_none();
-
-                    if playing_empty && queue_empty {
-                        // println!("Queue is empty, stopping channel loop after audio has finished");
-                        break;
-                    }
-                }
-            }
-        });
-    }
-    
 }
