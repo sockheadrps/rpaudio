@@ -43,11 +43,8 @@ impl AudioSink {
     pub fn handle_action_and_effects(&mut self, sink: Arc<Mutex<Sink>>) {
         if let Some(receiver) = &self.action_receiver {
             if let Ok(action) = receiver.lock().unwrap().try_recv() {
-                println!("Received action: {:?}", action);
+                // println!("Received action: {:?}", action);
                 let mut effects_guard = self.effects.lock().unwrap();
-                println!("metadata: {:?}", self.metadata.duration.unwrap());
-                println!("metadata: {:?}", self.metadata);
-                println!("current position: {:?}", sink.lock().unwrap().get_pos().as_secs_f32());
                 let effect_sync = Arc::new(EffectSync::new(
                     action.clone(),
                     sink.lock().unwrap().get_pos().as_secs_f32(),
@@ -66,11 +63,11 @@ impl AudioSink {
                         effects_guard.push(effect_sync);
                     }
                     ActionType::FadeOut(fade_out) => {
-                        println!("Fading out with duration: {}", fade_out.duration);
+                        // println!("Fading out with duration: {}", fade_out.duration);
                         effects_guard.push(effect_sync);
                     }
                     ActionType::ChangeSpeed(_) => {
-                        println!("Changing speed");
+                        // println!("Changing speed");
                         effects_guard.push(effect_sync);
                     }
                 }
@@ -81,9 +78,9 @@ impl AudioSink {
             effects_guard.retain(|effect| {
                 let current_position = sink.lock().unwrap().get_pos().as_secs_f32();
                 let keep_effect = match effect.action {
-                    ActionType::FadeIn(fade_in) => match effect.update(current_position) {
+                    ActionType::FadeIn(_fade_in) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
-                            println!("Setting volume to: {}", val);
+                            // println!("Setting volume to: {}", val);
                             sink.lock().unwrap().set_volume(val);
                             true
                         }
@@ -92,7 +89,7 @@ impl AudioSink {
                             false
                         }
                     },
-                    ActionType::FadeOut(fade_out) => match effect.update(current_position) {
+                    ActionType::FadeOut(_fade_out) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             println!("Setting volume to: {}", val);
@@ -103,7 +100,7 @@ impl AudioSink {
                             false
                         }
                     },
-                    ActionType::ChangeSpeed(change_speed) => {
+                    ActionType::ChangeSpeed(_change_speed) => {
                         match effect.update(current_position) {
                             EffectResult::Value(val) => {
                                 sink.lock().unwrap().set_speed(val);

@@ -18,7 +18,7 @@ async def play_audio(channel) -> None:
     global complete_1, complete_2
     await asyncio.sleep(2)
     channel.auto_consume = True
-    print(channel.current_audio )
+    # print(channel.current_audio )
     first = channel.current_audio
 
 
@@ -27,9 +27,9 @@ async def play_audio(channel) -> None:
 
 
         if channel.current_audio is None or not first.is_playing:
-            print("complete_1")
-            print(f"metadata: {channel.current_audio.metadata}")
-            channel.current_audio.try_seek(150)
+            # print("complete_1")
+            # print(f"metadata: {channel.current_audio.metadata}")
+            # channel.current_audio.try_seek(150)
             complete_1 = True
 
     while complete_1 and not complete_2:
@@ -46,7 +46,7 @@ async def play_audio(channel) -> None:
 async def sleep_loop() -> None:
     global complete_1, complete_2
     while True:
-        print("Sleeping...")
+        # print("Sleeping...")
         if complete_1 and complete_2:
             break
         await asyncio.sleep(1)
@@ -60,15 +60,15 @@ async def main() -> None:
     print(f"Channels: {channels}, Duration: {duration}")
 
     audio_2 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\nondmc\L.Q.2.M.mp3")
-    audio_2.set_duration(164.0)
+    audio_2.load_audio("examples/ex.wav")
+    # audio_2.set_duration(226.0)
 
     channel_1 = rpaudio.AudioChannel()
-    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=2.0)
-    fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
-    audio_1.try_seek(8)
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+    fade_out_effect = FadeOut(end_val=0.0, duration=3.0)
+    # audio_1.try_seek(8)
 
-    effects = [fade_out_effect]
+    effects = [fade_in_effect, fade_out_effect]
     channel_1.set_effects_chain(effects)
     channel_1.auto_consume = True
     channel_1.push(audio_1)

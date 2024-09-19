@@ -41,13 +41,10 @@ impl AudioChannel {
         let channel_clone = Arc::clone(&channel_arc);
 
         thread::spawn(move || {
-            let mut backoff = 10; // Initial backoff time for retrying failed locks
+            let mut backoff = 10;
             loop {
                 let channel = channel_clone.lock().unwrap();
 
-                // println!("Channel loop running");
-
-                // Step 1: Try to acquire lock on auto_consume with backoff
                 let should_consume = {
                     let auto_consume_guard = match channel.auto_consume.lock() {
                         Ok(guard) => guard,
@@ -56,7 +53,7 @@ impl AudioChannel {
                                 "Failed to acquire lock on auto_consume, retrying after backoff"
                             );
                             thread::sleep(Duration::from_millis(backoff));
-                            backoff = std::cmp::min(backoff * 2, 1000); // Exponential backoff up to 1 second
+                            backoff = std::cmp::min(backoff * 2, 1000);
                             continue;
                         }
                     };
@@ -68,7 +65,6 @@ impl AudioChannel {
                     continue;
                 }
 
-                // Step 2: Handle playing and queue logic with minimal lock duration
                 if let (Ok(mut playing_guard), Ok(mut queue_guard)) =
                     (channel.currently_playing.lock(), channel.queue.lock())
                 {
@@ -77,7 +73,6 @@ impl AudioChannel {
                         *playing_guard = Some(next_sink.clone());
                         println!("Playing next sink: {:?}", next_sink);
 
-                        // Step 3: Handle effects chain with error logging
                         let effects_guard = match channel.effects_chain.lock() {
                             Ok(guard) => guard,
                             Err(_) => {
@@ -87,7 +82,6 @@ impl AudioChannel {
                         };
 
                         if let Some(sender) = next_sink.action_sender.take() {
-                            // Handle effects sending here
                             for effect in effects_guard.iter() {
                                 sender.send(effect.clone()).unwrap();
                             }
@@ -104,7 +98,6 @@ impl AudioChannel {
                     eprintln!("Failed to acquire locks on currently_playing or queue");
                 }
 
-                // Step 4: Check if current audio is playing and handle errors
                 if let Ok(mut playing_guard) = channel.currently_playing.lock() {
                     if let Some(ref mut sink) = *playing_guard {
                         if !sink.is_playing() {
@@ -119,12 +112,12 @@ impl AudioChannel {
                     eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
                 }
 
-                thread::sleep(Duration::from_millis(100)); // Sleep for a while to reduce CPU usage
+                thread::sleep(Duration::from_millis(100));
             }
         });
 
         let x = channel_arc.lock().unwrap().clone();
-        x
+        x 
     }
 
     pub fn push(&mut self, sink: AudioSink) {

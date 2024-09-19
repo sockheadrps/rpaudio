@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 
-// Define the FadeIn struct with optional parameters
 #[derive(Clone, Debug, Copy, PartialEq)]
 #[pyclass]
 pub struct FadeIn {
@@ -14,7 +13,6 @@ pub struct FadeIn {
     pub apply_after: Option<f32>,
 }
 
-// Default values for FadeIn
 const DEFAULT_FADE_IN_DURATION: f32 = 5.0;
 const DEFAULT_FADE_IN_START_VOL: Option<f32> = None;
 const DEFAULT_FADE_IN_END_VOL: f32 = 1.0;
@@ -127,7 +125,6 @@ impl ChangeSpeed {
     }
 }
 
-// Define the ActionType enum
 #[derive(Clone, Debug, PartialEq)]
 #[pyclass]
 pub enum ActionType {
@@ -136,7 +133,6 @@ pub enum ActionType {
     ChangeSpeed(ChangeSpeed),
 }
 
-// Define the EffectSync struct
 #[derive(PartialEq, Clone, Debug)]
 pub struct EffectSync {
     start_position: f32,
@@ -198,14 +194,13 @@ impl EffectSync {
     }
 
     pub fn update(&self, current_position: f32) -> EffectResult {
-        println!("Current position: {}", current_position);
-        println!("Start position: {}", self.start_position);
-        println!("Completion position: {}", self.completion_pos);
-        println!("Apply after: {:?}", self.apply_after);
+        // println!("Current position: {}", current_position);
+        // println!("Start position: {}", self.start_position);
+        // println!("Completion position: {}", self.completion_pos);
+        // println!("Apply after: {:?}", self.apply_after);
 
         if let Some(apply_after) = self.apply_after {
             if current_position < apply_after {
-                println!("Effect not yet applied, waiting until: {}", apply_after);
                 return EffectResult::Value(self.start_val);
             }
         }
