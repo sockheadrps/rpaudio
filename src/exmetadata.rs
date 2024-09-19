@@ -1,4 +1,4 @@
-use pyo3::{prelude::*};
+use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};
 use std::{fs::File, path::Path};
@@ -204,8 +204,8 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                 duration: Some(duration),
                 ..MetaData::default()
             };
-            Ok(metadata)  // Return metadata wrapped in Ok
+            Ok(metadata)
         },
-        _ => Ok(MetaData::default()),  // Handle unsupported file extensions and return empty metadata wrapped in Ok
+        _ => Ok(MetaData::default()),
     }
 }
