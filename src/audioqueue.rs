@@ -71,7 +71,13 @@ impl AudioChannel {
                     if playing_guard.is_none() && !queue_guard.is_empty() {
                         let mut next_sink = queue_guard.remove(0);
                         *playing_guard = Some(next_sink.clone());
-                        println!("Playing next sink: {:?}", next_sink);
+
+                        if let Err(e) = next_sink.play() {
+                            eprintln!("Failed to play sink: {}", e);
+                            *playing_guard = None;
+                        } else {
+                            *playing_guard = Some(next_sink.clone());
+                        }
 
                         let effects_guard = match channel.effects_chain.lock() {
                             Ok(guard) => guard,
@@ -92,6 +98,8 @@ impl AudioChannel {
                         if let Err(e) = next_sink.play() {
                             eprintln!("Failed to play sink: {}", e);
                             *playing_guard = None;
+                        } else {
+                            *playing_guard = Some(next_sink.clone());
                         }
                     }
                 } else {
@@ -100,8 +108,7 @@ impl AudioChannel {
 
                 if let Ok(mut playing_guard) = channel.currently_playing.lock() {
                     if let Some(ref mut sink) = *playing_guard {
-                        if !sink.is_playing() {
-                            println!("Sink is not playing, stopping it");
+                        if !sink.is_playing() && sink.empty() {
                             if let Err(e) = sink.stop() {
                                 eprintln!("Failed to stop sink: {}", e);
                             }
@@ -117,7 +124,7 @@ impl AudioChannel {
         });
 
         let x = channel_arc.lock().unwrap().clone();
-        x 
+        x
     }
 
     pub fn push(&mut self, sink: AudioSink) {
@@ -147,7 +154,6 @@ impl AudioChannel {
     pub fn set_auto_consume(&mut self, value: bool) {
         if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard = value;
-            println!("Successfully set auto_consume to {}", value);
         } else {
             eprintln!("Failed to acquire lock on auto_consume in set_auto_consume()");
         }
@@ -196,12 +202,12 @@ impl AudioChannel {
             eprintln!("Failed to acquire lock on queue in set_queue_contents()");
         }
     }
-
     #[getter]
     pub fn is_playing(&self) -> bool {
         if let Ok(currently_playing_guard) = self.currently_playing.lock() {
             if let Some(ref sink) = *currently_playing_guard {
-                sink.is_playing()
+                let playing_state = sink.is_playing();
+                playing_state
             } else {
                 false
             }
