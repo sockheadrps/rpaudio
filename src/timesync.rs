@@ -84,7 +84,7 @@ impl FadeOut {
 }
 
 // Define the ChangeSpeed struct with optional parameters
-pub const DEFAULT_SPEED_CHANGE_DURATION: f32 = 5.0;
+pub const DEFAULT_SPEED_CHANGE_DURATION: f32 = 0.0;
 pub const DEFAULT_START_SPEED: f32 = 1.0;
 pub const DEFAULT_END_SPEED: f32 = 1.5;
 
@@ -147,6 +147,7 @@ pub struct EffectSync {
 
 pub enum EffectResult {
     Value(f32),
+    Ignored,
     Completed,
 }
 impl EffectSync {
@@ -159,17 +160,23 @@ impl EffectSync {
                 fade_in.end_val,
                 fade_in.apply_after,
             ),
-            ActionType::FadeOut(fade_out) => (
-                if fade_out.apply_after.is_none() {
+            ActionType::FadeOut(fade_out) => {
+                let start_pos = if fade_out.apply_after.is_none() {
                     sink_duration.unwrap_or(current_position) - fade_out.duration
                 } else {
                     current_position
-                },
-                fade_out.duration,
-                fade_out.start_val,
-                fade_out.end_val.unwrap_or(0.0),
-                fade_out.apply_after,
-            ),
+                };
+
+                let end_val = fade_out.end_val.unwrap_or(0.0);
+
+                (
+                    current_position,
+                    fade_out.duration,
+                    fade_out.start_val,
+                    end_val,
+                    fade_out.apply_after,
+                )
+            }
             ActionType::ChangeSpeed(change_speed) => (
                 current_position,
                 change_speed.duration,
@@ -179,7 +186,11 @@ impl EffectSync {
             ),
         };
 
-        let completion_pos = start_position + duration;
+        let completion_pos = if let Some(apply_after) = apply_after {
+            apply_after + duration
+        } else {
+            start_position + duration
+        };
 
         Self {
             start_position,
@@ -194,24 +205,35 @@ impl EffectSync {
     }
 
     pub fn update(&self, current_position: f32) -> EffectResult {
-        // println!("Current position: {}", current_position);
-        // println!("Start position: {}", self.start_position);
-        // println!("Completion position: {}", self.completion_pos);
-        // println!("Apply after: {:?}", self.apply_after);
-
         if let Some(apply_after) = self.apply_after {
             if current_position < apply_after {
-                return EffectResult::Value(self.start_val);
+                return EffectResult::Ignored;
+            }
+            if current_position >= self.completion_pos {
+                return EffectResult::Completed;
+            }
+            let adjusted_start_position = apply_after;
+            let remaining_duration = self.completion_pos - adjusted_start_position;
+            let progress = (current_position - adjusted_start_position) / remaining_duration;
+            let progress = progress.clamp(0.0, 1.0);
+            let set_val = self.start_val + (self.end_val - self.start_val) * progress;
+            return EffectResult::Value(set_val);
+        }
+
+        // Handle immediate speed change if duration is 0.0
+        if let ActionType::ChangeSpeed(change_speed) = &self.action {
+            if change_speed.duration == 0.0 {
+                return EffectResult::Value(self.end_val);
             }
         }
 
+        // Existing handling for duration > 0
         if current_position >= self.completion_pos {
             return EffectResult::Completed;
         }
 
         let progress = (current_position - self.start_position) / self.duration;
         let progress = progress.clamp(0.0, 1.0);
-
         let set_val = self.start_val + (self.end_val - self.start_val) * progress;
         EffectResult::Value(set_val)
     }

@@ -158,7 +158,7 @@ impl AudioTag for Id3v2Tag {
             comment: data_to_string(self.comment()),
             sample_rate: None,
             channels: None,
-            duration: self.duration().and_then(|s| s.to_string().parse::<f64>().ok()),
+            duration: self.duration().and_then(|s| Some(s as f64)),
         }
     }
 }
@@ -177,12 +177,8 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                         let mut metadata = id3_tag.metadata_fields();
                         if metadata.duration.is_none() {
                             let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            
-
-
                             let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            let duration = source.total_duration().map_or(0.0, |d| d.as_secs_f64());
-                            metadata.duration = Some(duration);
+                            metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
                         }
                         Ok(metadata)
                     },

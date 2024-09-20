@@ -55,6 +55,7 @@ async def test_auto_consume(audio_channel):
 async def test_drop_current_audio(audio_channel):
     """Test dropping the current audio."""
     channel, _, _ = audio_channel
+    await asyncio.sleep(0.1)
     channel.current_audio.play()
     await asyncio.sleep(0.1)
     channel.drop_current_audio()
@@ -65,6 +66,7 @@ async def test_drop_current_audio(audio_channel):
 async def test_current_audio(audio_channel):
     """Test that current audio is not None."""
     channel, _, _ = audio_channel
+    await asyncio.sleep(0.1)
     assert channel.current_audio is not None
 
 
