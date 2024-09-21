@@ -2,7 +2,7 @@ use crate::timesync::{self, ActionType};
 use crate::AudioSink;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::PyList;
+use pyo3::types::{PyList, IntoPyDict};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{fmt, thread};
@@ -126,6 +126,7 @@ impl AudioChannel {
         let x = channel_arc.lock().unwrap().clone();
         x
     }
+    
 
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
@@ -218,6 +219,33 @@ impl AudioChannel {
     }
 
     #[getter]
+    pub fn effects(&self, py: Python) -> PyResult<Py<PyList>> {
+        let effects_guard = self.effects_chain.lock().unwrap();
+
+        let effects_list: Vec<PyObject> = effects_guard
+            .iter()
+            .map(|effect| {
+                match effect {
+                    ActionType::FadeIn(fade_in) => {
+                        // Convert Rust FadeIn to Python FadeIn
+                        Py::new(py, fade_in.clone()).unwrap().into_py(py)
+                    }
+                    ActionType::FadeOut(fade_out) => {
+                        // Convert Rust FadeOut to Python FadeOut
+                        Py::new(py, fade_out.clone()).unwrap().into_py(py)
+                    }
+                    ActionType::ChangeSpeed(change_speed) => {
+                        // Convert Rust ChangeSpeed to Python ChangeSpeed
+                        Py::new(py, change_speed.clone()).unwrap().into_py(py)
+                    }
+                }
+            })
+            .collect();
+        let py_list = PyList::new_bound(py, effects_list);
+
+        Ok(py_list.into())
+    }
+
     pub fn effects_chain(&self) -> Vec<ActionType> {
         if let Ok(effects_guard) = self.effects_chain.lock() {
             effects_guard.clone()
