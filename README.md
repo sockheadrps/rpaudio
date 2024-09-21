@@ -44,6 +44,7 @@ async def play_audio():
     fade_out_effect = FadeOut(duration=6.0, apply_after=handler.get_pos() + 7.0)
     speed_up = ChangeSpeed(apply_after=3.0, end_val=1.5, duration=3.0)
 
+
     effects_list = [speed_up, fade_in_effect, fade_out_effect]
     handler.apply_effects(effects_list)
     handler.set_volume(0.0)
