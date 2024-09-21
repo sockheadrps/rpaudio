@@ -38,7 +38,12 @@ jobs:
             exit 1
           fi
           
+          echo "Pytest timestamp: $pytest_timestamp"
+
           one_hour_ago=$(($now - 3600))
+
+          # Print one hour ago timestamp
+          echo "One hour ago timestamp: $one_hour_ago"
 
           # Check if pytest_timestamp is older than one hour
           if [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
