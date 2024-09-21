@@ -78,11 +78,14 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -97,6 +100,8 @@
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.album_artist">album_artist (rpaudio.MetaData property)</a>
 </li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.album_title">album_title (rpaudio.MetaData property)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.apply_effects">apply_effects() (rpaudio.AudioSink method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -114,6 +119,10 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.cancel_callback">cancel_callback() (rpaudio.AudioSink method)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.ChangeSpeed">ChangeSpeed (class in rpaudio)</a>
+</li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.ChannelManager.channel">channel() (rpaudio.ChannelManager method)</a>
 </li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.ChannelManager">ChannelManager (class in rpaudio)</a>
@@ -130,9 +139,9 @@
 </li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.composer">composer (rpaudio.MetaData property)</a>
 </li>
-      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.control_loop">control_loop() (rpaudio.AudioChannel method)</a>
-</li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.current_audio">current_audio (rpaudio.AudioChannel property)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.currently_playing">currently_playing (rpaudio.AudioChannel attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -155,14 +164,40 @@
   </ul></td>
 </tr></table>
 
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.effects_chain">effects_chain (rpaudio.AudioChannel attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.FadeIn">FadeIn (class in rpaudio)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.FadeOut">FadeOut (class in rpaudio)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.genre">genre (rpaudio.MetaData property)</a>
 </li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.get_pos">get_pos() (rpaudio.AudioSink method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.get_effects">get_effects (rpaudio.AudioSink property)</a>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.get_remaining_time">get_remaining_time() (rpaudio.AudioSink method)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.get_speed">get_speed() (rpaudio.AudioSink method)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.get_volume">get_volume() (rpaudio.AudioSink method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -171,6 +206,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.is_playing">is_playing (rpaudio.AudioSink property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.is_playing">is_playing() (rpaudio.AudioChannel method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -216,6 +255,18 @@
   </ul></td>
 </tr></table>
 
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.queue">queue (rpaudio.AudioChannel attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.queue_contents">queue_contents (rpaudio.AudioChannel property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -234,10 +285,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.sample_rate">sample_rate (rpaudio.MetaData property)</a>
 </li>
-      <li><a href="autoapi/rpaudio/index.html#rpaudio.ChannelManager.start_all">start_all() (rpaudio.ChannelManager method)</a>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.set_duration">set_duration() (rpaudio.AudioSink method)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioChannel.set_effects_chain">set_effects_chain() (rpaudio.AudioChannel method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.set_volume">set_volume() (rpaudio.AudioSink method)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.ChannelManager.start_all">start_all() (rpaudio.ChannelManager method)</a>
+</li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.stop">stop() (rpaudio.AudioSink method)</a>
 </li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.ChannelManager.stop_all">stop_all() (rpaudio.ChannelManager method)</a>
@@ -257,6 +314,8 @@
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.total_tracks">total_tracks (rpaudio.MetaData property)</a>
 </li>
       <li><a href="autoapi/rpaudio/index.html#rpaudio.MetaData.track_number">track_number (rpaudio.MetaData property)</a>
+</li>
+      <li><a href="autoapi/rpaudio/index.html#rpaudio.AudioSink.try_seek">try_seek() (rpaudio.AudioSink method)</a>
 </li>
   </ul></td>
 </tr></table>

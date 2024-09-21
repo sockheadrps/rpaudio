@@ -9,40 +9,107 @@ rpaudio
 Module Contents
 ---------------
 
-.. py:class:: AudioChannel(channel_id, channel_callback)
+.. py:class:: AudioChannel
 
    Bases: :py:obj:`Protocol`
 
 
-   Manages a queue of AudioSink objects and handles playback.
+   Base class for protocol classes.
 
-   :param channel_id: A unique identifier for the audio channel.
-   :type channel_id: Union[int, str]
-   :param channel_callback: (optional) A callback invoked when the queue is idle.
-   :type channel_callback: Optional[Callable[[], None]]
+   Protocol classes are defined as::
 
+       class Proto(Protocol):
+           def meth(self) -> int:
+               ...
 
-   .. py:method:: control_loop()
-      :async:
+   Such classes are primarily used with static type checkers that recognize
+   structural subtyping (static duck-typing).
 
+   For example::
 
-      Continuously monitors the queue and handles playback,
-      auto-consume, and callback execution.
+       class C:
+           def meth(self) -> int:
+               return 0
 
+       def func(x: Proto) -> int:
+           return x.meth()
+
+       func(C())  # Passes static type check
+
+   See PEP 544 for details. Protocol classes decorated with
+   @typing.runtime_checkable act as simple-minded runtime protocols that check
+   only the presence of given attributes, ignoring their type signatures.
+   Protocol classes can be generic, they are defined as::
+
+       class GenProto(Protocol[T]):
+           def meth(self) -> T:
+               ...
 
 
    .. py:method:: drop_current_audio()
 
-      Drops the current audio from the queue.
+      Stops the currently playing audio, if any, and removes it from the channel.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          channel.drop_current_audio()  # Stops and clears the currently playing audio
+
+
+
+   .. py:method:: is_playing()
+
+      Returns True if audio is currently playing, otherwise False.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          if channel.is_playing():
+              print("Audio is playing")
+          else:
+              print("No audio is playing")
 
 
 
    .. py:method:: push(audio)
 
-      Adds an AudioSink to the channel queue.
+      Adds an AudioSink object to the queue.
 
-      :param audio: The audio object to add to the queue.
-      :type audio: AudioSink
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          sink = AudioSink("my_audio_file.mp3")
+          channel.push(sink)
+
+
+
+   .. py:method:: set_effects_chain(effect_list)
+
+      Sets the effects chain for the audio channel.
+
+      This method accepts a list of effects and applies them to the audio channel.
+      The effects can include FadeIn, FadeOut, and ChangeSpeed.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+          fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
+          speed_up_effect = ChangeSpeed(end_val=1.5, duration=5.0)
+
+          channel.set_effects_chain([fade_in_effect, fade_out_effect, speed_up_effect])
+
+      :param effect_list: A list of effects to set for the audio channel.
+      :type effect_list: list
+      :raises TypeError: If an unknown effect type is provided.
 
 
 
@@ -59,7 +126,44 @@ Module Contents
 
       Returns the currently playing AudioSink object.
 
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          current_sink = channel.current_audio()
+          if current_sink:
+              print("Currently playing:", current_sink)
+          else:
+              print("No audio is playing")
+
       :rtype: AudioSink
+
+
+   .. py:attribute:: currently_playing
+      :type:  Optional[AudioSink]
+
+
+   .. py:attribute:: effects_chain
+      :type:  List[ActionType]
+
+
+   .. py:attribute:: queue
+      :type:  List[AudioSink]
+
+
+   .. py:property:: queue_contents
+      :type: List[AudioSink]
+
+      Returns the current queue of AudioSink objects.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          queue = channel.queue_contents()
+          print(f"Queue has {len(queue)} items")
 
 
 .. py:class:: AudioSink(callback = None)
@@ -69,8 +173,9 @@ Module Contents
 
    Interface that wraps functionality for audio files.
 
-   This class provides methods to load, play, pause, and stop audio playback.
-   An optional callback function can be invoked when the audio stops playing.
+   This class provides methods to load, play, pause, stop audio playback, manage audio effects,
+   and manipulate playback speed and volume. An optional callback function can be invoked when
+   the audio stops playing.
 
    Example:
 
@@ -90,22 +195,82 @@ Module Contents
    :vartype is_playing: :py:class:`bool`
 
 
-   .. py:method:: load_audio(filename)
+   .. py:method:: apply_effects(effect_list)
 
-      Load an audio file for playback.
+      Apply a list of audio effects such as fade-in, fade-out, or speed changes.
 
-      :param filename: The path to the audio file to load.
-      :type filename: :py:class:`str`
+      :param effect_list: A list of effects to apply. Each effect must be an instance of `FadeIn`, `FadeOut`, `ChangeSpeed`, or similar.
+      :type effect_list: list
+      :raises TypeError: If an unknown effect type is provided.
+      :raises RuntimeError: If an error occurs while applying the effects.
 
-      :returns: This method does not return any value.
-      :rtype: None
+
+
+   .. py:method:: cancel_callback()
+
+      Cancels the current audio callback.
+
+      This method sets a flag to indicate that the audio callback should be canceled.
+      Once called, the audio sink will stop processing the current audio callback.
 
       Example:
 
       .. code-block:: python
 
-          handler = AudioHandler(callback=my_callback)
-          handler.load_audio("my_audio_file.mp3")
+          audio_sink = AudioSink()
+          audio_sink.cancel_callback()
+          print("Audio callback has been canceled.")
+
+      :raises RuntimeError: If there is an issue acquiring the lock on the callback.
+
+
+
+   .. py:method:: get_pos()
+
+      Get the current playback position in seconds.
+
+      :return: The playback position.
+      :rtype: float
+
+      :raises RuntimeError: If playback has not started.
+
+
+
+   .. py:method:: get_remaining_time()
+
+      Get the remaining time of the audio playback.
+
+      :return: The remaining time of the audio in seconds, rounded to two decimal places.
+      :rtype: float
+      :raises RuntimeError: If the audio duration is not available.
+      :raises RuntimeError: If no sink is available or audio is not loaded.
+
+
+
+   .. py:method:: get_speed()
+
+      Get the current playback speed of the audio.
+
+      :return: The playback speed.
+      :rtype: float
+
+
+
+   .. py:method:: get_volume()
+
+      Get the current volume level.
+
+      :return: The current volume level.
+      :rtype: float
+
+
+
+   .. py:method:: load_audio(filename)
+
+      Load an audio file for playback.
+
+      :param filename: The path to the audio file to load.
+      :type filename: str
 
 
 
@@ -145,6 +310,27 @@ Module Contents
 
 
 
+   .. py:method:: set_duration(duration)
+
+      Set the length of the audio file to the meta data.
+
+      :param duration: The duration. Must be a float
+      :type volume: float
+
+
+
+
+   .. py:method:: set_volume(volume)
+
+      Set the volume level for playback.
+
+      :param volume: The volume level. Must be between 0.0 and 1.0.
+      :type volume: float
+
+      :raises ValueError: If the volume is not between 0.0 and 1.0.
+
+
+
    .. py:method:: stop()
 
       Stop the currently playing audio, if any.
@@ -162,11 +348,15 @@ Module Contents
 
 
 
-   .. py:property:: get_effects
-      :type: dict[str, any]
+   .. py:method:: try_seek(position)
 
-      Get current effect settings.
-      rtype: dict[str, any]
+      Attempt to seek to a specific position in the audio playback.
+
+      :param position: The position in seconds to seek to.
+      :type position: float
+
+      :raises ValueError: If the position is negative or not a valid time in the audio.
+
 
 
    .. py:property:: is_playing
@@ -188,12 +378,30 @@ Module Contents
 
 
    .. py:property:: metadata
-      :type: Dict[str, str]
+      :type: dict[str, any]
 
       Get metadata for the audio file.
 
+      Example:
+
+      .. code-block:: python
+
+          audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+          audio_1.load_audio("ex.wav")
+          data = audio_1.metadata
+
       :return: A dictionary containing metadata for the audio file.
       :rtype: dict[str, any]
+
+
+.. py:class:: ChangeSpeed(duration=0.0, start_val=1.0, end_val=1.5, apply_after=None)
+
+   Represents a speed change effect for audio.
+
+   :param duration: Duration of the speed change effect in seconds. Defaults to 0.0.
+   :param start_val: Starting speed value. Defaults to 1.0.
+   :param end_val: Ending speed value. Defaults to 1.5.
+   :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
 
 
 .. py:class:: ChannelManager
@@ -203,6 +411,37 @@ Module Contents
 
    Manages multiple audio channels and provides an API to control them.
 
+       Example:
+
+       .. code-block:: python
+
+           # Intializing 2 audio sinks
+           audio_1 = AudioSink(callback=on_audio_stop)
+           audio_1.load_audio("ex.wav")
+           audio_2 = AudioSink(callback=on_audio_stop)
+           audio_2.load_audio("Acrylic.mp3")
+           print(audio_1.metadata)
+
+           # Intializing 1st audio channel
+           channel_1 = AudioChannel()
+           channel_1.push(audio_1)
+           channel_1.push(audio_2)
+
+           # Intializing 2 more audio sinks
+           audio_3 = AudioSink(callback=on_audio_stop)
+           audio_3.load_audio("ex.wav")
+           audio_4 = AudioSink(callback=on_audio_stop)
+           audio_4.load_audio("Acrylic.mp3")
+           # Intializing 2nd audio channel
+           channel_2 = AudioChannel()
+           channel_2.push(audio_3)
+           channel_2.push(audio_4)
+
+           # Intializing ChannelManager
+           manager = ChannelManager()
+           manager.add_channel("Channel1", channel_1)
+           manager.add_channel("Channel2", channel_2)
+
    :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
    :vartype channels: dict
 
@@ -210,7 +449,6 @@ Module Contents
    .. py:method:: add_channel(name, channel)
 
       Adds a new audio channel to the manager.
-
       :param name: The unique identifier for the channel.
       :type name: str
       :param channel: The audio channel to add.
@@ -221,7 +459,6 @@ Module Contents
    .. py:method:: channel(name)
 
       Retrieves a channel by its identifier.
-
       :param name: The unique identifier of the channel.
       :type name: str
       :return: The corresponding AudioChannel instance, or None if not found.
@@ -232,7 +469,6 @@ Module Contents
    .. py:method:: drop_channel(name)
 
       Drops an audio channel from the manager.
-
       :param name: The unique identifier of the channel to drop.
       :type name: str
       :raises RuntimeError: If the channel is not found.
@@ -253,6 +489,26 @@ Module Contents
 
    .. py:attribute:: channels
       :type:  dict[str, AudioChannel]
+
+
+.. py:class:: FadeIn(duration=5.0, start_val=None, end_val=1.0, apply_after=None)
+
+   Represents a fade-in effect for audio.
+
+   :param duration: Duration of the fade-in effect in seconds. Defaults to 5.0.
+   :param start_val: Starting volume value. Defaults to None.
+   :param end_val: Ending volume value. Defaults to 1.0.
+   :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
+
+
+.. py:class:: FadeOut(duration=5.0, start_val=1.0, end_val=None, apply_after=None)
+
+   Represents a fade-out effect for audio.
+
+   :param duration: Duration of the fade-out effect in seconds. Defaults to 5.0.
+   :param start_val: Starting volume value. Defaults to 1.0.
+   :param end_val: Ending volume value. Defaults to None.
+   :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
 
 
 .. py:class:: MetaData(audio_sink)
