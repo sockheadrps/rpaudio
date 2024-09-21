@@ -43,12 +43,12 @@ tests/test_ChannelManager.py::test_start_all PASSED                      [ 64%]
 tests/test_ChannelManager.py::test_stop_all PASSED                       [ 66%]
 tests/test_ChannelManager.py::test_drop_channel PASSED                   [ 68%]
 tests/test_ChannelManager.py::test_drop_channel_not_found PASSED         [ 70%]
-tests/test_Channel_multi_sink.py::test_initialization PASSED             [ 72%]
-tests/test_Channel_multi_sink.py::test_push_audio PASSED                 [ 74%]
-tests/test_Channel_multi_sink.py::test_auto_consume PASSED               [ 76%]
+tests/test_Channel_multi_sink.py::test_audio_channel_effects_chain PASSED [ 72%]
+tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume PASSED [ 74%]
+tests/test_Channel_multi_sink.py::test_audiochannel_multiple_sink_pushes PASSED [ 76%]
 tests/test_Channel_multi_sink.py::test_drop_current_audio PASSED         [ 78%]
 tests/test_Channel_multi_sink.py::test_current_audio PASSED              [ 80%]
-tests/test_Channel_multi_sink.py::test_autoplay_second_song PASSED       [ 82%]
+tests/test_Channel_multi_sink.py::test_autoplay_songs PASSED             [ 82%]
 tests/test_Channel_single_sink.py::test_play_audio PASSED                [ 84%]
 tests/test_Channel_single_sink.py::test_pause PASSED                     [ 86%]
 tests/test_Channel_single_sink.py::test_resume PASSED                    [ 88%]
@@ -58,7 +58,7 @@ tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
 tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
 tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
 tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 2024-09-20 10:49:12 - All tests completed.
+ 2024-09-21 08:43:43 - All tests completed.
 
 
-============================= 51 passed in 18.18s =============================
+============================= 51 passed in 18.82s =============================
