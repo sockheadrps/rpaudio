@@ -151,16 +151,6 @@ class AudioSink(Protocol):
         """
         
 
-    def set_speed(self, speed: float) -> None:
-        """
-        Set the playback speed of the audio.
-
-        :param speed: The playback speed. Must be greater than 0.
-        :type speed: float
-
-        :raises ValueError: If the speed is less than or equal to 0.
-        """
-        
 
     def get_speed(self) -> float:
         """
@@ -223,19 +213,6 @@ class AudioSink(Protocol):
         """
         
 
-    def set_effects(self, effect_list: list) -> None:
-        """
-        Apply effects from a list to the audio playback.
-
-        :param effect_list: A list of effect objects to be applied to the audio playback. 
-                            The list may contain instances of `FadeIn`, `FadeOut`, and `ChangeSpeed`.
-        :type effect_list: list
-
-        :raises TypeError: If an unknown effect type is encountered in the list.
-        """
-
-        
-
     def get_remaining_time(self) -> float:
         """
         Get the remaining time of the audio playback.
@@ -256,8 +233,24 @@ class AudioSink(Protocol):
         :raises TypeError: If an unknown effect type is provided.
         :raises RuntimeError: If an error occurs while applying the effects.
         """
-        
+    
+    def cancel_callback(self) -> None:
+        """
+        Cancels the current audio callback.
 
+        This method sets a flag to indicate that the audio callback should be canceled.
+        Once called, the audio sink will stop processing the current audio callback.
+
+        Example:
+
+        .. code-block:: python
+
+            audio_sink = AudioSink()
+            audio_sink.cancel_callback()
+            print("Audio callback has been canceled.")
+
+        :raises RuntimeError: If there is an issue acquiring the lock on the callback.
+        """
 
 class MetaData:
     """
@@ -580,34 +573,31 @@ class AudioChannel(Protocol):
         """
         
 
-    def effects_chain(self) -> List[ActionType]:
-        """
-        Returns the current list of effects applied to the audio channel.
-
-        Example:
-
-        .. code-block:: python
-
-            channel = AudioChannel()
-            effects = channel.effects_chain()
-            print(f"Effects chain: {effects}")
-        """
-        
-
-    def set_effects_chain(self, effect_list: List[ActionType]) -> None:
+    def set_effects_chain(self, effect_list: list) -> None:
         """
         Sets the effects chain for the audio channel.
 
+        This method accepts a list of effects and applies them to the audio channel. 
+        The effects can include FadeIn, FadeOut, and ChangeSpeed.
+
         Example:
 
         .. code-block:: python
 
-            from timesync import FadeIn, FadeOut
-
             channel = AudioChannel()
-            effects = [FadeIn(duration=5), FadeOut(duration=3)]
-            channel.set_effects_chain(effects)
+            fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+            fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
+            speed_up_effect = ChangeSpeed(end_val=1.5, duration=5.0)
+
+            channel.set_effects_chain([fade_in_effect, fade_out_effect, speed_up_effect])
+
+        :param effect_list: A list of effects to set for the audio channel.
+        :type effect_list: list
+        :raises TypeError: If an unknown effect type is provided.
         """
+        
+
+
         
 
 
@@ -701,264 +691,42 @@ class ChannelManager(Protocol):
 
 class FadeIn:
     """
-    Represents a fade-in effect for audio playback.
+    Represents a fade-in effect for audio.
 
-    :param duration: The duration of the fade-in effect in seconds. Defaults to 5.0 seconds.
-    :type duration: float, optional
-    :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 0.1.
-    :type start_vol: float, optional
-    :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 1.0.
-    :type end_vol: float, optional
-    :param apply_after: Time delay before applying the fade-in effect, optional.
-    :type apply_after: float, optional
-
-    :raises ValueError: If duration is negative or volumes are out of range.
+    :param duration: Duration of the fade-in effect in seconds. Defaults to 5.0.
+    :param start_val: Starting volume value. Defaults to None.
+    :param end_val: Ending volume value. Defaults to 1.0.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
     """
 
-    duration: float
-    start_vol: float
-    end_vol: float
-    apply_after: float | None
-
-    def __init__(self, duration: float = 5.0, start_vol: float = 0.1, end_vol: float = 1.0, apply_after: float = None) -> None:
-        """
-        Initialize the FadeIn effect with specified duration, start volume, and end volume.
-
-        :param duration: The duration of the fade-in effect in seconds. Must be non-negative.
-        :type duration: float
-        :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type start_vol: float
-        :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type end_vol: float
-        :param apply_after: Time delay before applying the fade-in effect, optional.
-        :type apply_after: float, optional
-
-        :raises ValueError: If duration is negative or volumes are out of range.
-        """
-        if duration < 0:
-            raise ValueError("Duration cannot be negative")
-        if not (0.0 <= start_vol <= 1.0):
-            raise ValueError("Start volume must be between 0.0 and 1.0")
-        if not (0.0 <= end_vol <= 1.0):
-            raise ValueError("End volume must be between 0.0 and 1.0")
-
-        self.duration = duration
-        self.start_vol = start_vol
-        self.end_vol = end_vol
-        self.apply_after = apply_after
+    def __init__(self, duration=5.0, start_val=None, end_val=1.0, apply_after=None):
+        pass 
 
 
 class FadeOut:
     """
-    Represents a fade-out effect for audio playback.
+    Represents a fade-out effect for audio.
 
-    :param duration: The duration of the fade-out effect in seconds. Defaults to 5.0 seconds.
-    :type duration: float, optional
-    :param start_vol: The starting volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 1.0.
-    :type start_vol: float, optional
-    :param end_vol: The ending volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 0.1.
-    :type end_vol: float, optional
-    :param apply_after: Time delay before applying the fade-out effect, optional.
-    :type apply_after: float, optional
-
-    :raises ValueError: If duration is negative or volumes are out of range.
+    :param duration: Duration of the fade-out effect in seconds. Defaults to 5.0.
+    :param start_val: Starting volume value. Defaults to 1.0.
+    :param end_val: Ending volume value. Defaults to None.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
     """
 
-    duration: float
-    start_vol: float
-    end_vol: float
-    apply_after: float | None
-
-    def __init__(self, duration: float = 5.0, start_vol: float = 1.0, end_vol: float = 0.1, apply_after: float = None) -> None:
-        """
-        Initialize the FadeOut effect with specified duration, start volume, and end volume.
-
-        :param duration: The duration of the fade-out effect in seconds. Must be non-negative.
-        :type duration: float
-        :param start_vol: The starting volume level of the fade-out. Must be between 0.0 and 1.0.
-        :type start_vol: float
-        :param end_vol: The ending volume level of the fade-out. Must be between 0.0 and 1.0.
-        :type end_vol: float
-        :param apply_after: Time delay before applying the fade-out effect, optional.
-        :type apply_after: float, optional
-
-        :raises ValueError: If duration is negative or volumes are out of range.
-        """
-        if duration < 0:
-            raise ValueError("Duration cannot be negative")
-        if not (0.0 <= start_vol <= 1.0):
-            raise ValueError("Start volume must be between 0.0 and 1.0")
-        if not (0.0 <= end_vol <= 1.0):
-            raise ValueError("End volume must be between 0.0 and 1.0")
-
-        self.duration = duration
-        self.start_vol = start_vol
-        self.end_vol = end_vol
-        self.apply_after = apply_after
-
-
-class FadeIn:
-    """
-    Represents a fade-in effect applied to audio.
-
-    Attributes:
-        duration (float): Duration of the fade-in effect.
-        start_val (Optional[float]): Starting value for the fade-in, if specified.
-        end_val (float): Ending value for the fade-in.
-        apply_after (Optional[float]): Time after which the fade-in will apply.
-
-    Example:
-
-    .. code-block:: python
-
-        fade_in = FadeIn(duration=5.0, start_val=0.1, end_val=1.0, apply_after=None)
-    """
-
-    def __init__(self, duration: float = 5.0, start_val: Optional[float] = None,
-                 end_val: float = 1.0, apply_after: Optional[float] = None):
-        """
-        Initialize a new FadeIn instance.
-        """
-        
-
-
-class FadeOut:
-    """
-    Represents a fade-out effect applied to audio.
-
-    Attributes:
-        duration (float): Duration of the fade-out effect.
-        start_val (float): Starting value for the fade-out.
-        end_val (Optional[float]): Ending value for the fade-out.
-        apply_after (Optional[float]): Time after which the fade-out will apply.
-
-    Example:
-
-    .. code-block:: python
-
-        fade_out = FadeOut(duration=5.0, start_val=1.0, end_val=None, apply_after=None)
-    """
-
-    def __init__(self, duration: float = 5.0, start_val: float = 1.0,
-                 end_val: Optional[float] = None, apply_after: Optional[float] = None):
-        """
-        Initialize a new FadeOut instance.
-        """
-        
+    def __init__(self, duration=5.0, start_val=1.0, end_val=None, apply_after=None):
+        pass
 
 
 class ChangeSpeed:
     """
-    Represents a speed change effect applied to audio.
+    Represents a speed change effect for audio.
 
-    Attributes:
-        duration (float): Duration of the speed change effect.
-        start_val (Optional[float]): Starting speed for the effect.
-        end_val (float): Ending speed for the effect.
-        apply_after (Optional[float]): Time after which the speed change will apply.
-
-    Example:
-
-    .. code-block:: python
-
-        change_speed = ChangeSpeed(duration=5.0, start_val=1.0, end_val=1.5, apply_after=None)
+    :param duration: Duration of the speed change effect in seconds. Defaults to 0.0.
+    :param start_val: Starting speed value. Defaults to 1.0.
+    :param end_val: Ending speed value. Defaults to 1.5.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
     """
 
-    def __init__(self, duration: float = 5.0, start_val: Optional[float] = 1.0,
-                 end_val: float = 1.5, apply_after: Optional[float] = None):
-        """
-        Initialize a new ChangeSpeed instance.
-        """
-        
+    def __init__(self, duration=0.0, start_val=1.0, end_val=1.5, apply_after=None):
+        pass 
 
-
-class ActionType:
-    """
-    Enum for different types of audio actions.
-
-    Members:
-        FadeIn: A fade-in effect.
-        FadeOut: A fade-out effect.
-        ChangeSpeed: A speed change effect.
-
-    Example:
-
-    .. code-block:: python
-
-        action = ActionType.FadeIn(fade_in_instance)
-    """
-    FadeIn: FadeIn
-    FadeOut: FadeOut
-    ChangeSpeed: ChangeSpeed
-    
-
-
-class EffectSync:
-    """
-    Synchronizes effects with the audio playback.
-
-    Attributes:
-        start_position (float): The position at which the effect starts.
-        duration (float): Duration of the effect.
-        start_val (float): Starting value of the effect.
-        end_val (float): Ending value of the effect.
-        completion_pos (float): The position when the effect completes.
-        current_position (float): The current position in the audio.
-        apply_after (Optional[float]): Time after which the effect applies.
-        action (ActionType): The type of action applied (FadeIn, FadeOut, ChangeSpeed).
-
-    Example:
-
-    .. code-block:: python
-
-        effect_sync = EffectSync(action=ActionType.FadeIn(fade_in_instance), current_position=10.0, sink_duration=None)
-    """
-
-    def __init__(self, action: ActionType, current_position: float, sink_duration: Optional[float]):
-        """
-        Initialize a new EffectSync instance.
-
-        Args:
-            action (ActionType): The action to be applied.
-            current_position (float): The current playback position.
-            sink_duration (Optional[float]): Duration of the audio sink, if applicable.
-        """
-        
-
-    def update(self, current_position: float) -> Union[float, None]:
-        """
-        Update the effect's value based on the current position.
-
-        Args:
-            current_position (float): The current playback position.
-
-        Returns:
-            float: The updated value of the effect at the current position.
-            None: If the effect is completed.
-
-        Example:
-
-        .. code-block:: python
-
-            result = effect_sync.update(current_position=12.0)
-        """
-        
-
-
-class EffectResult:
-    """
-    Result of an effect update.
-
-    Members:
-        Value (float): The updated value of the effect.
-        Completed: Indicates the effect has completed.
-
-    Example:
-
-    .. code-block:: python
-
-        result = EffectResult.Value(0.8)
-    """
-    Value: float
-    Completed: None
-    

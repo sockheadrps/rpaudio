@@ -196,13 +196,6 @@ impl AudioChannel {
         }
     }
 
-    pub fn set_queue_contents(&mut self, new_queue: Vec<AudioSink>) {
-        if let Ok(mut queue_guard) = self.queue.lock() {
-            *queue_guard = new_queue;
-        } else {
-            eprintln!("Failed to acquire lock on queue in set_queue_contents()");
-        }
-    }
     #[getter]
     pub fn is_playing(&self) -> bool {
         if let Ok(currently_playing_guard) = self.currently_playing.lock() {
@@ -244,15 +237,6 @@ impl AudioChannel {
         let py_list = PyList::new_bound(py, effects_list);
 
         Ok(py_list.into())
-    }
-
-    pub fn effects_chain(&self) -> Vec<ActionType> {
-        if let Ok(effects_guard) = self.effects_chain.lock() {
-            effects_guard.clone()
-        } else {
-            eprintln!("Failed to acquire lock on effects_chain in effects_chain()");
-            Vec::new()
-        }
     }
 
     pub fn set_effects_chain(&mut self, effect_list: Py<PyList>) -> PyResult<()> {

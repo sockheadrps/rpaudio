@@ -89,7 +89,6 @@ async def main() -> None:
     channel_1.push(audio_1)
     channel_1.push(audio_2)
 
-    # Await the play_audio and sleep_loop functions concurrently
     await asyncio.gather(play_audio(channel_1), sleep_loop())
 
 asyncio.run(main())
