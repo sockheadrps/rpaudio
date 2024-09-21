@@ -14,24 +14,17 @@ async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
     print(handler.metadata)
 
-    handler.set_volume(0.5)
     handler.play()
 
-    # handler.play()
     count = 0
     while True:
         await asyncio.sleep(1)
-        print(handler.get_volume())
-
-        if count == 2:
-            handler.stop()
 
         count += 1
         if count == 4:
             # Pause the audio for 2 seconds
             print("Pausing audio")
             print(handler.get_volume())
-
             handler.pause()
             await asyncio.sleep(1)
 
@@ -39,19 +32,18 @@ async def play_audio():
 
         if count == 6:
             # Resume the audio
-            # handler.play()
-            print(handler.get_volume())
+            handler.play()
 
         if count == 7:
             # turn down the volume
             print("Resuming audio, raise volume")
-            # handler.set_volume(1.0)
+            handler.set_volume(0.2)
             handler.play()
 
         if count == 8:
             # Seek to 33.5 seconds
             print(f"Current position: {handler.get_pos()}")
-            handler.try_seek(33.5)
+            handler.try_seek(10)
             await asyncio.sleep(1)
             print(f"Position after seek: {handler.get_pos()}")
 

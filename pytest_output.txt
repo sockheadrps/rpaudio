@@ -9,56 +9,11 @@ collecting ... collected 51 items
 
 tests/test_AudioSink.py::test_fade_in PASSED                             [  1%]
 tests/test_AudioSink.py::test_fade_out PASSED                            [  3%]
-tests/test_AudioSink.py::test_change_speed PASSED                        [  5%]
-tests/test_AudioSink.py::test_effects_applied_over_time PASSED           [  7%]
-tests/test_AudioSink.py::test_effect_completion PASSED                   [  9%]
-tests/test_AudioSink.py::test_set_duration PASSED                        [ 11%]
-tests/test_AudioSink.py::test_set_volume_valid_input PASSED              [ 13%]
-tests/test_AudioSink.py::test_set_volume_out_of_range PASSED             [ 15%]
-tests/test_AudioSink.py::test_volume_uninitialized_sink PASSED           [ 17%]
-tests/test_AudioSink.py::test_get_volume_returns_correct_value PASSED    [ 19%]
-tests/test_AudioSink.py::test_cancel_callback PASSED                     [ 21%]
-tests/test_AudioSink.py::test_stop_uninitialized_sink PASSED             [ 23%]
-tests/test_AudioSink.py::test_pause_uninitialized_sink PASSED            [ 25%]
-tests/test_AudioSink.py::test_no_file_provided PASSED                    [ 27%]
-tests/test_AudioSink.py::test_audio_handler_no_callback PASSED           [ 29%]
-tests/test_AudioSink.py::test_load_audio_multiple_times PASSED           [ 31%]
-tests/test_AudioSink.py::test_audio_handler_callback PASSED              [ 33%]
-tests/test_AudioSink.py::test_default_values PASSED                      [ 35%]
-tests/test_AudioSink.py::test_play_audio PASSED                          [ 37%]
-tests/test_AudioSink.py::test_pause PASSED                               [ 39%]
-tests/test_AudioSink.py::test_resume PASSED                              [ 41%]
-tests/test_AudioSink.py::test_set_volume PASSED                          [ 43%]
-tests/test_AudioSink.py::test_try_seek PASSED                            [ 45%]
-tests/test_AudioSink.py::test_get_pos PASSED                             [ 47%]
-tests/test_AudioSink.py::test_set_speed PASSED                           [ 49%]
-tests/test_AudioSink.py::test_get_speed PASSED                           [ 50%]
-tests/test_AudioSink.py::test_stop PASSED                                [ 52%]
-tests/test_AudioSink.py::test_metadata PASSED                            [ 54%]
-tests/test_AudioSink.py::test_callback_called PASSED                     [ 56%]
-tests/test_ChannelManager.py::test_add_channel PASSED                    [ 58%]
-tests/test_ChannelManager.py::test_channel_retrieval PASSED              [ 60%]
-tests/test_ChannelManager.py::test_channel_retrieval_not_found PASSED    [ 62%]
-tests/test_ChannelManager.py::test_start_all PASSED                      [ 64%]
-tests/test_ChannelManager.py::test_stop_all PASSED                       [ 66%]
-tests/test_ChannelManager.py::test_drop_channel PASSED                   [ 68%]
-tests/test_ChannelManager.py::test_drop_channel_not_found PASSED         [ 70%]
-tests/test_Channel_multi_sink.py::test_audio_channel_effects_chain PASSED [ 72%]
-tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume PASSED [ 74%]
-tests/test_Channel_multi_sink.py::test_audiochannel_multiple_sink_pushes PASSED [ 76%]
-tests/test_Channel_multi_sink.py::test_drop_current_audio PASSED         [ 78%]
-tests/test_Channel_multi_sink.py::test_current_audio PASSED              [ 80%]
-tests/test_Channel_multi_sink.py::test_autoplay_songs PASSED             [ 82%]
-tests/test_Channel_single_sink.py::test_play_audio PASSED                [ 84%]
-tests/test_Channel_single_sink.py::test_pause PASSED                     [ 86%]
-tests/test_Channel_single_sink.py::test_resume PASSED                    [ 88%]
-tests/test_Channel_single_sink.py::test_set_volume PASSED                [ 90%]
-tests/test_Channel_single_sink.py::test_try_seek PASSED                  [ 92%]
-tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
-tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
-tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
-tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 2024-09-21 08:43:43 - All tests completed.
+tests/test_AudioSink.py::test_change_speed 
+ 2024-09-21 09:48:44 - All tests completed.
 
 
-============================= 51 passed in 18.82s =============================
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+C:\Users\16145\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py:817: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+============================== 2 passed in 3.49s ==============================

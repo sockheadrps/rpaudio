@@ -9,6 +9,7 @@
 - **AudioChannel**: Handle and process audio files in a queue via channels.
 - **ChannelManager**: Multi-channel grouping and management.
 - **AudioSink.metadata** Access information about audio files if present.
+- **Effects** : FadeIn, FadeOut, ChangeSpeed
 
 **Supports: MP3, WAV, Vorbis and Flac (mp4 + AAC will also be supported in a future release)**
 
@@ -22,54 +23,47 @@
 ```py
 import rpaudio
 import asyncio
+from rpaudio import FadeIn, FadeOut, ChangeSpeed
+
+kill_audio = False
+AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"
 
 def on_audio_stop():
+    global kill_audio
+    kill_audio = True
     print("Audio has stopped")
 
 async def play_audio():
-    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
+    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
+    print(handler.metadata)
+    await asyncio.sleep(0.5)
+    
 
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, apply_after=handler.get_pos(), duration=3.0)
+
+    fade_out_effect = FadeOut(duration=6.0, apply_after=handler.get_pos() + 7.0)
+    speed_up = ChangeSpeed(apply_after=3.0, end_val=1.5, duration=3.0)
+
+    effects_list = [speed_up, fade_in_effect, fade_out_effect]
+    handler.apply_effects(effects_list)
+    handler.set_volume(0.0)
     handler.play()
-    count = 0
-    while True:
+
+    while not kill_audio:
         await asyncio.sleep(1)
-        count += 1
-
-        if count == 4:
-            # Pause the audio for 2 seconds
-            print ("Pausing audio")
-            handler.pause()
-
-        if count == 6:
-            # Resume the audio, but turn down the volume
-            print("Resuming audio, lowering volume")
-            handler.set_volume(0.5)
-            handler.play()
-
-        if count == 8:
-            # Seek to 10 seconds
-            print(f"Current position: {handler.get_pos()}")
-            handler.try_seek(10.)
-            await asyncio.sleep(1)
-            print(f"Position after seek: {handler.get_pos()}")
-
-        if count == 10:
-            # Change the playback speed to 1.5
-            handler.set_speed(1.5)
-            print(f"Playback speed: {handler.get_speed()}")
-            await asyncio.sleep(1)
-            handler.stop()
-
 
 async def sleep_loop():
-    for i in range(10):
-        print(f"Sleeping {i}")
+    global kill_audio
+    i = 0
+    while not kill_audio:
         await asyncio.sleep(1)
+        i += 1
 
 async def main():
     await asyncio.gather(play_audio(), sleep_loop())
 
 asyncio.run(main())
+
 ```
 
 
