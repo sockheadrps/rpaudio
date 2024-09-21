@@ -18,30 +18,27 @@ jobs:
 
       - name: Check output date
         run: |
+          # Extract the last line containing the timestamp
           last_line=$(tail -n 4 pytest_output.txt | head -n 1)
 
-          pytest_date=$(echo "$last_line" | grep -oP "\d{4}-\d{2}-\d{2}")
-          pytest_time=$(echo "$last_line" | grep -oP "\d{2}:\d{2}:\d{2}")
+          # Extract the Unix timestamp from the last line (if printed)
+          pytest_timestamp=$(echo "$last_line" | grep -oP "\d{10}")
 
-          today=$(date +%Y-%m-%d)
-          now=$(date +%s)
+          # Get the current date in UTC
+          now=$(date -u +%s)
 
-          pytest_timestamp=$(date -d "$pytest_date $pytest_time" +%s 2>/dev/null)
-          if [ $? -ne 0 ]; then
-            echo "Error: Invalid date or time format"
-            exit 1
-          fi
+          echo "Pytest timestamp: $pytest_timestamp"
           one_hour_ago=$(($now - 3600))
 
-          if [ "$pytest_date" != "$today" ] || [ "$pytest_timestamp" -gt "$one_hour_ago" ]; then
+          # Print one hour ago timestamp
+          echo "One hour ago timestamp: $one_hour_ago"
+
+          # Check if pytest_timestamp is older than one hour
+          if [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
             echo "Pytest output is outdated or not from today. Please run the tests again."
             exit 1
           fi
 
-
-      - name: Success message
-        if: success()
-        run: echo "Pytest output is recent and valid."
 
   windows:
     runs-on: windows-latest
@@ -178,8 +175,7 @@ jobs:
 
       - name: Publish to PyPI
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         working-directory: dist
         run: |
           pip install --upgrade twine
