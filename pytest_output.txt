@@ -58,7 +58,7 @@ tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
 tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
 tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
 tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 2024-09-21 09:54:41 - All tests completed.
+ 1726943411 - All tests completed.
 
 
-============================= 51 passed in 18.32s =============================
+============================= 51 passed in 17.70s =============================
