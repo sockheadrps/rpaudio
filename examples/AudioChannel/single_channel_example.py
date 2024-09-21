@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 This snippet is a test for the rpaudio module. It demonstrates control over audio playback using a single AudioChannel class.
 """
 
-
 complete_1: bool = False
 complete_2: bool = False
 
@@ -32,10 +31,13 @@ async def play_audio(channel) -> None:
                 paused_once = True
                 start_time = datetime.now()
             elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
-                await asyncio.sleep(1)
                 channel.current_audio.stop()
-
+                paused_once = False
+                start_time = datetime.now()
+        
         # Check if the current audio has stopped
+        await asyncio.sleep(1)
+
         if channel.current_audio is None or not channel.current_audio.is_playing:
             complete_1 = True
 
@@ -54,9 +56,10 @@ async def play_audio(channel) -> None:
                 paused_once = True
                 start_time = datetime.now()
             elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
-                await asyncio.sleep(1)
                 channel.current_audio.stop()
-
+                paused_once = False
+                start_time = datetime.now()
+        
         # Check if the current audio has stopped
         if channel.current_audio is None or not channel.current_audio.is_playing:
             complete_2 = True
@@ -72,12 +75,13 @@ async def sleep_loop() -> None:
 
 async def main() -> None:
     audio_1 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_1.load_audio("examples\ex.wav")
+    audio_1.load_audio("examples/ex.wav")
+
     channels = audio_1.metadata["channels"]
     duration = audio_1.metadata["duration"]
     print(f"Channels: {channels}, Duration: {duration}")
 
-    audio_2: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+    audio_2 = rpaudio.AudioSink(callback=on_audio_stop)
     audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
     channel_1 = rpaudio.AudioChannel()

@@ -47,7 +47,7 @@ class AudioSink(Protocol):
 
             handler = AudioHandler(callback=on_audio_end)
         """
-        ...
+        
 
     @property
     def is_playing(self) -> bool:
@@ -66,7 +66,7 @@ class AudioSink(Protocol):
             handler.play()
             print(handler.is_playing)  # True if audio is playing
         """
-        ...
+        
 
     def load_audio(self, filename: str) -> AudioSink:
         """
@@ -75,7 +75,7 @@ class AudioSink(Protocol):
         :param filename: The path to the audio file to load.
         :type filename: str
         """
-        ...
+        
 
     def play(self) -> None:
         """
@@ -95,7 +95,7 @@ class AudioSink(Protocol):
             handler.load_audio("my_audio_file.mp3")
             handler.play()
         """
-        ...
+        
 
     def pause(self) -> None:
         """
@@ -113,7 +113,7 @@ class AudioSink(Protocol):
             handler.play()
             handler.pause()
         """
-        ...
+        
 
     def stop(self) -> None:
         """
@@ -131,8 +131,7 @@ class AudioSink(Protocol):
             handler.play()
             handler.stop()
         """
-        ...
-
+        
 
     @property
     def metadata(self) -> dict[str, any]:
@@ -150,18 +149,8 @@ class AudioSink(Protocol):
         :return: A dictionary containing metadata for the audio file.
         :rtype: dict[str, any]
         """
-        ...
+        
 
-    def set_speed(self, speed: float) -> None:
-        """
-        Set the playback speed of the audio.
-
-        :param speed: The playback speed. Must be greater than 0.
-        :type speed: float
-
-        :raises ValueError: If the speed is less than or equal to 0.
-        """
-        ...
 
     def get_speed(self) -> float:
         """
@@ -170,7 +159,7 @@ class AudioSink(Protocol):
         :return: The playback speed.
         :rtype: float
         """
-        ...
+        
 
     def get_pos(self) -> float:
         """
@@ -181,7 +170,7 @@ class AudioSink(Protocol):
 
         :raises RuntimeError: If playback has not started.
         """
-        ...
+        
 
     def try_seek(self, position: float) -> None:
         """
@@ -192,7 +181,7 @@ class AudioSink(Protocol):
 
         :raises ValueError: If the position is negative or not a valid time in the audio.
         """
-        ...
+        
 
     def set_volume(self, volume: float) -> None:
         """
@@ -203,7 +192,7 @@ class AudioSink(Protocol):
 
         :raises ValueError: If the volume is not between 0.0 and 1.0.
         """
-        ...
+        
 
     def get_volume(self) -> float:
         """
@@ -212,27 +201,62 @@ class AudioSink(Protocol):
         :return: The current volume level.
         :rtype: float
         """
-        ...
+        
+
+    def set_duration(self, duration: float) -> None:
+        """
+        Set the length of the audio file to the meta data.
+
+        :param duration: The duration. Must be a float
+        :type volume: float
+
+        """
+        
+
+    def get_remaining_time(self) -> float:
+        """
+        Get the remaining time of the audio playback.
+
+        :return: The remaining time of the audio in seconds, rounded to two decimal places.
+        :rtype: float
+        :raises RuntimeError: If the audio duration is not available.
+        :raises RuntimeError: If no sink is available or audio is not loaded.
+        """
+        
+
+    def apply_effects(self, effect_list: list) -> None:
+        """
+        Apply a list of audio effects such as fade-in, fade-out, or speed changes.
+
+        :param effect_list: A list of effects to apply. Each effect must be an instance of `FadeIn`, `FadeOut`, `ChangeSpeed`, or similar.
+        :type effect_list: list
+        :raises TypeError: If an unknown effect type is provided.
+        :raises RuntimeError: If an error occurs while applying the effects.
+        """
     
-    def set_fade_in(self, dur: float, start_vol: float, end_vol: float) -> None:
+    def cancel_callback(self) -> None:
         """
-        Set the fade-in effect for the audio playback.
+        Cancels the current audio callback.
 
-        :param duration: The duration of the fade-in effect in seconds. Must be non-negative.
-        :type duration: float
-        :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type start_vol: float
-        :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0.
-        :type end_vol: float
+        This method sets a flag to indicate that the audio callback should be canceled.
+        Once called, the audio sink will stop processing the current audio callback.
 
-        :raises ValueError: If duration is negative or volumes are out of range.
+        Example:
+
+        .. code-block:: python
+
+            audio_sink = AudioSink()
+            audio_sink.cancel_callback()
+            print("Audio callback has been canceled.")
+
+        :raises RuntimeError: If there is an issue acquiring the lock on the callback.
         """
-        ...
 
 class MetaData:
     """
     A class representing metadata for an audio file.
     """
+
     def __init__(self, audio_sink: 'AudioSink') -> None:
         """
         Initializes an instance of MetaData with values from the audio_sink.
@@ -257,7 +281,6 @@ class MetaData:
         self.channels = audio_sink.get_metadata("channels")
         self.duration = audio_sink.get_metadata("duration")
 
-
     @property
     def title(self) -> Optional[str]:
         """
@@ -266,7 +289,7 @@ class MetaData:
         :return: The title of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def artist(self) -> Optional[str]:
@@ -276,7 +299,7 @@ class MetaData:
         :return: The artist of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def date(self) -> Optional[str]:
@@ -286,7 +309,7 @@ class MetaData:
         :return: The date of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def year(self) -> Optional[str]:
@@ -296,7 +319,7 @@ class MetaData:
         :return: The year of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def album_title(self) -> Optional[str]:
@@ -306,7 +329,7 @@ class MetaData:
         :return: The album title of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def album_artist(self) -> Optional[str]:
@@ -316,7 +339,7 @@ class MetaData:
         :return: The album artist of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def track_number(self) -> Optional[str]:
@@ -326,7 +349,7 @@ class MetaData:
         :return: The track number of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def total_tracks(self) -> Optional[str]:
@@ -336,7 +359,7 @@ class MetaData:
         :return: The total number of tracks, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def disc_number(self) -> Optional[str]:
@@ -346,7 +369,7 @@ class MetaData:
         :return: The disc number, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def total_discs(self) -> Optional[str]:
@@ -356,7 +379,7 @@ class MetaData:
         :return: The total number of discs, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def genre(self) -> Optional[str]:
@@ -366,7 +389,7 @@ class MetaData:
         :return: The genre of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def composer(self) -> Optional[str]:
@@ -376,7 +399,7 @@ class MetaData:
         :return: The composer of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def comment(self) -> Optional[str]:
@@ -386,7 +409,7 @@ class MetaData:
         :return: The comment of the audio file, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def sample_rate(self) -> Optional[int]:
@@ -396,7 +419,7 @@ class MetaData:
         :return: The sample rate of the audio file, or None if not available.
         :rtype: Optional[int]
         """
-        ...
+        
 
     @property
     def channels(self) -> Optional[str]:
@@ -406,7 +429,7 @@ class MetaData:
         :return: The number of channels, or None if not available.
         :rtype: Optional[str]
         """
-        ...
+        
 
     @property
     def duration(self) -> Optional[float]:
@@ -416,32 +439,42 @@ class MetaData:
         :return: The duration of the audio file, or None if not available.
         :rtype: Optional[float]
         """
-        ...
+        
+
 
 class AudioChannel(Protocol):
-    """
-    Manages a queue of AudioSink objects and handles playback.
+    queue: List[AudioSink]
+    auto_consume: bool
+    currently_playing: Optional[AudioSink]
+    effects_chain: List[ActionType]
 
-    :param channel_id: A unique identifier for the audio channel.
-    :type channel_id: Union[int, str]
-    :param channel_callback: (optional) A callback invoked when the queue is idle.
-    :type channel_callback: Optional[Callable[[], None]]
-    """
+    def __init__(self) -> None:
+        """
+        Initializes a new AudioChannel instance with an empty queue, effects chain, and auto_consume set to False.
 
-    def __init__(self, channel_id: Union[int, str], channel_callback: Optional[Callable[[], None]]) -> None:
-        self.channel_id = channel_id
-        self.channel_callback = channel_callback
-        self._auto_consume = False
-        self.queue = []
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            channel.auto_consume = True
+            
+        """
+        
 
     def push(self, audio: AudioSink) -> None:
         """
-        Adds an AudioSink to the channel queue.
+        Adds an AudioSink object to the queue.
 
-        :param audio: The audio object to add to the queue.
-        :type audio: AudioSink
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            sink = AudioSink("my_audio_file.mp3")
+            channel.push(sink)
         """
-        ...
+        
 
     @property
     def auto_consume(self) -> bool:
@@ -457,41 +490,115 @@ class AudioChannel(Protocol):
         """
         Sets the auto-consume behavior of the channel.
 
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            channel.set_auto_consume(True)
+
         :param value: True to enable auto-consume, False to disable.
         :type value: bool
         """
-        ...
+        
 
     def drop_current_audio(self) -> None:
         """
-        Drops the current audio from the queue.
+        Stops the currently playing audio, if any, and removes it from the channel.
+
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            channel.drop_current_audio()  # Stops and clears the currently playing audio
         """
-        ...
+        
 
     @property
     def current_audio(self) -> AudioSink:
         """
         Returns the currently playing AudioSink object.
 
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            current_sink = channel.current_audio()
+            if current_sink:
+                print("Currently playing:", current_sink)
+            else:
+                print("No audio is playing")
+
         :rtype: AudioSink
         """
-        ...
+        
 
     async def _control_loop(self) -> None:
         """
         Continuously monitors the queue and handles playback,
         auto-consume, and callback execution. Not meant for python access
         """
-        ...
+        
 
     @property
     def queue_contents(self) -> List[AudioSink]:
         """
-        Returns the list of AudioSink objects currently in the queue.
+        Returns the current queue of AudioSink objects.
 
-        :rtype: List[AudioSink]
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            queue = channel.queue_contents()
+            print(f"Queue has {len(queue)} items")
         """
-        ...
+        
+
+    def is_playing(self) -> bool:
+        """
+        Returns True if audio is currently playing, otherwise False.
+
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            if channel.is_playing():
+                print("Audio is playing")
+            else:
+                print("No audio is playing")
+        """
+        
+
+    def set_effects_chain(self, effect_list: list) -> None:
+        """
+        Sets the effects chain for the audio channel.
+
+        This method accepts a list of effects and applies them to the audio channel. 
+        The effects can include FadeIn, FadeOut, and ChangeSpeed.
+
+        Example:
+
+        .. code-block:: python
+
+            channel = AudioChannel()
+            fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+            fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
+            speed_up_effect = ChangeSpeed(end_val=1.5, duration=5.0)
+
+            channel.set_effects_chain([fade_in_effect, fade_out_effect, speed_up_effect])
+
+        :param effect_list: A list of effects to set for the audio channel.
+        :type effect_list: list
+        :raises TypeError: If an unknown effect type is provided.
+        """
+        
+
+
+        
 
 
 class ChannelManager(Protocol):
@@ -533,11 +640,13 @@ class ChannelManager(Protocol):
     :vartype channels: dict
     """
     channels: dict[str, AudioChannel]
+
     def __init__(self) -> None:
         """
         Initializes a new instance of ChannelManager.
         """
-        ...
+        
+
     def add_channel(self, name: str, channel: AudioChannel) -> None:
         """
         Adds a new audio channel to the manager.
@@ -546,7 +655,8 @@ class ChannelManager(Protocol):
         :param channel: The audio channel to add.
         :type channel: AudioChannel
         """
-        ...
+        
+
     def drop_channel(self, name: str) -> None:
         """
         Drops an audio channel from the manager.
@@ -554,7 +664,8 @@ class ChannelManager(Protocol):
         :type name: str
         :raises RuntimeError: If the channel is not found.
         """
-        ...
+        
+
     def channel(self, name: str) -> Optional[AudioChannel]:
         """
         Retrieves a channel by its identifier.
@@ -563,14 +674,59 @@ class ChannelManager(Protocol):
         :return: The corresponding AudioChannel instance, or None if not found.
         :rtype: Optional[AudioChannel]
         """
-        ...
+        
+
     def start_all(self) -> None:
         """
         Starts auto-consuming audio on all channels.
         """
-        ...
+        
+
     def stop_all(self) -> None:
         """
         Stops auto-consuming audio on all channels.
         """
-        ...
+        
+
+
+class FadeIn:
+    """
+    Represents a fade-in effect for audio.
+
+    :param duration: Duration of the fade-in effect in seconds. Defaults to 5.0.
+    :param start_val: Starting volume value. Defaults to None.
+    :param end_val: Ending volume value. Defaults to 1.0.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
+    """
+
+    def __init__(self, duration=5.0, start_val=None, end_val=1.0, apply_after=None):
+        pass 
+
+
+class FadeOut:
+    """
+    Represents a fade-out effect for audio.
+
+    :param duration: Duration of the fade-out effect in seconds. Defaults to 5.0.
+    :param start_val: Starting volume value. Defaults to 1.0.
+    :param end_val: Ending volume value. Defaults to None.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
+    """
+
+    def __init__(self, duration=5.0, start_val=1.0, end_val=None, apply_after=None):
+        pass
+
+
+class ChangeSpeed:
+    """
+    Represents a speed change effect for audio.
+
+    :param duration: Duration of the speed change effect in seconds. Defaults to 0.0.
+    :param start_val: Starting speed value. Defaults to 1.0.
+    :param end_val: Ending speed value. Defaults to 1.5.
+    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
+    """
+
+    def __init__(self, duration=0.0, start_val=1.0, end_val=1.5, apply_after=None):
+        pass 
+

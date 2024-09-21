@@ -1,4 +1,4 @@
-use pyo3::{prelude::*};
+use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};
 use std::{fs::File, path::Path};
@@ -47,7 +47,7 @@ impl MetaData {
             comment: audio_sink.metadata.comment.clone(),
             sample_rate: audio_sink.metadata.sample_rate,
             channels: audio_sink.metadata.channels.clone(),
-            duration: audio_sink.metadata.duration,
+            duration: audio_sink.metadata.duration.clone(),
         }
     }
 
@@ -158,7 +158,7 @@ impl AudioTag for Id3v2Tag {
             comment: data_to_string(self.comment()),
             sample_rate: None,
             channels: None,
-            duration: None,
+            duration: self.duration().and_then(|s| Some(s as f64)),
         }
     }
 }
@@ -174,7 +174,12 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                 match tag_result {
                     Ok(tag) => {
                         let id3_tag = Id3v2Tag::from(tag);
-                        let metadata = id3_tag.metadata_fields();
+                        let mut metadata = id3_tag.metadata_fields();
+                        if metadata.duration.is_none() {
+                            let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                            let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                            metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
+                        }
                         Ok(metadata)
                     },
                     Err(e) => {
@@ -195,8 +200,8 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                 duration: Some(duration),
                 ..MetaData::default()
             };
-            Ok(metadata)  // Return metadata wrapped in Ok
+            Ok(metadata)
         },
-        _ => Ok(MetaData::default()),  // Handle unsupported file extensions and return empty metadata wrapped in Ok
+        _ => Ok(MetaData::default()),
     }
 }

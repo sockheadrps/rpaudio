@@ -6,8 +6,8 @@ rpaudio
 
 
 
-Module Contents
----------------
+Package Contents
+----------------
 
 .. py:class:: AudioChannel(channel_id, channel_callback)
 
@@ -45,6 +45,12 @@ Module Contents
       :rtype: bool
 
 
+   .. py:attribute:: channel_callback
+
+
+   .. py:attribute:: channel_id
+
+
    .. py:property:: current_audio
       :type: AudioSink
 
@@ -53,87 +59,17 @@ Module Contents
       :rtype: AudioSink
 
 
-.. py:class:: AudioChannel
-
-   Bases: :py:obj:`Protocol`
-
-
-   Base class for protocol classes.
-
-   Protocol classes are defined as::
-
-       class Proto(Protocol):
-           def meth(self) -> int:
-               ...
-
-   Such classes are primarily used with static type checkers that recognize
-   structural subtyping (static duck-typing), for example::
-
-       class C:
-           def meth(self) -> int:
-               return 0
-
-       def func(x: Proto) -> int:
-           return x.meth()
-
-       func(C())  # Passes static type check
-
-   See PEP 544 for details. Protocol classes decorated with
-   @typing.runtime_checkable act as simple-minded runtime protocols that check
-   only the presence of given attributes, ignoring their type signatures.
-   Protocol classes can be generic, they are defined as::
-
-       class GenProto(Protocol[T]):
-           def meth(self) -> T:
-               ...
-
-
-   .. py:method:: add_channel(name, channel)
-
-      Adds a new audio channel to the manager.
-
-      :param name: The unique identifier for the channel.
-      :type name: str
-      :param channel: The audio channel to add.
-      :type channel: AudioChannel
+   .. py:attribute:: queue
+      :value: []
 
 
 
-   .. py:method:: channel(name)
+   .. py:property:: queue_contents
+      :type: List[AudioSink]
 
-      Retrieves a channel by its identifier.
+      Returns the list of AudioSink objects currently in the queue.
 
-      :param name: The unique identifier of the channel.
-      :type name: str
-      :return: The corresponding AudioChannel instance, or None if not found.
-      :rtype: Optional[AudioChannel]
-
-
-
-   .. py:method:: drop_channel(name)
-
-      Drops an audio channel from the manager.
-
-      :param name: The unique identifier of the channel to drop.
-      :type name: str
-      :raises RuntimeError: If the channel is not found.
-
-
-
-   .. py:method:: start_all()
-
-      Starts auto-consuming audio on all channels.
-
-
-
-   .. py:method:: stop_all()
-
-      Stops auto-consuming audio on all channels.
-
-
-
-   .. py:attribute:: channels
-      :type:  dict[str, AudioChannel]
+      :rtype: List[AudioSink]
 
 
 .. py:class:: AudioSink(callback = None)
@@ -165,6 +101,17 @@ Module Contents
    :vartype is_playing: :py:class:`bool`
 
 
+   .. py:method:: apply_effects(effect_list)
+
+      Apply a list of audio effects such as fade-in, fade-out, or speed changes.
+
+      :param effect_list: A list of effects to apply. Each effect must be an instance of `FadeIn`, `FadeOut`, `ChangeSpeed`, or similar.
+      :type effect_list: list
+      :raises TypeError: If an unknown effect type is provided.
+      :raises RuntimeError: If an error occurs while applying the effects.
+
+
+
    .. py:method:: get_pos()
 
       Get the current playback position in seconds.
@@ -173,6 +120,17 @@ Module Contents
       :rtype: float
 
       :raises RuntimeError: If playback has not started.
+
+
+
+   .. py:method:: get_remaining_time()
+
+      Get the remaining time of the audio playback.
+
+      :return: The remaining time of the audio in seconds, rounded to two decimal places.
+      :rtype: float
+      :raises RuntimeError: If the audio duration is not available.
+      :raises RuntimeError: If no sink is available or audio is not loaded.
 
 
 
@@ -239,6 +197,18 @@ Module Contents
 
 
 
+   .. py:method:: set_effects(effect_list)
+
+      Apply effects from a list to the audio playback.
+
+      :param effect_list: A list of effect objects to be applied to the audio playback.
+                          The list may contain instances of `FadeIn`, `FadeOut`, and `ChangeSpeed`.
+      :type effect_list: list
+
+      :raises TypeError: If an unknown effect type is encountered in the list.
+
+
+
    .. py:method:: set_speed(speed)
 
       Set the playback speed of the audio.
@@ -287,17 +257,6 @@ Module Contents
 
       :raises ValueError: If the position is negative or not a valid time in the audio.
 
-
-
-   .. py:property:: get_effects
-      :type: dict[str, any]
-
-      NOT IMPLEMENTED YET
-
-      Get current effect settings.
-
-      :return: A dictionary containing the current effect settings.
-      :rtype: dict[str, any]
 
 
    .. py:property:: is_playing
@@ -375,6 +334,115 @@ Module Contents
 
    :ivar channels: A dictionary mapping channel identifiers to their corresponding AudioChannel instances.
    :vartype channels: dict
+
+
+   .. py:method:: add_channel(name, channel)
+
+      Adds a new audio channel to the manager.
+      :param name: The unique identifier for the channel.
+      :type name: str
+      :param channel: The audio channel to add.
+      :type channel: AudioChannel
+
+
+
+   .. py:method:: channel(name)
+
+      Retrieves a channel by its identifier.
+      :param name: The unique identifier of the channel.
+      :type name: str
+      :return: The corresponding AudioChannel instance, or None if not found.
+      :rtype: Optional[AudioChannel]
+
+
+
+   .. py:method:: drop_channel(name)
+
+      Drops an audio channel from the manager.
+      :param name: The unique identifier of the channel to drop.
+      :type name: str
+      :raises RuntimeError: If the channel is not found.
+
+
+
+   .. py:method:: start_all()
+
+      Starts auto-consuming audio on all channels.
+
+
+
+   .. py:method:: stop_all()
+
+      Stops auto-consuming audio on all channels.
+
+
+
+   .. py:attribute:: channels
+      :type:  dict[str, AudioChannel]
+
+
+.. py:class:: FadeIn(duration = 5.0, start_vol = 0.1, end_vol = 1.0, apply_after = None)
+
+   Represents a fade-in effect for audio playback.
+
+   :param duration: The duration of the fade-in effect in seconds. Defaults to 5.0 seconds.
+   :type duration: float, optional
+   :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 0.1.
+   :type start_vol: float, optional
+   :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 1.0.
+   :type end_vol: float, optional
+   :param apply_after: Time delay before applying the fade-in effect, optional.
+   :type apply_after: float, optional
+
+   :raises ValueError: If duration is negative or volumes are out of range.
+
+
+   .. py:attribute:: apply_after
+      :type:  float | None
+
+
+   .. py:attribute:: duration
+      :type:  float
+
+
+   .. py:attribute:: end_vol
+      :type:  float
+
+
+   .. py:attribute:: start_vol
+      :type:  float
+
+
+.. py:class:: FadeOut(duration = 5.0, start_vol = 1.0, end_vol = 0.1, apply_after = None)
+
+   Represents a fade-out effect for audio playback.
+
+   :param duration: The duration of the fade-out effect in seconds. Defaults to 5.0 seconds.
+   :type duration: float, optional
+   :param start_vol: The starting volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 1.0.
+   :type start_vol: float, optional
+   :param end_vol: The ending volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 0.1.
+   :type end_vol: float, optional
+   :param apply_after: Time delay before applying the fade-out effect, optional.
+   :type apply_after: float, optional
+
+   :raises ValueError: If duration is negative or volumes are out of range.
+
+
+   .. py:attribute:: apply_after
+      :type:  float | None
+
+
+   .. py:attribute:: duration
+      :type:  float
+
+
+   .. py:attribute:: end_vol
+      :type:  float
+
+
+   .. py:attribute:: start_vol
+      :type:  float
 
 
 .. py:class:: MetaData(audio_sink)
@@ -524,3 +592,5 @@ Module Contents
 
       :return: The year of the audio file, or None if not available.
       :rtype: Optional[str]
+
+
