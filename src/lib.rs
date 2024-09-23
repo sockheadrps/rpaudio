@@ -29,7 +29,6 @@ pub struct AudioSink {
     pub metadata: MetaData,
     volume: Arc<Mutex<f32>>,
     start_time: Arc<Mutex<Option<Instant>>>,
-    speed: Arc<Mutex<f32>>,
     position: Arc<Mutex<Duration>>,
     pub action_sender: Option<Sender<ActionType>>,
     pub action_receiver: Option<Arc<Mutex<Receiver<ActionType>>>>,
@@ -42,7 +41,6 @@ impl AudioSink {
     pub fn handle_action_and_effects(&mut self, sink: Arc<Mutex<Sink>>) {
         if let Some(receiver) = &self.action_receiver {
             if let Ok(action) = receiver.lock().unwrap().try_recv() {
-                // println!("Received action: {:?}", action);
                 let mut effects_guard = self.effects.lock().unwrap();
                 let effect_sync = Arc::new(EffectSync::new(
                     action.clone(),
@@ -61,7 +59,7 @@ impl AudioSink {
 
                         effects_guard.push(effect_sync);
                     }
-                    ActionType::FadeOut(fade_out) => {
+                    ActionType::FadeOut(_fade_out) => {
                         effects_guard.push(effect_sync);
                     }
                     ActionType::ChangeSpeed(_) => {
@@ -74,8 +72,9 @@ impl AudioSink {
 
             effects_guard.retain(|effect| {
                 let current_position = sink.lock().unwrap().get_pos().as_secs_f32();
+                let speed = Some(sink.lock().unwrap().speed());
                 let keep_effect = match effect.action {
-                    ActionType::FadeIn(fade_in) => match effect.update(current_position) {
+                    ActionType::FadeIn(fade_in) => match effect.update(current_position, speed) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
@@ -83,11 +82,10 @@ impl AudioSink {
                         EffectResult::Ignored => true,
                         EffectResult::Completed => {
                             sink.lock().unwrap().set_volume(fade_in.end_val);
-                            println!("FadeIn effect completed.");
                             false
                         }
                     },
-                    ActionType::FadeOut(fade_out) => match effect.update(current_position) {
+                    ActionType::FadeOut(fade_out) => match effect.update(current_position, speed) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
@@ -105,7 +103,7 @@ impl AudioSink {
                         }
                     },
                     ActionType::ChangeSpeed(change_speed) => {
-                        match effect.update(current_position) {
+                        match effect.update(current_position, None) {
                             EffectResult::Value(val) => {
                                 if change_speed.duration == 0.0 {
                                     sink.lock().unwrap().set_speed(change_speed.end_val);
@@ -144,7 +142,6 @@ impl AudioSink {
             metadata: MetaData::default(),
             volume: Arc::new(Mutex::new(1.0)),
             start_time: Arc::new(Mutex::new(None)),
-            speed: Arc::new(Mutex::new(1.0)),
             position: Mutex::new(Duration::from_secs(0)).into(),
             action_sender: Some(action_sender),
             action_receiver: Some(Arc::new(Mutex::new(action_receiver))),
@@ -473,7 +470,6 @@ impl AudioSink {
             }
         };
         if let Some(sender) = self.action_sender.take() {
-            // Handle effects sending here
             for effect in effects_guard.iter() {
                 sender.send(effect.clone()).unwrap();
             }
@@ -499,7 +495,6 @@ impl AudioSink {
 #[pymodule]
 fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
-    m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
     m.add_class::<audioqueue::AudioChannel>()?;
     m.add_class::<ActionType>()?;
