@@ -72,8 +72,9 @@ impl AudioSink {
 
             effects_guard.retain(|effect| {
                 let current_position = sink.lock().unwrap().get_pos().as_secs_f32();
+                let speed = Some(sink.lock().unwrap().speed());
                 let keep_effect = match effect.action {
-                    ActionType::FadeIn(fade_in) => match effect.update(current_position) {
+                    ActionType::FadeIn(fade_in) => match effect.update(current_position, speed) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
@@ -81,11 +82,10 @@ impl AudioSink {
                         EffectResult::Ignored => true,
                         EffectResult::Completed => {
                             sink.lock().unwrap().set_volume(fade_in.end_val);
-                            println!("FadeIn effect completed.");
                             false
                         }
                     },
-                    ActionType::FadeOut(fade_out) => match effect.update(current_position) {
+                    ActionType::FadeOut(fade_out) => match effect.update(current_position, speed) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
@@ -103,7 +103,7 @@ impl AudioSink {
                         }
                     },
                     ActionType::ChangeSpeed(change_speed) => {
-                        match effect.update(current_position) {
+                        match effect.update(current_position, None) {
                             EffectResult::Value(val) => {
                                 if change_speed.duration == 0.0 {
                                     sink.lock().unwrap().set_speed(change_speed.end_val);
@@ -470,7 +470,6 @@ impl AudioSink {
             }
         };
         if let Some(sender) = self.action_sender.take() {
-            // Handle effects sending here
             for effect in effects_guard.iter() {
                 sender.send(effect.clone()).unwrap();
             }

@@ -15,77 +15,48 @@ To quickly get started with rpaudio, follow these steps:
     .. code-block:: python
 
 
+        import rpaudio
         import asyncio
-        from rpaudio import AudioSink, AudioChannel, ChannelManager
+        from rpaudio import FadeIn, FadeOut, ChangeSpeed
+
+        kill_audio = False
+        AUDIO_FILE = r"C:\Users\16145\Desktop\code_24\frpaudio\rpaudio\examples\ex.wav"
 
 
         def on_audio_stop():
-            print("Audio stopped.")
+            global kill_audio
+            kill_audio = True
+            print("Audio has stopped")
 
 
-        async def run_manager(manager: ChannelManager):
-            # Autoplay Channel1
-            manager.channel("Channel1").auto_consume = True
-            await asyncio.sleep(3)
+        async def play_audio():
+            handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
+            print(handler.metadata)
 
-            # Autoplay all channels (channel2 not autoplayed)
-            manager.start_all()
-            await asyncio.sleep(3)
+            fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+            fade_out_effect = FadeOut(duration=2.0)
+            speed_up = ChangeSpeed(apply_after=1.0, end_val=1.5, duration=3.0)
 
-            # Get the current audio metadata of channel1
-            print(f"{manager.channel('Channel1').current_audio.metadata} is playing in Channel1")
+            effects_list = [fade_in_effect,  fade_out_effect, speed_up]
+            handler.apply_effects(effects_list)
 
-            # Pause channel1
-            manager.channel("Channel1").current_audio.pause()
-            await asyncio.sleep(3)
+            handler.play()
 
-            # Stop channel1's current audio, autoplays next audio in queue if auto_consume is True
-            manager.channel("Channel1").current_audio.cancel_callback()
-            manager.channel("Channel1").current_audio.stop()
-            await asyncio.sleep(3)
 
-            # Stop the remaining audio in channel1 which exhausts its queue
-            manager.channel("Channel1").current_audio.cancel_callback()
-            manager.channel("Channel1").current_audio.stop()
-            await asyncio.sleep(3)
+            while not kill_audio:
+                await asyncio.sleep(1)
 
-            # Stop channel2's current audio, autoplays next audio in queue if auto_consume is True
-            manager.channel("Channel2").current_audio.stop()
-            await asyncio.sleep(3)
 
-            # Stop the remaining audio in channel2 which exhaust its queue
-            manager.channel("Channel2").current_audio.stop()
-            await asyncio.sleep(1)
+        async def sleep_loop():
+            global kill_audio
+            i = 0
+            while not kill_audio:
+                await asyncio.sleep(1)
+                i += 1
 
 
         async def main():
-            # Intializing 2 audio sinks
-            audio_1 = AudioSink(callback=on_audio_stop).load_audio("ex.wav")
-            audio_2 = AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
+            await asyncio.gather(play_audio(), sleep_loop())
 
-            # Intializing 1st audio channel
-            channel_1 = AudioChannel()
-            channel_1.push(audio_1)
-            channel_1.push(audio_2)
+        asyncio.run(main())
 
-            # Intializing 2 more audio sinks
-            audio_3 = AudioSink(callback=on_audio_stop).load_audio("ex.wav")
-            audio_4 = AudioSink(callback=on_audio_stop).load_audio("Acrylic.mp3")
-
-            # Intializing 2nd audio channel
-            channel_2 = AudioChannel()
-            channel_2.push(audio_3)
-            channel_2.push(audio_4)
-
-            # Intializing ChannelManager
-            manager = ChannelManager()
-            manager.add_channel("Channel1", channel_1)
-            manager.add_channel("Channel2", channel_2)
-
-            await asyncio.gather(
-                run_manager(manager),
-            )
-
-
-        if __name__ == "__main__":
-            asyncio.run(main())
