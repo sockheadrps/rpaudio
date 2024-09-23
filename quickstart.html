@@ -150,6 +150,13 @@
     <span class="n">channel_2</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_3</span><span class="p">)</span>
     <span class="n">channel_2</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_4</span><span class="p">)</span>
 
+    <span class="c1"># Add effects to the channels</span>
+    <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">start_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">fade_out_effect</span> <span class="o">=</span> <span class="n">FadeOut</span><span class="p">(</span><span class="n">end_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+    <span class="n">effects</span> <span class="o">=</span> <span class="p">[</span><span class="n">fade_in_effect</span><span class="p">,</span> <span class="n">fade_out_effect</span><span class="p">]</span>
+    <span class="n">channel_1</span><span class="o">.</span><span class="n">set_effects_chain</span><span class="p">(</span><span class="n">effects</span><span class="p">)</span>
+    <span class="n">channel_2</span><span class="o">.</span><span class="n">set_effects_chain</span><span class="p">(</span><span class="n">effects</span><span class="p">)</span>
+
     <span class="c1"># Intializing ChannelManager</span>
     <span class="n">manager</span> <span class="o">=</span> <span class="n">ChannelManager</span><span class="p">()</span>
     <span class="n">manager</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="s2">&quot;Channel1&quot;</span><span class="p">,</span> <span class="n">channel_1</span><span class="p">)</span>

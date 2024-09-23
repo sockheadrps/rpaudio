@@ -56,7 +56,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.ChannelManager"><code class="docutils literal notranslate"><span class="pre">ChannelManager</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.FadeIn"><code class="docutils literal notranslate"><span class="pre">FadeIn</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.FadeOut"><code class="docutils literal notranslate"><span class="pre">FadeOut</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#rpaudio.MetaData"><code class="docutils literal notranslate"><span class="pre">MetaData</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -97,37 +96,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="rpaudio.AudioChannel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">AudioChannel</span></span><a class="headerlink" href="#rpaudio.AudioChannel" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Base class for protocol classes.</p>
-<p>Protocol classes are defined as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Proto</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">meth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="o">...</span>
-</pre></div>
-</div>
-<p>Such classes are primarily used with static type checkers that recognize
-structural subtyping (static duck-typing).</p>
-<p>For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">C</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">meth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-
-<span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Proto</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">meth</span><span class="p">()</span>
-
-<span class="n">func</span><span class="p">(</span><span class="n">C</span><span class="p">())</span>  <span class="c1"># Passes static type check</span>
-</pre></div>
-</div>
-<p>See PEP 544 for details. Protocol classes decorated with
-&#64;typing.runtime_checkable act as simple-minded runtime protocols that check
-only the presence of given attributes, ignoring their type signatures.
-Protocol classes can be generic, they are defined as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GenProto</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-    <span class="k">def</span> <span class="nf">meth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-        <span class="o">...</span>
-</pre></div>
-</div>
-<dl class="py method">
+<dd><dl class="py method">
 <dt class="sig sig-object py" id="rpaudio.AudioChannel.drop_current_audio">
 <span class="sig-name descname"><span class="pre">drop_current_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel.drop_current_audio" title="Link to this definition"></a></dt>
 <dd><p>Stops the currently playing audio, if any, and removes it from the channel.</p>
@@ -278,8 +247,7 @@ The effects can include FadeIn, FadeOut, and ChangeSpeed.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="rpaudio.AudioSink">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">AudioSink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Interface that wraps functionality for audio files.</p>
+<dd><p>Interface that wraps functionality for audio files.</p>
 <p>This class provides methods to load, play, pause, stop audio playback, manage audio effects,
 and manipulate playback speed and volume. An optional callback function can be invoked when
 the audio stops playing.</p>
@@ -589,13 +557,17 @@ If the audio is already playing, this method has no effect.</p>
 </ul>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">change_speed</span> <span class="o">=</span> <span class="n">ChangeSpeed</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">start_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="c1"># Changes audio speed over 2 seconds from normal speed (1.0) to faster (1.2)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="rpaudio.ChannelManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">ChannelManager</span></span><a class="headerlink" href="#rpaudio.ChannelManager" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
-<p>Manages multiple audio channels and provides an API to control them.</p>
+<dd><p>Manages multiple audio channels and provides an API to control them.</p>
 <blockquote>
 <div><p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Intializing 2 audio sinks</span>
@@ -731,6 +703,11 @@ If the audio is already playing, this method has no effect.</p>
 </ul>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fade_in</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">start_val</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="c1"># Applies a fade-in effect over 3 seconds, starting from 0.2 volume to full volume (1.0)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -747,241 +724,11 @@ If the audio is already playing, this method has no effect.</p>
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="rpaudio.MetaData">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">MetaData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio_sink</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.MetaData" title="Link to this definition"></a></dt>
-<dd><p>A class representing metadata for an audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>audio_sink</strong> (<a class="reference internal" href="#rpaudio.AudioSink" title="rpaudio.AudioSink"><em>AudioSink</em></a>)</p>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.album_artist">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">album_artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.album_artist" title="Link to this definition"></a></dt>
-<dd><p>Get the album artist of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The album artist of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.album_title">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">album_title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.album_title" title="Link to this definition"></a></dt>
-<dd><p>Get the album title of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The album title of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.artist">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">artist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.artist" title="Link to this definition"></a></dt>
-<dd><p>Get the artist of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The artist of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.channels">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.channels" title="Link to this definition"></a></dt>
-<dd><p>Get the number of channels in the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The number of channels, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.comment">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">comment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.comment" title="Link to this definition"></a></dt>
-<dd><p>Get the comment associated with the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The comment of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.composer">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">composer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.composer" title="Link to this definition"></a></dt>
-<dd><p>Get the composer of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The composer of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.date">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.date" title="Link to this definition"></a></dt>
-<dd><p>Get the date associated with the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The date of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.disc_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disc_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.disc_number" title="Link to this definition"></a></dt>
-<dd><p>Get the disc number of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The disc number, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.duration">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.duration" title="Link to this definition"></a></dt>
-<dd><p>Get the duration of the audio file in seconds.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The duration of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[float]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.genre">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">genre</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.genre" title="Link to this definition"></a></dt>
-<dd><p>Get the genre of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The genre of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.sample_rate">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sample_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.sample_rate" title="Link to this definition"></a></dt>
-<dd><p>Get the sample rate of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The sample rate of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[int]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.title">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.title" title="Link to this definition"></a></dt>
-<dd><p>Get the title of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The title of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.total_discs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_discs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.total_discs" title="Link to this definition"></a></dt>
-<dd><p>Get the total number of discs in the album.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The total number of discs, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.total_tracks">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_tracks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.total_tracks" title="Link to this definition"></a></dt>
-<dd><p>Get the total number of tracks in the album.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The total number of tracks, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.track_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">track_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.track_number" title="Link to this definition"></a></dt>
-<dd><p>Get the track number of the audio file.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The track number of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="rpaudio.MetaData.year">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">year</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#rpaudio.MetaData.year" title="Link to this definition"></a></dt>
-<dd><p>Get the year the audio file was released.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The year of the audio file, or None if not available.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Optional[str]</p>
-</dd>
-</dl>
-</dd></dl>
-
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fade_out</span> <span class="o">=</span> <span class="n">FadeOut</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">start_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="c1"># Applies a fade-out effect over 4 seconds, fading from full volume (1.0) to silence (0.0)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

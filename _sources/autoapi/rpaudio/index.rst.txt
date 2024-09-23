@@ -11,41 +11,6 @@ Module Contents
 
 .. py:class:: AudioChannel
 
-   Bases: :py:obj:`Protocol`
-
-
-   Base class for protocol classes.
-
-   Protocol classes are defined as::
-
-       class Proto(Protocol):
-           def meth(self) -> int:
-               ...
-
-   Such classes are primarily used with static type checkers that recognize
-   structural subtyping (static duck-typing).
-
-   For example::
-
-       class C:
-           def meth(self) -> int:
-               return 0
-
-       def func(x: Proto) -> int:
-           return x.meth()
-
-       func(C())  # Passes static type check
-
-   See PEP 544 for details. Protocol classes decorated with
-   @typing.runtime_checkable act as simple-minded runtime protocols that check
-   only the presence of given attributes, ignoring their type signatures.
-   Protocol classes can be generic, they are defined as::
-
-       class GenProto(Protocol[T]):
-           def meth(self) -> T:
-               ...
-
-
    .. py:method:: drop_current_audio()
 
       Stops the currently playing audio, if any, and removes it from the channel.
@@ -167,9 +132,6 @@ Module Contents
 
 
 .. py:class:: AudioSink(callback = None)
-
-   Bases: :py:obj:`Protocol`
-
 
    Interface that wraps functionality for audio files.
 
@@ -403,11 +365,15 @@ Module Contents
    :param end_val: Ending speed value. Defaults to 1.5.
    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
 
+   Example:
+
+   .. code-block:: python
+
+       change_speed = ChangeSpeed(duration=2.0, start_val=1.0, end_val=1.2)
+       # Changes audio speed over 2 seconds from normal speed (1.0) to faster (1.2)
+
 
 .. py:class:: ChannelManager
-
-   Bases: :py:obj:`Protocol`
-
 
    Manages multiple audio channels and provides an API to control them.
 
@@ -500,6 +466,13 @@ Module Contents
    :param end_val: Ending volume value. Defaults to 1.0.
    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
 
+   Example:
+
+   .. code-block:: python
+
+       fade_in = FadeIn(duration=3.0, start_val=0.2, end_val=1.0)
+       # Applies a fade-in effect over 3 seconds, starting from 0.2 volume to full volume (1.0)
+
 
 .. py:class:: FadeOut(duration=5.0, start_val=1.0, end_val=None, apply_after=None)
 
@@ -510,153 +483,11 @@ Module Contents
    :param end_val: Ending volume value. Defaults to None.
    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
 
+   Example:
 
-.. py:class:: MetaData(audio_sink)
+   .. code-block:: python
 
-   A class representing metadata for an audio file.
-
-
-   .. py:property:: album_artist
-      :type: Optional[str]
-
-      Get the album artist of the audio file.
-
-      :return: The album artist of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: album_title
-      :type: Optional[str]
-
-      Get the album title of the audio file.
-
-      :return: The album title of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: artist
-      :type: Optional[str]
-
-      Get the artist of the audio file.
-
-      :return: The artist of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: channels
-      :type: Optional[str]
-
-      Get the number of channels in the audio file.
-
-      :return: The number of channels, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: comment
-      :type: Optional[str]
-
-      Get the comment associated with the audio file.
-
-      :return: The comment of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: composer
-      :type: Optional[str]
-
-      Get the composer of the audio file.
-
-      :return: The composer of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: date
-      :type: Optional[str]
-
-      Get the date associated with the audio file.
-
-      :return: The date of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: disc_number
-      :type: Optional[str]
-
-      Get the disc number of the audio file.
-
-      :return: The disc number, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: duration
-      :type: Optional[float]
-
-      Get the duration of the audio file in seconds.
-
-      :return: The duration of the audio file, or None if not available.
-      :rtype: Optional[float]
-
-
-   .. py:property:: genre
-      :type: Optional[str]
-
-      Get the genre of the audio file.
-
-      :return: The genre of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: sample_rate
-      :type: Optional[int]
-
-      Get the sample rate of the audio file.
-
-      :return: The sample rate of the audio file, or None if not available.
-      :rtype: Optional[int]
-
-
-   .. py:property:: title
-      :type: Optional[str]
-
-      Get the title of the audio file.
-
-      :return: The title of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: total_discs
-      :type: Optional[str]
-
-      Get the total number of discs in the album.
-
-      :return: The total number of discs, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: total_tracks
-      :type: Optional[str]
-
-      Get the total number of tracks in the album.
-
-      :return: The total number of tracks, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: track_number
-      :type: Optional[str]
-
-      Get the track number of the audio file.
-
-      :return: The track number of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: year
-      :type: Optional[str]
-
-      Get the year the audio file was released.
-
-      :return: The year of the audio file, or None if not available.
-      :rtype: Optional[str]
+       fade_out = FadeOut(duration=4.0, start_val=1.0, end_val=0.0)
+       # Applies a fade-out effect over 4 seconds, fading from full volume (1.0) to silence (0.0)
 
 
