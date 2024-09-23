@@ -29,7 +29,6 @@ pub struct AudioSink {
     pub metadata: MetaData,
     volume: Arc<Mutex<f32>>,
     start_time: Arc<Mutex<Option<Instant>>>,
-    speed: Arc<Mutex<f32>>,
     position: Arc<Mutex<Duration>>,
     pub action_sender: Option<Sender<ActionType>>,
     pub action_receiver: Option<Arc<Mutex<Receiver<ActionType>>>>,
@@ -42,7 +41,6 @@ impl AudioSink {
     pub fn handle_action_and_effects(&mut self, sink: Arc<Mutex<Sink>>) {
         if let Some(receiver) = &self.action_receiver {
             if let Ok(action) = receiver.lock().unwrap().try_recv() {
-                // println!("Received action: {:?}", action);
                 let mut effects_guard = self.effects.lock().unwrap();
                 let effect_sync = Arc::new(EffectSync::new(
                     action.clone(),
@@ -61,7 +59,7 @@ impl AudioSink {
 
                         effects_guard.push(effect_sync);
                     }
-                    ActionType::FadeOut(fade_out) => {
+                    ActionType::FadeOut(_fade_out) => {
                         effects_guard.push(effect_sync);
                     }
                     ActionType::ChangeSpeed(_) => {
@@ -144,7 +142,6 @@ impl AudioSink {
             metadata: MetaData::default(),
             volume: Arc::new(Mutex::new(1.0)),
             start_time: Arc::new(Mutex::new(None)),
-            speed: Arc::new(Mutex::new(1.0)),
             position: Mutex::new(Duration::from_secs(0)).into(),
             action_sender: Some(action_sender),
             action_receiver: Some(Arc::new(Mutex::new(action_receiver))),
@@ -499,7 +496,6 @@ impl AudioSink {
 #[pymodule]
 fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
-    m.add_class::<MetaData>()?;
     m.add_class::<mixer::ChannelManager>()?;
     m.add_class::<audioqueue::AudioChannel>()?;
     m.add_class::<ActionType>()?;

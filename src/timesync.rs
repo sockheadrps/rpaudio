@@ -126,6 +126,7 @@ impl ChangeSpeed {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[allow(non_upper_case_globals)]
 #[pyclass]
 pub enum ActionType {
     FadeIn(FadeIn),
@@ -161,7 +162,7 @@ impl EffectSync {
                 fade_in.apply_after,
             ),
             ActionType::FadeOut(fade_out) => {
-                let start_pos = if fade_out.apply_after.is_none() {
+                let _start_pos = if fade_out.apply_after.is_none() {
                     sink_duration.unwrap_or(current_position) - fade_out.duration
                 } else {
                     current_position
