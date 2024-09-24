@@ -301,18 +301,22 @@ impl EffectSync {
             }
         } else {
             // If there's no apply_after, handle effects directly
-            if current_position < speed_start_position {
-                println!("Ignored speed_start_position: {} current_position: {}", speed_start_position, current_position);
-                return EffectResult::Ignored;
-            }
+            
 
             // Handle completion check for fade-out and fade-in
             if is_fade_out {
+                if current_position < speed_start_position {
+                    return EffectResult::Ignored;
+                }
                 if current_position >= speed_completion_pos {
                     println!("fade-out completed");
                     return EffectResult::Completed;
                 }
             } else {
+                if current_position < speed_start_position {
+                    println!("Ignored speed_start_position: {} current_position: {}", speed_start_position, current_position);
+                    return EffectResult::Ignored;
+                }
                 if current_position >= speed_completion_pos {
                     return EffectResult::Completed;
                 }
