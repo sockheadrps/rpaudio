@@ -72,49 +72,38 @@ impl AudioSink {
 
             effects_guard.retain(|effect| {
                 let current_position = sink.lock().unwrap().get_pos().as_secs_f32();
-                let speed = Some(sink.lock().unwrap().speed());
                 let keep_effect = match effect.action {
-                    ActionType::FadeIn(fade_in) => match effect.update(current_position, speed) {
+                    ActionType::FadeIn(_fade_in) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
                         }
                         EffectResult::Ignored => true,
-                        EffectResult::Completed => {
-                            sink.lock().unwrap().set_volume(fade_in.end_val);
-                            false
+                        EffectResult::Completed(val) => {
+                            sink.lock().unwrap().set_volume(val); 
+                            false 
                         }
                     },
-                    ActionType::FadeOut(fade_out) => match effect.update(current_position, speed) {
+                    ActionType::FadeOut(_fade_out) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
                             sink.lock().unwrap().set_volume(val);
                             true
                         }
                         EffectResult::Ignored => true,
-                        EffectResult::Completed => {
-                            if let Some(end_val) = fade_out.end_val {
-                                sink.lock().unwrap().set_volume(end_val);
-                            } else {
-                                sink.lock().unwrap().set_volume(0.0);
-
-                            }
-
+                        EffectResult::Completed(val) => {
+                            sink.lock().unwrap().set_volume(val);
                             false
                         }
                     },
-                    ActionType::ChangeSpeed(change_speed) => {
-                        match effect.update(current_position, None) {
+                    ActionType::ChangeSpeed(_change_speed) => {
+                        match effect.update(current_position) {
                             EffectResult::Value(val) => {
-                                if change_speed.duration == 0.0 {
-                                    sink.lock().unwrap().set_speed(change_speed.end_val);
-                                } else {
-                                    sink.lock().unwrap().set_speed(val);
-                                }
+                                sink.lock().unwrap().set_speed(val);
                                 true
                             }
                             EffectResult::Ignored => true,
-                            EffectResult::Completed => {
-                                sink.lock().unwrap().set_speed(change_speed.end_val);
+                            EffectResult::Completed(val) => {
+                                sink.lock().unwrap().set_speed(val);
                                 false
                             }
                         }
@@ -174,7 +163,9 @@ impl AudioSink {
         dict.insert("channels", self.metadata.channels.clone());
         dict.insert(
             "duration",
-            self.metadata.duration.map(|duration| format!("{:.1}", duration)),
+            self.metadata
+                .duration
+                .map(|duration| format!("{:.1}", duration)),
         );
 
         let py_dict = PyDict::new_bound(py);
@@ -262,7 +253,7 @@ impl AudioSink {
                 }
 
                 self_clone.handle_action_and_effects(sink.clone());
-                thread::sleep(Duration::from_millis(100));
+                thread::sleep(Duration::from_millis(20));
             }
         });
 
@@ -359,7 +350,7 @@ impl AudioSink {
 
     pub fn set_duration(&mut self, duration: f32) -> PyResult<()> {
         let duration = Duration::from_secs_f32(duration);
-        self.metadata.duration = Some(duration.as_secs_f64());  // Keep as f64
+        self.metadata.duration = Some(duration.as_secs_f64()); 
         Ok(())
     }
 

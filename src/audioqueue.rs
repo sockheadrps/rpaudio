@@ -2,7 +2,7 @@ use crate::timesync::{self, ActionType};
 use crate::AudioSink;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyList, IntoPyDict};
+use pyo3::types::PyList;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{fmt, thread};
@@ -119,7 +119,7 @@ impl AudioChannel {
                     eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
                 }
 
-                thread::sleep(Duration::from_millis(100));
+                thread::sleep(Duration::from_millis(20));
             }
         });
 
@@ -228,7 +228,6 @@ impl AudioChannel {
                         Py::new(py, fade_out.clone()).unwrap().into_py(py)
                     }
                     ActionType::ChangeSpeed(change_speed) => {
-                        // Convert Rust ChangeSpeed to Python ChangeSpeed
                         Py::new(py, change_speed.clone()).unwrap().into_py(py)
                     }
                 }
