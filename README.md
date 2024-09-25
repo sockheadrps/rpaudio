@@ -14,6 +14,9 @@
 
 **Python 3.8+**
 
+### Example Projects
+**[FastAPI LAN Audio Web Client](https://github.com/sockheadrps/RpaudioFastAPIExample)**
+
 ## Getting Started ([Read the Docs](https://sockheadrps.github.io/rpaudio/))
 
 ```py
