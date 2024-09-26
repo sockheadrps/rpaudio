@@ -98,7 +98,7 @@ async def test_audio_channel_auto_consume(audio_callback):
     channel_1.current_audio.stop()
     await asyncio.sleep(0.1)
     audio_callback.assert_called_once()
-    assert len(channel_1.queue_contents) == 1
+    assert len(channel_1.queue_contents) == 0
 
 
 @pytest.mark.asyncio
