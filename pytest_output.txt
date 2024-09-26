@@ -47,7 +47,7 @@ tests/test_ChannelManager.py::test_stop_all PASSED                       [ 68%]
 tests/test_ChannelManager.py::test_drop_channel PASSED                   [ 70%]
 tests/test_ChannelManager.py::test_drop_channel_not_found PASSED         [ 72%]
 tests/test_Channel_multi_sink.py::test_audio_channel_effects_chain PASSED [ 74%]
-tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume PASSED [ 75%]
+tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume FAILED [ 75%]
 tests/test_Channel_multi_sink.py::test_audiochannel_multiple_sink_pushes PASSED [ 77%]
 tests/test_Channel_multi_sink.py::test_drop_current_audio PASSED         [ 79%]
 tests/test_Channel_multi_sink.py::test_current_audio PASSED              [ 81%]
@@ -61,7 +61,38 @@ tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
 tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
 tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
 tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 1727268535 - All tests completed.
+ 1727368307 - All tests completed.
 
 
-============================= 54 passed in 16.67s =============================
+================================== FAILURES ===================================
+_______________________ test_audio_channel_auto_consume _______________________
+
+audio_callback = <Mock id='1567950092304'>
+
+    @pytest.mark.asyncio
+    async def test_audio_channel_auto_consume(audio_callback):
+        """Test if the AudioChannel can auto-consume and switch between audio sinks."""
+        # Initialize AudioSinks
+        audio_1 = rpaudio.AudioSink(callback=audio_callback)
+        audio_1.load_audio("examples/ex.wav")
+        audio_2 = rpaudio.AudioSink(callback=audio_callback)
+        audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+        channel_1 = rpaudio.AudioChannel()
+        channel_1.push(audio_1)
+        channel_1.push(audio_2)
+        assert len(channel_1.queue_contents) == 2
+        channel_1.auto_consume = True
+        await asyncio.sleep(0.1)
+        assert len(channel_1.queue_contents) == 1
+        channel_1.current_audio.stop()
+        await asyncio.sleep(0.1)
+        audio_callback.assert_called_once()
+>       assert len(channel_1.queue_contents) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+E        +    where [] = <builtins.AudioChannel object at 0x0000016D111BBD70>.queue_contents
+
+tests\test_Channel_multi_sink.py:101: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume - as...
+======================== 1 failed, 53 passed in 16.23s ========================
