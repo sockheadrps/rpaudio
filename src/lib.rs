@@ -35,6 +35,7 @@ pub struct AudioSink {
     initial_play: bool,
     effects: Arc<Mutex<Vec<Arc<EffectSync>>>>,
     effects_chain: Arc<Mutex<Vec<ActionType>>>,
+    resume: bool,
 }
 
 impl AudioSink {
@@ -110,6 +111,11 @@ impl AudioSink {
                     }
                 };
 
+                if sink.lock().unwrap().is_paused() && self.resume {
+                    println!("Resuming audio effects");
+                    sink.lock().unwrap().play();
+                    self.resume = false;
+                }
                 keep_effect
             });
         }
@@ -137,6 +143,7 @@ impl AudioSink {
             initial_play: true,
             effects: Arc::new(Mutex::new(Vec::new())),
             effects_chain: Arc::new(Mutex::new(Vec::new())),
+            resume: false,
         }
     }
 
@@ -267,6 +274,11 @@ impl AudioSink {
                 sink.lock().unwrap().play();
 
                 self.handle_action_and_effects(sink.clone());
+            } else {
+                println!("Resuming audio in playu");
+                self.resume = true;
+                self.handle_action_and_effects(sink.clone());
+
             }
             Ok(())
         } else {

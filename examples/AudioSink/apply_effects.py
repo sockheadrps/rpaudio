@@ -13,13 +13,14 @@ def on_audio_stop():
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
     print(handler.metadata)
+    handler.try_seek(148.0)
     await asyncio.sleep(0.3)
 
-    fade_in_effect = FadeIn(duration=10.0, apply_after=0.0)
+    fade_in_effect = FadeIn(duration=3.0, apply_after=0.0)
     fade_out_effect = FadeOut(duration=10.0, apply_after=10.0)
     speed_up = ChangeSpeed(apply_after=5.0, end_val=1.5, duration=3.0)
 
-    effects_list = [fade_in_effect, fade_out_effect, speed_up]
+    effects_list = [fade_in_effect]
     handler.apply_effects(effects_list)
     handler.play()
 

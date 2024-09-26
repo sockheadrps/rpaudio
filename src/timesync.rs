@@ -199,7 +199,7 @@ impl EffectSync {
     }
 
     pub fn update(&self, current_position: f32) -> EffectResult {
-        if current_position < self.start_position {
+        if current_position <= self.start_position {
             return EffectResult::Ignored;
         } else {
             if current_position >= self.completion_pos {

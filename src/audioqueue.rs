@@ -126,7 +126,6 @@ impl AudioChannel {
         let x = channel_arc.lock().unwrap().clone();
         x
     }
-    
 
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
@@ -172,8 +171,11 @@ impl AudioChannel {
 
     #[getter]
     pub fn current_audio(&self) -> Option<AudioSink> {
-        let playing_guard = self.currently_playing.lock().unwrap();
-        playing_guard.clone()
+        if let Ok(playing_guard) = self.currently_playing.try_lock() {
+            playing_guard.clone()
+        } else {
+            None
+        }
     }
 
     pub fn drop_current_audio(&mut self) {
@@ -238,38 +240,41 @@ impl AudioChannel {
         Ok(py_list.into())
     }
 
-    pub fn set_effects_chain(&mut self, effect_list: Py<PyList>) -> PyResult<()> {
-        Python::with_gil(|py| {
-            let mut effects_guard = match self.effects_chain.lock() {
-                Ok(guard) => guard,
-                Err(_) => {
-                    return Err(PyRuntimeError::new_err(
-                        "Failed to acquire lock on effects_chain",
-                    ))
+   pub fn set_effects_chain(&mut self, effect_list: Py<PyList>) -> PyResult<()> {
+    Python::with_gil(|py| {
+        let mut effects_guard = match self.effects_chain.lock() {
+            Ok(guard) => guard,
+            Err(_) => {
+                return Err(PyRuntimeError::new_err(
+                    "Failed to acquire lock on effects_chain",
+                ));
+            }
+        };
+
+        let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
+
+        let rust_effect_list: Vec<ActionType> = _effect_list
+            .into_iter()
+            .map(|effect| {
+                let effect = effect.downcast_bound(py).unwrap();
+                if let Ok(fade_in) = effect.extract::<FadeIn>() {
+                    Ok(ActionType::FadeIn(fade_in))
+                } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
+                    Ok(ActionType::FadeOut(fade_out))
+                } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
+                    Ok(ActionType::ChangeSpeed(change_speed))
+                } else {
+                    Err(PyTypeError::new_err("Unknown effect type"))
                 }
-            };
+            })
+            .collect::<Result<Vec<ActionType>, PyErr>>()?;
 
-            let _effect_list: Vec<Py<PyAny>> = effect_list.extract(py)?;
+        println!("Setting effects chain: {:?}", rust_effect_list);
 
-            let rust_effect_list: Vec<ActionType> = _effect_list
-                .into_iter()
-                .map(|effect| {
-                    let effect = effect.downcast_bound(py).unwrap();
-                    if let Ok(fade_in) = effect.extract::<FadeIn>() {
-                        Ok(ActionType::FadeIn(fade_in))
-                    } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
-                        Ok(ActionType::FadeOut(fade_out))
-                    } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
-                        Ok(ActionType::ChangeSpeed(change_speed))
-                    } else {
-                        Err(PyTypeError::new_err("Unknown effect type"))
-                    }
-                })
-                .collect::<Result<Vec<ActionType>, PyErr>>()?;
+        *effects_guard = rust_effect_list;
 
-            *effects_guard = rust_effect_list;
+        Ok(())
+    })
+}
 
-            Ok(())
-        })
-    }
 }
