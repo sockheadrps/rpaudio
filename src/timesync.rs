@@ -1,3 +1,5 @@
+use std::fmt;
+
 use pyo3::prelude::*;
 
 #[derive(Clone, Debug, Copy, PartialEq)]
@@ -98,6 +100,27 @@ impl ChangeSpeed {
     }
 }
 
+impl fmt::Display for FadeIn {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FadeIn {{ duration: {:?}, start_val: {:?}, end_val: {:?} apply_after: {:?} }}", 
+            self.duration, self.start_val, self.end_val, self.apply_after)
+    }
+}
+
+impl fmt::Display for FadeOut {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "FadeOut {{ duration: {:?}, start_val: {:?}, end_val: {:?} apply_after: {:?} }}", 
+            self.duration, self.start_val, self.end_val, self.apply_after)
+    }
+}
+
+impl fmt::Display for ChangeSpeed {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ChangeSpeed {{ duration: {:?}, start_val: {:?}, end_val: {:?} apply_after: {:?} }}", 
+            self.duration, self.start_val, self.end_val, self.apply_after)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 #[allow(non_upper_case_globals)]
 #[pyclass]
@@ -119,10 +142,36 @@ pub struct EffectSync {
     pub action: ActionType,
 }
 
+impl fmt::Display for EffectSync {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "EffectSync {{ start_position: {}, duration: {}, start_val: {}, end_val: {}, completion_pos: {}, current_position: {}, apply_after: {:?}, action: {} }}", 
+               self.start_position, 
+               self.duration, 
+               self.start_val, 
+               self.end_val, 
+               self.completion_pos, 
+               self.current_position, 
+               self.apply_after, 
+               self.action)
+    }
+}
+
 pub enum EffectResult {
     Value(f32),
     Ignored,
     Completed(f32),
+}
+
+impl fmt::Display for ActionType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ActionType::FadeIn(_) => write!(f, "FadeIn"),
+
+            ActionType::FadeOut(_) => write!(f, "FadeOut"),
+
+            ActionType::ChangeSpeed(_) => write!(f, "ChangeSpeed"),
+        }
+    }
 }
 
 impl EffectSync {

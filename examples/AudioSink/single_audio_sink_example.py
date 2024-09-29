@@ -21,11 +21,13 @@ async def play_audio():
         await asyncio.sleep(1)
 
         count += 1
+        handler.cancel_callback()
+
         if count == 4:
             # Pause the audio for 2 seconds
             print("Pausing audio")
             print(handler.get_volume())
-            handler.pause()
+            handler.stop()
             await asyncio.sleep(1)
 
             print(handler.is_playing)
@@ -34,23 +36,23 @@ async def play_audio():
             # Resume the audio
             handler.play()
 
-        if count == 7:
-            # turn down the volume
-            print("Resuming audio, raise volume")
-            handler.set_volume(0.2)
-            handler.play()
+        # if count == 7:
+        #     # turn down the volume
+        #     print("Resuming audio, raise volume")
+        #     handler.set_volume(0.2)
+        #     handler.play()
 
-        if count == 8:
-            # Seek to 33.5 seconds
-            print(f"Current position: {handler.get_pos()}")
-            handler.try_seek(10)
-            await asyncio.sleep(1)
-            print(f"Position after seek: {handler.get_pos()}")
+        # if count == 8:
+        #     # Seek to 33.5 seconds
+        #     print(f"Current position: {handler.get_pos()}")
+        #     handler.try_seek(10)
+        #     await asyncio.sleep(1)
+        #     print(f"Position after seek: {handler.get_pos()}")
 
-        if count == 10:
-            # Stop the audio
-            print(handler.get_volume())
-            handler.stop()
+        # if count == 10:
+        #     # Stop the audio
+        #     print(handler.get_volume())
+        #     handler.stop()
 
 
 async def sleep_loop():

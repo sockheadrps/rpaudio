@@ -51,9 +51,13 @@ tests/test_Channel_multi_sink.py::test_audio_channel_auto_consume PASSED [ 75%]
 tests/test_Channel_multi_sink.py::test_audiochannel_multiple_sink_pushes PASSED [ 77%]
 tests/test_Channel_multi_sink.py::test_drop_current_audio PASSED         [ 79%]
 tests/test_Channel_multi_sink.py::test_current_audio PASSED              [ 81%]
-tests/test_Channel_multi_sink.py::test_autoplay_songs PASSED             [ 83%]
+tests/test_Channel_multi_sink.py::test_autoplay_songs PASSED             [ 83%]this  ckis
+this  ckis
+this  ckis
+
 tests/test_Channel_single_sink.py::test_play_audio PASSED                [ 85%]
-tests/test_Channel_single_sink.py::test_pause PASSED                     [ 87%]
+tests/test_Channel_single_sink.py::test_pause this  ckis
+PASSED                     [ 87%]
 tests/test_Channel_single_sink.py::test_resume PASSED                    [ 88%]
 tests/test_Channel_single_sink.py::test_set_volume PASSED                [ 90%]
 tests/test_Channel_single_sink.py::test_try_seek PASSED                  [ 92%]
@@ -61,7 +65,21 @@ tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
 tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
 tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
 tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 1727618658 - All tests completed.
+ 1727641033 - All tests completed.
 
 
-============================= 54 passed in 16.41s =============================
+============================= 54 passed in 16.23s =============================
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
