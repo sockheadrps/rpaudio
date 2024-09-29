@@ -40,3 +40,4 @@ dockerfile
 
 __pycache__/
 .pytest_cache/
+temp/
