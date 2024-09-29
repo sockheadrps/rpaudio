@@ -36,6 +36,7 @@ async def test_fade_out(audio_handler):
         duration=1.0, apply_after=handler.get_pos())
     handler.apply_effects([fade_out_effect])
     handler.play()
+    handler.set_volume(1.0)
     initial_volume = handler.get_volume()
     await asyncio.sleep(1)
     new_volume = handler.get_volume()
@@ -194,7 +195,7 @@ async def test_audio_handler_callback():
 async def test_default_values(audio_handler):
     handler, _ = audio_handler
     assert handler.is_playing is False
-    assert handler.get_volume() == 1.0
+    assert handler.get_volume() == 0.0
     assert handler.get_speed() == 1.0
 
 
@@ -267,6 +268,7 @@ async def test_get_pos(audio_handler):
 @pytest.mark.asyncio
 async def test_set_speed(audio_handler):
     handler, _ = audio_handler
+    handler.set_speed(1.5)
     handler.play()
     await asyncio.sleep(0.1)
     speed_up = rpaudio.ChangeSpeed(end_val=1.5)
