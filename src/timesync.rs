@@ -252,11 +252,13 @@ impl EffectSync {
             return EffectResult::Ignored;
         } else {
             if current_position >= self.completion_pos {
-                return EffectResult::Completed(self.end_val);
+                let rounded_end_val = format!("{:.2}", self.end_val).parse::<f32>().unwrap_or(self.end_val);
+                return EffectResult::Completed(rounded_end_val);
             } else {
                 let progress = (current_position - self.start_position)
                     / (self.completion_pos - self.start_position);
-                let progress = progress.clamp(0.0, 1.0);
+                let rounded_progresss = format!("{:.2}", progress).parse::<f32>().unwrap_or(progress);
+                let progress = rounded_progresss.clamp(0.0, 1.0);
                 let set_val = self.start_val + (self.end_val - self.start_val) * progress;
                 return EffectResult::Value(set_val);
             }
