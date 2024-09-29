@@ -31,6 +31,7 @@ async def play_audio(channel) -> None:
                 paused_once = True
                 start_time = datetime.now()
             elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
+                print("Stop audio after 2 seconds")
                 channel.current_audio.stop()
                 paused_once = False
                 start_time = datetime.now()
@@ -39,12 +40,14 @@ async def play_audio(channel) -> None:
         await asyncio.sleep(1)
 
         if channel.current_audio is None or not channel.current_audio.is_playing:
+            print("Complete phase 1")
             complete_1 = True
 
     # Wait until complete_1 is True before starting the second phase
     start_time = datetime.now()
     paused_once = False
     while complete_1 and not complete_2:
+        print("Starting phase 2")
         await asyncio.sleep(1)
 
         if channel.current_audio is not None:
@@ -56,6 +59,7 @@ async def play_audio(channel) -> None:
                 paused_once = True
                 start_time = datetime.now()
             elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
+                print("Stop audio after 2 seconds")
                 channel.current_audio.stop()
                 paused_once = False
                 start_time = datetime.now()
@@ -85,7 +89,6 @@ async def main() -> None:
     audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
 
     channel_1 = rpaudio.AudioChannel()
-    channel_1.auto_consume = True
     channel_1.push(audio_1)
     channel_1.push(audio_2)
 
