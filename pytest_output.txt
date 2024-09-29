@@ -56,12 +56,30 @@ tests/test_Channel_single_sink.py::test_play_audio PASSED                [ 85%]
 tests/test_Channel_single_sink.py::test_pause PASSED                     [ 87%]
 tests/test_Channel_single_sink.py::test_resume PASSED                    [ 88%]
 tests/test_Channel_single_sink.py::test_set_volume PASSED                [ 90%]
-tests/test_Channel_single_sink.py::test_try_seek PASSED                  [ 92%]
+tests/test_Channel_single_sink.py::test_try_seek this  ckis
+this  ckis
+PASSED                  [ 92%]
 tests/test_Channel_single_sink.py::test_get_pos PASSED                   [ 94%]
 tests/test_Channel_single_sink.py::test_get_speed PASSED                 [ 96%]
 tests/test_Channel_single_sink.py::test_stop PASSED                      [ 98%]
-tests/test_Channel_single_sink.py::test_callbacks_called PASSED          [100%]
- 1727618658 - All tests completed.
+tests/test_Channel_single_sink.py::test_callbacks_called this  ckis
+this  ckis
+this  ckis
+PASSED          [100%]
+ 1727641095 - All tests completed.
 
 
-============================= 54 passed in 16.41s =============================
+============================= 54 passed in 16.17s =============================
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
+this  ckis
