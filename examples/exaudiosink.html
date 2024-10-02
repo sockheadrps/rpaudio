@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="AudioChannel" href="exaudiochannel.html" />
-    <link rel="prev" title="Examples" href="index.html" /> 
+    <link rel="prev" title="Example Aplications" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,15 +45,19 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start Guide</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Example Aplications</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">AudioSink</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exaudiochannel.html">AudioChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exchannelmanager.html">AudioManager</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -70,7 +74,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Example Aplications</a></li>
       <li class="breadcrumb-item active">AudioSink</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/exaudiosink.rst.txt" rel="nofollow"> View page source</a>
@@ -107,11 +111,13 @@
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">cancel_callback</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
             <span class="c1"># Pause the audio for 2 seconds</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pausing audio&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">get_volume</span><span class="p">())</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
             <span class="nb">print</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">is_playing</span><span class="p">)</span>
@@ -120,23 +126,23 @@
             <span class="c1"># Resume the audio</span>
             <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
-            <span class="c1"># turn down the volume</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resuming audio, raise volume&quot;</span><span class="p">)</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+        <span class="c1"># if count == 7:</span>
+        <span class="c1">#     # turn down the volume</span>
+        <span class="c1">#     print(&quot;Resuming audio, raise volume&quot;)</span>
+        <span class="c1">#     handler.set_volume(0.2)</span>
+        <span class="c1">#     handler.play()</span>
 
-        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-            <span class="c1"># Seek to 33.5 seconds</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current position: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">try_seek</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position after seek: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># if count == 8:</span>
+        <span class="c1">#     # Seek to 33.5 seconds</span>
+        <span class="c1">#     print(f&quot;Current position: {handler.get_pos()}&quot;)</span>
+        <span class="c1">#     handler.try_seek(10)</span>
+        <span class="c1">#     await asyncio.sleep(1)</span>
+        <span class="c1">#     print(f&quot;Position after seek: {handler.get_pos()}&quot;)</span>
 
-        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="c1"># Stop the audio</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">get_volume</span><span class="p">())</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="c1"># if count == 10:</span>
+        <span class="c1">#     # Stop the audio</span>
+        <span class="c1">#     print(handler.get_volume())</span>
+        <span class="c1">#     handler.stop()</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">sleep_loop</span><span class="p">():</span>
@@ -166,17 +172,16 @@
 <span class="k">async</span> <span class="k">def</span> <span class="nf">play_audio</span><span class="p">():</span>
     <span class="n">handler</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="n">AUDIO_FILE</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-    
-
-    <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">start_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">apply_after</span><span class="o">=</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">(),</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
-
-    <span class="n">fade_out_effect</span> <span class="o">=</span> <span class="n">FadeOut</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span> <span class="n">apply_after</span><span class="o">=</span><span class="n">handler</span><span class="o">.</span><span class="n">get_pos</span><span class="p">()</span> <span class="o">+</span> <span class="mf">7.0</span><span class="p">)</span>
-    <span class="n">speed_up</span> <span class="o">=</span> <span class="n">ChangeSpeed</span><span class="p">(</span><span class="n">apply_after</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
-
-    <span class="n">effects_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">speed_up</span><span class="p">,</span> <span class="n">fade_in_effect</span><span class="p">,</span> <span class="n">fade_out_effect</span><span class="p">]</span>
-    <span class="n">handler</span><span class="o">.</span><span class="n">apply_effects</span><span class="p">(</span><span class="n">effects_list</span><span class="p">)</span>
+    <span class="c1"># handler.try_seek(148.0)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
     <span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">apply_after</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">fade_out_effect</span> <span class="o">=</span> <span class="n">FadeOut</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">apply_after</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+    <span class="n">speed_up</span> <span class="o">=</span> <span class="n">ChangeSpeed</span><span class="p">(</span><span class="n">apply_after</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="n">effects_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">fade_in_effect</span><span class="p">]</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">apply_effects</span><span class="p">(</span><span class="n">effects_list</span><span class="p">)</span>
     <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 
     <span class="k">while</span> <span class="ow">not</span> <span class="n">kill_audio</span><span class="p">:</span>
@@ -201,7 +206,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Example Aplications" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="exaudiochannel.html" class="btn btn-neutral float-right" title="AudioChannel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

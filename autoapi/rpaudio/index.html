@@ -22,6 +22,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Quick Start Guide" href="../../quickstart.html" />
     <link rel="prev" title="API Reference" href="../index.html" /> 
 </head>
 
@@ -45,11 +46,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start Guide</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">rpaudio</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rpaudio.EffectConflictException"><code class="docutils literal notranslate"><span class="pre">EffectConflictException</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel"><code class="docutils literal notranslate"><span class="pre">AudioChannel</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink"><code class="docutils literal notranslate"><span class="pre">AudioSink</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.ChangeSpeed"><code class="docutils literal notranslate"><span class="pre">ChangeSpeed</span></code></a></li>
@@ -62,6 +62,12 @@
 </li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Example Aplications</a></li>
 </ul>
 
         </div>
@@ -93,10 +99,86 @@
 <span id="rpaudio"></span><h1>rpaudio<a class="headerlink" href="#module-rpaudio" title="Link to this heading"></a></h1>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="rpaudio.EffectConflictException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">EffectConflictException</span></span><a class="headerlink" href="#rpaudio.EffectConflictException" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception raised when an effect manipulation conflict occurs.</p>
+<p>This exception is raised when a user tries to change the volume or speed of the audio
+while effects are currently being applied.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">handler</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="n">AUDIO_FILE</span><span class="p">)</span>
+<span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+<span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">apply_after</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+<span class="n">effects_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">fade_in_effect</span><span class="p">]</span>
+<span class="n">handler</span><span class="o">.</span><span class="n">apply_effects</span><span class="p">(</span><span class="n">effects_list</span><span class="p">)</span>
+<span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">while</span> <span class="ow">not</span> <span class="n">kill_audio</span><span class="p">:</span>
+    <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;volume: </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">EffectConflictException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="rpaudio.AudioChannel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">AudioChannel</span></span><a class="headerlink" href="#rpaudio.AudioChannel" title="Link to this definition"></a></dt>
 <dd><dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioChannel.current_audio_data">
+<span class="sig-name descname"><span class="pre">current_audio_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel.current_audio_data" title="Link to this definition"></a></dt>
+<dd><p>Retrieves metadata and current playback information.</p>
+<p>This method returns a dictionary containing various metadata fields such
+as album artist, album title, artist, channels, duration, and more,
+along with current playback information like volume and position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>A dictionary with audio
+metadata and playback details, including:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>album_artist (str): The artist of the album.</p></li>
+<li><p>album_title (str): The title of the album.</p></li>
+<li><p>artist (str): The artist of the audio track.</p></li>
+<li><p>channels (int): The number of audio channels.</p></li>
+<li><p>comment (Optional[str]): Comments about the track.</p></li>
+<li><p>composer (Optional[str]): The composer of the audio.</p></li>
+<li><p>date (Optional[str]): The release date of the audio.</p></li>
+<li><p>disc_number (Optional[int]): The disc number in a multi-disc set.</p></li>
+<li><p>duration (float): The duration of the audio in seconds.</p></li>
+<li><p>genre (Optional[str]): The genre of the audio.</p></li>
+<li><p>sample_rate (int): The sample rate of the audio in Hz.</p></li>
+<li><p>title (str): The title of the audio track.</p></li>
+<li><p>total_discs (Optional[int]): The total number of discs in a multi-disc set.</p></li>
+<li><p>total_tracks (Optional[int]): The total number of tracks in the album.</p></li>
+<li><p>track_number (Optional[int]): The track number on the album.</p></li>
+<li><p>year (Optional[int]): The year the audio was released.</p></li>
+<li><p>speed (float): The current playback speed.</p></li>
+<li><p>position (float): The current playback position in seconds.</p></li>
+<li><p>volume (float): The current volume level.</p></li>
+<li><p>effects (List[Dict[str, Any]]): List of effects applied to the audio.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Union[str, float, int, None]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rpaudio.AudioChannel.drop_current_audio">
 <span class="sig-name descname"><span class="pre">drop_current_audio</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel.drop_current_audio" title="Link to this definition"></a></dt>
 <dd><p>Stops the currently playing audio, if any, and removes it from the channel.</p>
@@ -446,6 +528,27 @@ If the audio is already playing, this method has no effect.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioSink.set_speed">
+<span class="sig-name descname"><span class="pre">set_speed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">speed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.set_speed" title="Link to this definition"></a></dt>
+<dd><p>Set the playback speed of the audio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>speed</strong> (<em>float</em>) – The playback speed. Must be a float.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the speed is not a valid float.</p></li>
+<li><p><a class="reference internal" href="#rpaudio.EffectConflictException" title="rpaudio.EffectConflictException"><strong>EffectConflictException</strong></a> – Raised when an attempt is made to change the volume while</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p>effects are actively being applied. This ensures that audio effects do not conflict during playback.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rpaudio.AudioSink.set_volume">
 <span class="sig-name descname"><span class="pre">set_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.set_volume" title="Link to this definition"></a></dt>
 <dd><p>Set the volume level for playback.</p>
@@ -454,12 +557,16 @@ If the audio is already playing, this method has no effect.</p>
 <dd class="field-odd"><p><strong>volume</strong> (<em>float</em>) – The volume level. Must be between 0.0 and 1.0.</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If the volume is not between 0.0 and 1.0.</p>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If the volume is not between 0.0 and 1.0.</p></li>
+<li><p><a class="reference internal" href="#rpaudio.EffectConflictException" title="rpaudio.EffectConflictException"><strong>EffectConflictException</strong></a> – Raised when an attempt is made to change the volume while</p></li>
+</ul>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<p>effects are actively being applied. This ensures that audio effects do not conflict during playback.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -739,6 +846,7 @@ If the audio is already playing, this method has no effect.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../quickstart.html" class="btn btn-neutral float-right" title="Quick Start Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
