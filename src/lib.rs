@@ -12,9 +12,11 @@ use std::thread;
 use std::time::{Duration, Instant};
 use timesync::{ActionType, ChangeSpeed, EffectResult, EffectSync, FadeIn, FadeOut};
 mod audioqueue;
+mod exceptions;
 mod exmetadata;
 mod mixer;
 mod timesync;
+use crate::exceptions::EffectConflictException;
 pub use exmetadata::MetaData;
 unsafe impl Send for AudioSink {}
 
@@ -93,35 +95,47 @@ impl AudioSink {
                 let keep_effect = match effect.action {
                     ActionType::FadeIn(_fade_in) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
+                            let mut lock = self.vol_manipulation_lock.write().unwrap();
                             sink.lock().unwrap().set_volume(val);
+                            *lock = true;
                             true
                         }
                         EffectResult::Ignored => true,
                         EffectResult::Completed(val) => {
+                            let mut lock = self.vol_manipulation_lock.write().unwrap();
                             sink.lock().unwrap().set_volume(val);
+                            *lock = false;
                             false
                         }
                     },
                     ActionType::FadeOut(_fade_out) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
+                            let mut lock = self.vol_manipulation_lock.write().unwrap();
                             sink.lock().unwrap().set_volume(val);
+                            *lock = true;
                             true
                         }
                         EffectResult::Ignored => true,
                         EffectResult::Completed(val) => {
+                            let mut lock = self.vol_manipulation_lock.write().unwrap();
                             sink.lock().unwrap().set_volume(val);
+                            *lock = false;
                             false
                         }
                     },
                     ActionType::ChangeSpeed(_change_speed) => {
                         match effect.update(current_position) {
                             EffectResult::Value(val) => {
+                                let mut lock = self.speed_manipulation_lock.write().unwrap();
                                 sink.lock().unwrap().set_speed(val);
+                                *lock = true;
                                 true
                             }
                             EffectResult::Ignored => true,
                             EffectResult::Completed(val) => {
                                 sink.lock().unwrap().set_speed(val);
+                                let mut lock = self.speed_manipulation_lock.write().unwrap();
+                                *lock = false;
                                 false
                             }
                         }
@@ -129,7 +143,6 @@ impl AudioSink {
                 };
 
                 if sink.lock().unwrap().is_paused() && self.resume {
-                    println!("Resuming audio effects");
                     sink.lock().unwrap().play();
                     self.resume = false;
                 }
@@ -157,6 +170,8 @@ pub struct AudioSink {
     effects: Arc<Mutex<Vec<Arc<EffectSync>>>>,
     effects_chain: Vec<ActionType>,
     resume: bool,
+    vol_manipulation_lock: Arc<RwLock<bool>>,
+    speed_manipulation_lock: Arc<RwLock<bool>>,
 }
 
 impl AudioSink {
@@ -193,6 +208,8 @@ impl AudioSink {
             effects: Arc::new(Mutex::new(Vec::new())),
             effects_chain: Vec::new(),
             resume: false,
+            vol_manipulation_lock: Arc::new(RwLock::new(false)),
+            speed_manipulation_lock: Arc::new(RwLock::new(false)),
         }
     }
 
@@ -276,7 +293,6 @@ impl AudioSink {
             .map_err(|e| format!("Failed to decode audio file: {}", e))
             .unwrap();
 
-        // Extract metadata
         self.metadata = exmetadata::extract_metadata(std::path::Path::new(&file_path))
             .map_err(|_| PyRuntimeError::new_err("Failed to extract metadata"))?;
 
@@ -288,7 +304,6 @@ impl AudioSink {
         self.stream = Some(Arc::new(new_stream));
         sink.lock().unwrap().set_volume(0.0);
         self.sink = Some(sink.clone());
-
 
         if let Some(sink) = &self.sink {
             sink.lock().unwrap().pause();
@@ -385,15 +400,20 @@ impl AudioSink {
     }
 
     pub fn set_volume(&mut self, volume: f32) -> PyResult<()> {
-        println!("Setting volume to: {}", volume);
         if volume < 0.0 || volume > 1.0 {
             return Err(PyValueError::new_err("Volume must be between 0.0 and 1.0."));
         }
 
         if let Some(sink) = &self.sink {
-            sink.lock().unwrap().set_volume(volume);
-            self.volume = volume;
-            Ok(())
+            let lock = self.vol_manipulation_lock.read().unwrap();
+
+            if *lock {
+                return Err(EffectConflictException::with_context("Volume"));
+            } else {
+                sink.lock().unwrap().set_volume(volume);
+                self.volume = volume;
+                Ok(())
+            }
         } else {
             Err(PyRuntimeError::new_err(
                 "No sink available to set volume. Load audio first.",
@@ -426,7 +446,6 @@ impl AudioSink {
 
             if let Some(duration) = self.metadata.duration {
                 let remaining = duration - position.as_secs_f64();
-                print!("remaining: {:?}", remaining);
                 Ok((remaining * 100.0).round() / 100.0)
             } else {
                 Err(PyRuntimeError::new_err("Audio duration is not available."))
@@ -452,8 +471,14 @@ impl AudioSink {
         }
 
         if let Some(sink) = &self.sink {
-            sink.lock().unwrap().set_speed(speed);
-            Ok(())
+            let lock = self.speed_manipulation_lock.read().unwrap();
+
+            if *lock {
+                return Err(EffectConflictException::with_context("Speed"));
+            } else {
+                sink.lock().unwrap().set_speed(speed);
+                Ok(())
+            }
         } else {
             Err(PyRuntimeError::new_err(
                 "No sink available. Load audio first.",
@@ -545,7 +570,7 @@ impl AudioSink {
 }
 
 #[pymodule]
-fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn rpaudio(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AudioSink>()?;
     m.add_class::<mixer::ChannelManager>()?;
     m.add_class::<audioqueue::AudioChannel>()?;
@@ -554,5 +579,6 @@ fn rpaudio(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<FadeOut>()?;
     m.add_class::<ChangeSpeed>()?;
     m.add_function(wrap_pyfunction!(get_audio_info, m)?)?;
+    m.add("EffectConflictException", py.get_type_bound::<EffectConflictException>())?;
     Ok(())
 }

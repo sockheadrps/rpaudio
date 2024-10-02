@@ -3,9 +3,8 @@ use crate::AudioSink;
 use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use std::borrow::Borrow;
-use std::sync::{Arc, Mutex, TryLockError};
-use std::time::{Duration, Instant};
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use std::{fmt, thread};
 use timesync::{ChangeSpeed, FadeIn, FadeOut};
 
