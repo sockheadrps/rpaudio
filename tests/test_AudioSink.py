@@ -28,7 +28,6 @@ async def test_fade_in(audio_handler):
     handler.stop()
 
 
-
 @pytest.mark.asyncio
 async def test_fade_out(audio_handler):
     handler, _ = audio_handler
@@ -66,15 +65,42 @@ async def test_effects_applied_over_time(audio_handler):
     await asyncio.sleep(1)
     halfway_volume = handler.get_volume()
     assert halfway_volume >= 0.5 and halfway_volume <= (
-        1.0 )
+        1.0)
     handler.stop()
 
+
+@pytest.mark.asyncio
+async def test_effects_applied_over_time_vol_exception(audio_handler):
+    handler, _ = audio_handler
+    fade_in_effect = rpaudio.FadeIn(start_val=0.0, end_val=1.0, duration=1.0)
+    handler.apply_effects([fade_in_effect])
+    handler.play()
+    await asyncio.sleep(0.1)
+
+    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+        handler.set_volume(0.0)
+
+    handler.stop()
+
+
+@pytest.mark.asyncio
+async def test_effects_applied_over_time_speed_exception(audio_handler):
+    handler, _ = audio_handler
+    speed_effect = rpaudio.ChangeSpeed(end_val=1.5, duration=1.0)
+    handler.apply_effects([speed_effect])
+    handler.play()
+    await asyncio.sleep(0.1)
+
+    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+        handler.set_speed(0.9)
+
+    handler.stop()
 
 @pytest.mark.asyncio
 async def test_effect_completion(audio_handler):
     handler, _ = audio_handler
     fade_out_effect = rpaudio.FadeOut(apply_after=handler.get_pos(),
-        duration=1.0)
+                                      duration=1.0)
     handler.apply_effects([fade_out_effect])
     handler.play()
     await asyncio.sleep(1.2)
@@ -217,7 +243,6 @@ async def test_pause(audio_handler):
     await asyncio.sleep(0.1)
     assert handler.is_playing is False
     handler.stop()
-
 
 
 @pytest.mark.asyncio
