@@ -17,6 +17,7 @@ pub struct FadeIn {
 
 #[pymethods]
 impl FadeIn {
+    
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
     pub fn new(

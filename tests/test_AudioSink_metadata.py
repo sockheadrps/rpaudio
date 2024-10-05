@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import MagicMock
-import rpaudio
+import python.rpaudio.rpaudio as rpaudio
 
 
 test_dict = {'duration': None, 'date': None, 'total_tracks': None, 'channels': None, 'album_title': None, 'total_discs': None, 'genre': None, 'disc_number': None,

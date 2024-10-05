@@ -42,3 +42,7 @@ docs = [
 dev = [
   "maturin",
 ]
+
+[tool.maturin]
+python-source = "python"
+module-name = "rpaudio.rpaudio"

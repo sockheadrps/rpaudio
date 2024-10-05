@@ -9,31 +9,115 @@ rpaudio
 Package Contents
 ----------------
 
-.. py:class:: AudioChannel(channel_id, channel_callback)
+.. py:class:: AudioChannel
 
-   Bases: :py:obj:`Protocol`
+   .. py:method:: _control_loop()
+      :async:
 
 
-   Manages a queue of AudioSink objects and handles playback.
+      Continuously monitors the queue and handles playback,
+      auto-consume, and callback execution. Not meant for python access
 
-   :param channel_id: A unique identifier for the audio channel.
-   :type channel_id: Union[int, str]
-   :param channel_callback: (optional) A callback invoked when the queue is idle.
-   :type channel_callback: Optional[Callable[[], None]]
+
+
+   .. py:method:: current_audio_data()
+
+      Retrieves metadata and current playback information.
+
+      This method returns a dictionary containing various metadata fields such
+      as album artist, album title, artist, channels, duration, and more,
+      along with current playback information like volume and position.
+
+      :returns: A dictionary with audio
+                metadata and playback details, including:
+                    - album_artist (str): The artist of the album.
+                    - album_title (str): The title of the album.
+                    - artist (str): The artist of the audio track.
+                    - channels (int): The number of audio channels.
+                    - comment (Optional[str]): Comments about the track.
+                    - composer (Optional[str]): The composer of the audio.
+                    - date (Optional[str]): The release date of the audio.
+                    - disc_number (Optional[int]): The disc number in a multi-disc set.
+                    - duration (float): The duration of the audio in seconds.
+                    - genre (Optional[str]): The genre of the audio.
+                    - sample_rate (int): The sample rate of the audio in Hz.
+                    - title (str): The title of the audio track.
+                    - total_discs (Optional[int]): The total number of discs in a multi-disc set.
+                    - total_tracks (Optional[int]): The total number of tracks in the album.
+                    - track_number (Optional[int]): The track number on the album.
+                    - year (Optional[int]): The year the audio was released.
+                    - speed (float): The current playback speed.
+                    - position (float): The current playback position in seconds.
+                    - volume (float): The current volume level.
+                    - effects (List[Dict[str, Any]]): List of effects applied to the audio.
+      :rtype: Dict[str, Union[str, float, int, None]]
+
 
 
    .. py:method:: drop_current_audio()
 
-      Drops the current audio from the queue.
+      Stops the currently playing audio, if any, and removes it from the channel.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          channel.drop_current_audio()  # Stops and clears the currently playing audio
+
+
+
+   .. py:method:: is_playing()
+
+      Returns True if audio is currently playing, otherwise False.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          if channel.is_playing():
+              print("Audio is playing")
+          else:
+              print("No audio is playing")
 
 
 
    .. py:method:: push(audio)
 
-      Adds an AudioSink to the channel queue.
+      Adds an AudioSink object to the queue.
 
-      :param audio: The audio object to add to the queue.
-      :type audio: AudioSink
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          sink = AudioSink("my_audio_file.mp3")
+          channel.push(sink)
+
+
+
+   .. py:method:: set_effects_chain(effect_list)
+
+      Sets the effects chain for the audio channel.
+
+      This method accepts a list of effects and applies them to the audio channel.
+      The effects can include FadeIn, FadeOut, and ChangeSpeed.
+
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+          fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
+          speed_up_effect = ChangeSpeed(end_val=1.5, duration=5.0)
+
+          channel.set_effects_chain([fade_in_effect, fade_out_effect, speed_up_effect])
+
+      :param effect_list: A list of effects to set for the audio channel.
+      :type effect_list: list
+      :raises TypeError: If an unknown effect type is provided.
 
 
 
@@ -45,37 +129,52 @@ Package Contents
       :rtype: bool
 
 
-   .. py:attribute:: channel_callback
-
-
-   .. py:attribute:: channel_id
-
-
    .. py:property:: current_audio
       :type: AudioSink
 
       Returns the currently playing AudioSink object.
 
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          current_sink = channel.current_audio()
+          if current_sink:
+              print("Currently playing:", current_sink)
+          else:
+              print("No audio is playing")
+
       :rtype: AudioSink
 
 
-   .. py:attribute:: queue
-      :value: []
+   .. py:attribute:: currently_playing
+      :type:  Optional[AudioSink]
 
+
+   .. py:attribute:: effects_chain
+      :type:  List[ActionType]
+
+
+   .. py:attribute:: queue
+      :type:  List[AudioSink]
 
 
    .. py:property:: queue_contents
       :type: List[AudioSink]
 
-      Returns the list of AudioSink objects currently in the queue.
+      Returns the current queue of AudioSink objects.
 
-      :rtype: List[AudioSink]
+      Example:
+
+      .. code-block:: python
+
+          channel = AudioChannel()
+          queue = channel.queue_contents()
+          print(f"Queue has {len(queue)} items")
 
 
 .. py:class:: AudioSink(callback = None)
-
-   Bases: :py:obj:`Protocol`
-
 
    Interface that wraps functionality for audio files.
 
@@ -109,6 +208,25 @@ Package Contents
       :type effect_list: list
       :raises TypeError: If an unknown effect type is provided.
       :raises RuntimeError: If an error occurs while applying the effects.
+
+
+
+   .. py:method:: cancel_callback()
+
+      Cancels the current audio callback.
+
+      This method sets a flag to indicate that the audio callback should be canceled.
+      Once called, the audio sink will stop processing the current audio callback.
+
+      Example:
+
+      .. code-block:: python
+
+          audio_sink = AudioSink()
+          audio_sink.cancel_callback()
+          print("Audio callback has been canceled.")
+
+      :raises RuntimeError: If there is an issue acquiring the lock on the callback.
 
 
 
@@ -197,15 +315,13 @@ Package Contents
 
 
 
-   .. py:method:: set_effects(effect_list)
+   .. py:method:: set_duration(duration)
 
-      Apply effects from a list to the audio playback.
+      Set the length of the audio file to the meta data.
 
-      :param effect_list: A list of effect objects to be applied to the audio playback.
-                          The list may contain instances of `FadeIn`, `FadeOut`, and `ChangeSpeed`.
-      :type effect_list: list
+      :param duration: The duration. Must be a float
+      :type volume: float
 
-      :raises TypeError: If an unknown effect type is encountered in the list.
 
 
 
@@ -213,10 +329,12 @@ Package Contents
 
       Set the playback speed of the audio.
 
-      :param speed: The playback speed. Must be greater than 0.
+      :param speed: The playback speed. Must be a float.
       :type speed: float
 
-      :raises ValueError: If the speed is less than or equal to 0.
+      :raises ValueError: If the speed is not a valid float.
+      :raises EffectConflictException: Raised when an attempt is made to change the volume while
+      effects are actively being applied. This ensures that audio effects do not conflict during playback.
 
 
 
@@ -228,6 +346,8 @@ Package Contents
       :type volume: float
 
       :raises ValueError: If the volume is not between 0.0 and 1.0.
+      :raises EffectConflictException: Raised when an attempt is made to change the volume while
+      effects are actively being applied. This ensures that audio effects do not conflict during playback.
 
 
 
@@ -295,9 +415,6 @@ Package Contents
 
 
 .. py:class:: ChannelManager
-
-   Bases: :py:obj:`Protocol`
-
 
    Manages multiple audio channels and provides an API to control them.
 
@@ -379,218 +496,5 @@ Package Contents
 
    .. py:attribute:: channels
       :type:  dict[str, AudioChannel]
-
-
-.. py:class:: FadeIn(duration = 5.0, start_vol = 0.1, end_vol = 1.0, apply_after = None)
-
-   Represents a fade-in effect for audio playback.
-
-   :param duration: The duration of the fade-in effect in seconds. Defaults to 5.0 seconds.
-   :type duration: float, optional
-   :param start_vol: The starting volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 0.1.
-   :type start_vol: float, optional
-   :param end_vol: The ending volume level of the fade-in. Must be between 0.0 and 1.0. Defaults to 1.0.
-   :type end_vol: float, optional
-   :param apply_after: Time delay before applying the fade-in effect, optional.
-   :type apply_after: float, optional
-
-   :raises ValueError: If duration is negative or volumes are out of range.
-
-
-   .. py:attribute:: apply_after
-      :type:  float | None
-
-
-   .. py:attribute:: duration
-      :type:  float
-
-
-   .. py:attribute:: end_vol
-      :type:  float
-
-
-   .. py:attribute:: start_vol
-      :type:  float
-
-
-.. py:class:: FadeOut(duration = 5.0, start_vol = 1.0, end_vol = 0.1, apply_after = None)
-
-   Represents a fade-out effect for audio playback.
-
-   :param duration: The duration of the fade-out effect in seconds. Defaults to 5.0 seconds.
-   :type duration: float, optional
-   :param start_vol: The starting volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 1.0.
-   :type start_vol: float, optional
-   :param end_vol: The ending volume level of the fade-out. Must be between 0.0 and 1.0. Defaults to 0.1.
-   :type end_vol: float, optional
-   :param apply_after: Time delay before applying the fade-out effect, optional.
-   :type apply_after: float, optional
-
-   :raises ValueError: If duration is negative or volumes are out of range.
-
-
-   .. py:attribute:: apply_after
-      :type:  float | None
-
-
-   .. py:attribute:: duration
-      :type:  float
-
-
-   .. py:attribute:: end_vol
-      :type:  float
-
-
-   .. py:attribute:: start_vol
-      :type:  float
-
-
-.. py:class:: MetaData(audio_sink)
-
-   A class representing metadata for an audio file.
-
-
-   .. py:property:: album_artist
-      :type: Optional[str]
-
-      Get the album artist of the audio file.
-
-      :return: The album artist of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: album_title
-      :type: Optional[str]
-
-      Get the album title of the audio file.
-
-      :return: The album title of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: artist
-      :type: Optional[str]
-
-      Get the artist of the audio file.
-
-      :return: The artist of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: channels
-      :type: Optional[str]
-
-      Get the number of channels in the audio file.
-
-      :return: The number of channels, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: comment
-      :type: Optional[str]
-
-      Get the comment associated with the audio file.
-
-      :return: The comment of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: composer
-      :type: Optional[str]
-
-      Get the composer of the audio file.
-
-      :return: The composer of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: date
-      :type: Optional[str]
-
-      Get the date associated with the audio file.
-
-      :return: The date of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: disc_number
-      :type: Optional[str]
-
-      Get the disc number of the audio file.
-
-      :return: The disc number, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: duration
-      :type: Optional[float]
-
-      Get the duration of the audio file in seconds.
-
-      :return: The duration of the audio file, or None if not available.
-      :rtype: Optional[float]
-
-
-   .. py:property:: genre
-      :type: Optional[str]
-
-      Get the genre of the audio file.
-
-      :return: The genre of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: sample_rate
-      :type: Optional[int]
-
-      Get the sample rate of the audio file.
-
-      :return: The sample rate of the audio file, or None if not available.
-      :rtype: Optional[int]
-
-
-   .. py:property:: title
-      :type: Optional[str]
-
-      Get the title of the audio file.
-
-      :return: The title of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: total_discs
-      :type: Optional[str]
-
-      Get the total number of discs in the album.
-
-      :return: The total number of discs, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: total_tracks
-      :type: Optional[str]
-
-      Get the total number of tracks in the album.
-
-      :return: The total number of tracks, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: track_number
-      :type: Optional[str]
-
-      Get the track number of the audio file.
-
-      :return: The track number of the audio file, or None if not available.
-      :rtype: Optional[str]
-
-
-   .. py:property:: year
-      :type: Optional[str]
-
-      Get the year the audio file was released.
-
-      :return: The year of the audio file, or None if not available.
-      :rtype: Optional[str]
 
 

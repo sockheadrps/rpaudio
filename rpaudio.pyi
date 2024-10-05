@@ -1,7 +1,16 @@
-from typing import Dict, List, Optional, Callable, Protocol, Union
+from typing import Dict, List, Optional, Callable, Union
+from rpaudio import effects, rpaudio_exceptions
 
+__all__ = [
+    "AudioSink",
+    "ChannelManager",
+    "AudioChannel",
+    "rpaudio_exceptions",
+    "ActionType",
+    "effects" 
+]
 
-class AudioSink(Protocol):
+class AudioSink:
     """
     Interface that wraps functionality for audio files.
 
@@ -152,6 +161,18 @@ class AudioSink(Protocol):
         :rtype: float
         """
 
+    def set_speed(self, speed: float) -> None:
+        """
+        Set the playback speed of the audio.
+
+        :param speed: The playback speed. Must be a float.
+        :type speed: float
+
+        :raises ValueError: If the speed is not a valid float.
+        :raises EffectConflictException: Raised when an attempt is made to change the volume while
+        effects are actively being applied. This ensures that audio effects do not conflict during playback.
+        """
+
     def get_pos(self) -> float:
         """
         Get the current playback position in seconds.
@@ -180,6 +201,8 @@ class AudioSink(Protocol):
         :type volume: float
 
         :raises ValueError: If the volume is not between 0.0 and 1.0.
+        :raises EffectConflictException: Raised when an attempt is made to change the volume while
+        effects are actively being applied. This ensures that audio effects do not conflict during playback.
         """
 
     def get_volume(self) -> float:
@@ -238,7 +261,7 @@ class AudioSink(Protocol):
         """
 
 
-class AudioChannel(Protocol):
+class AudioChannel:
     queue: List[AudioSink]
     auto_consume: bool
     currently_playing: Optional[AudioSink]
@@ -384,8 +407,41 @@ class AudioChannel(Protocol):
         :raises TypeError: If an unknown effect type is provided.
         """
 
+    def current_audio_data(self) -> Dict[str, Union[str, float, int, None]]:
+        """
+        Retrieves metadata and current playback information.
 
-class ChannelManager(Protocol):
+        This method returns a dictionary containing various metadata fields such
+        as album artist, album title, artist, channels, duration, and more,
+        along with current playback information like volume and position.
+
+        Returns:
+            Dict[str, Union[str, float, int, None]]: A dictionary with audio
+            metadata and playback details, including:
+                - album_artist (str): The artist of the album.
+                - album_title (str): The title of the album.
+                - artist (str): The artist of the audio track.
+                - channels (int): The number of audio channels.
+                - comment (Optional[str]): Comments about the track.
+                - composer (Optional[str]): The composer of the audio.
+                - date (Optional[str]): The release date of the audio.
+                - disc_number (Optional[int]): The disc number in a multi-disc set.
+                - duration (float): The duration of the audio in seconds.
+                - genre (Optional[str]): The genre of the audio.
+                - sample_rate (int): The sample rate of the audio in Hz.
+                - title (str): The title of the audio track.
+                - total_discs (Optional[int]): The total number of discs in a multi-disc set.
+                - total_tracks (Optional[int]): The total number of tracks in the album.
+                - track_number (Optional[int]): The track number on the album.
+                - year (Optional[int]): The year the audio was released.
+                - speed (float): The current playback speed.
+                - position (float): The current playback position in seconds.
+                - volume (float): The current volume level.
+                - effects (List[Dict[str, Any]]): List of effects applied to the audio.
+        """
+
+
+class ChannelManager:
     """
     Manages multiple audio channels and provides an API to control them.
 
@@ -528,3 +584,38 @@ class ChangeSpeed:
 
     def __init__(self, duration=0.0, start_val=1.0, end_val=1.5, apply_after=None):
         pass
+
+
+class EffectConflictException(Exception):
+    """
+    Exception raised when an effect manipulation conflict occurs.
+
+    This exception is raised when a user tries to change the volume or speed of the audio
+    while effects are currently being applied.
+
+    Example:
+
+    .. code-block:: python
+
+        handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
+        await asyncio.sleep(0.3)
+        handler.set_volume(0.0)
+
+        fade_in_effect = FadeIn(duration=10.0, apply_after=0.0)
+
+        effects_list = [fade_in_effect]
+        handler.apply_effects(effects_list)
+        handler.play()
+
+        i = 0
+
+        while not kill_audio:
+            i+=1
+            await asyncio.sleep(1)
+            print(f"volume: {handler.get_volume()}")
+            if i == 4:
+                try:
+                    handler.set_volume(0.5)
+                except EffectConflictException as e:
+                    print(f"Error: {e}")
+    """

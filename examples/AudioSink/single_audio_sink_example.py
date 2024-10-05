@@ -1,4 +1,4 @@
-import rpaudio
+import python.rpaudio.rpaudio as rpaudio
 import asyncio
 
 

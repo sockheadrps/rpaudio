@@ -1,5 +1,5 @@
 import asyncio
-from rpaudio import AudioSink, AudioChannel, ChannelManager
+from python.rpaudio.rpaudio import AudioSink, AudioChannel, ChannelManager
 
 
 

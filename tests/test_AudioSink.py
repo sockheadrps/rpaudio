@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import MagicMock
-import rpaudio
+import python.rpaudio.rpaudio as rpaudio
 
 
 @pytest.fixture

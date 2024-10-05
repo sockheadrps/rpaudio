@@ -1,9 +1,9 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-import rpaudio
+import python.rpaudio.rpaudio as rpaudio
 from unittest.mock import Mock
-from rpaudio import FadeIn, FadeOut, ChangeSpeed
+from python.rpaudio.rpaudio import FadeIn, FadeOut, ChangeSpeed
 
 
 @pytest.fixture

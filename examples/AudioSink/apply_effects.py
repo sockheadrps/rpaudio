@@ -1,6 +1,6 @@
-import rpaudio
+import python.rpaudio.rpaudio as rpaudio
 import asyncio
-from rpaudio import FadeIn, FadeOut, ChangeSpeed
+from python.rpaudio.rpaudio import FadeIn, FadeOut, ChangeSpeed
 
 kill_audio = False
 AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"

@@ -261,8 +261,6 @@ impl AudioChannel {
                 })
                 .collect::<Result<Vec<ActionType>, PyErr>>()?;
 
-            println!("Setting effects chain: {:?}", rust_effect_list);
-
             *effects_guard = rust_effect_list;
 
             Ok(())

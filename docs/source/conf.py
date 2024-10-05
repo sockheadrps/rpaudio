@@ -26,6 +26,8 @@ extensions = [
     'sphinx.ext.napoleon',
     "sphinx.ext.viewcode",
     'sphinx_autodoc_typehints',
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
 ]
 
 html_theme = 'sphinx_rtd_theme'
@@ -40,10 +42,13 @@ autoapi_type = 'python'
 autodoc_typehints = 'description'
 autoapi_file_patterns = ['*.pyi']
 autoapi_ignore = ['__init__.py', '__init__.pyi', 'asynctest.py', 'threadtest.py', 'docs\source\conf.py']
-autoapi_keep_files = True  # To keep the generated _autoapi files
+autoapi_keep_files = True
 autoapi_member_order = 'groupwise'
 autoapi_options = [
     'members',
     'undoc-members',
+    'private-members',
+    'special-members',
+    'inherited-members',
     'show-inheritance',
 ]

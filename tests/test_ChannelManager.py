@@ -1,7 +1,7 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-from rpaudio import ChannelManager, AudioChannel, AudioSink
+from python.rpaudio.rpaudio import ChannelManager, AudioChannel, AudioSink
 
 
 @pytest.fixture
