@@ -21,6 +21,8 @@ crate-type = ["cdylib"]
 [package.metadata.maturin]
 name = "rpaudio"
 
+[tool.maturin]
+python-source = "python"
 
 [features]
 default = ["pyo3/extension-module"]
