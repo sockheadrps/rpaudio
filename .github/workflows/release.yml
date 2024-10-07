@@ -18,25 +18,14 @@ jobs:
 
       - name: Check output date
         run: |
-          # Extract the last line containing the time
+          # Extract the last line containing the timestamp
           last_line=$(tail -n 4 pytest_output.txt | head -n 1)
 
-          # Extract the time from the last line
-          pytest_time=$(echo "$last_line" | grep -oP "\d{2}:\d{2}:\d{2}")
-          
-          # Get the current date in UTC
-          today=$(date -u +%Y-%m-%d)
-          now=$(date -u +%s)
+          # Extract the Unix timestamp from the last line (if printed)
+          pytest_timestamp=$(echo "$last_line" | grep -oP "\d{10}")
 
-          # Combine current date with extracted time
-          datetime="$today $pytest_time"
-          
-          # Convert combined datetime to Unix timestamp in UTC
-          pytest_timestamp=$(date -u -d "$datetime" +%s 2>/dev/null)
-          if [ $? -ne 0 ]; then
-            echo "Error: Invalid date or time format"
-            exit 1
-          fi
+          # Get the current date in UTC
+          now=$(date -u +%s)
 
           echo "Pytest timestamp: $pytest_timestamp"
           one_hour_ago=$(($now - 3600))
