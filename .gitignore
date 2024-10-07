@@ -41,3 +41,5 @@ dockerfile
 __pycache__/
 .pytest_cache/
 temp/
+
+python/rpaudio/rpaudio.pyd
