@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>watchfiles._rust_notify &mdash; rpaudio 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=7ab3649f" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            rpaudio
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../rpaudio/index.html">rpaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../effects/index.html">effects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions/index.html">exceptions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rpaudio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">watchfiles._rust_notify</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/watchfiles/_rust_notify/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-watchfiles._rust_notify">
+<span id="watchfiles-rust-notify"></span><h1>watchfiles._rust_notify<a class="headerlink" href="#module-watchfiles._rust_notify" title="Link to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.WatchfilesRustInternalError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">watchfiles._rust_notify.</span></span><span class="sig-name descname"><span class="pre">WatchfilesRustInternalError</span></span><a class="headerlink" href="#watchfiles._rust_notify.WatchfilesRustInternalError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeError</span></code></p>
+<p>Raised when RustNotify encounters an unknown error.</p>
+<p>If you get this a lot, please check [github](<a class="reference external" href="https://github.com/samuelcolvin/watchfiles/issues">https://github.com/samuelcolvin/watchfiles/issues</a>) issues
+and create a new issue if your problem is not discussed.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.RustNotify">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">watchfiles._rust_notify.</span></span><span class="sig-name descname"><span class="pre">RustNotify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">watch_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_polling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_delay_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_permission_denied</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#watchfiles._rust_notify.RustNotify" title="Link to this definition"></a></dt>
+<dd><p>Interface to the Rust [notify](<a class="reference external" href="https://crates.io/crates/notify">https://crates.io/crates/notify</a>) crate which does
+the heavy lifting of watching for file changes and grouping them into events.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.RustNotify.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#watchfiles._rust_notify.RustNotify.__enter__" title="Link to this definition"></a></dt>
+<dd><p>Does nothing, but allows <cite>RustNotify</cite> to be used as a context manager.</p>
+<p>!!! note</p>
+<blockquote>
+<div><p>The watching thead is created when an instance is initiated, not on <cite>__enter__</cite>.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.RustNotify.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#watchfiles._rust_notify.RustNotify.__exit__" title="Link to this definition"></a></dt>
+<dd><p>Calls [<cite>close</cite>][watchfiles._rust_notify.RustNotify.close].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.RustNotify.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#watchfiles._rust_notify.RustNotify.close" title="Link to this definition"></a></dt>
+<dd><p>Stops the watching thread. After <cite>close</cite> is called, the <cite>RustNotify</cite> instance can no
+longer be used, calls to [<cite>watch</cite>][watchfiles._rust_notify.RustNotify.watch] will raise a <cite>RuntimeError</cite>.</p>
+<p>!!! note</p>
+<blockquote>
+<div><p><cite>close</cite> is not required, just deleting the <cite>RustNotify</cite> instance will kill the thread
+implicitly.</p>
+<p>As per [#163](<a class="reference external" href="https://github.com/samuelcolvin/watchfiles/issues/163">https://github.com/samuelcolvin/watchfiles/issues/163</a>) <cite>close()</cite> is only required because
+in the event of an error, the traceback in <cite>sys.exc_info</cite> keeps a reference to <cite>watchfiles.watch</cite>’s
+frame, so you can’t rely on the <cite>RustNotify</cite> object being deleted, and thereby stopping
+the watching thread.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="watchfiles._rust_notify.RustNotify.watch">
+<span class="sig-name descname"><span class="pre">watch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debounce_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_ms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#watchfiles._rust_notify.RustNotify.watch" title="Link to this definition"></a></dt>
+<dd><p>Watch for changes.</p>
+<p>This method will wait <cite>timeout_ms</cite> milliseconds for changes, but once a change is detected,
+it will group changes and return in no more than <cite>debounce_ms</cite> milliseconds.</p>
+<p>The GIL is released during a <cite>step_ms</cite> sleep on each iteration to avoid
+blocking python.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>debounce_ms</strong> – maximum time in milliseconds to group changes over before returning.</p></li>
+<li><p><strong>step_ms</strong> – time to wait for new changes in milliseconds, if no changes are detected
+in this time, and at least one change has been detected, the changes are yielded.</p></li>
+<li><p><strong>timeout_ms</strong> – maximum time in milliseconds to wait for changes before returning,
+<cite>0</cite> means wait indefinitely, <cite>debounce_ms</cite> takes precedence over <cite>timeout_ms</cite> once
+a change is detected.</p></li>
+<li><p><strong>stop_event</strong> – event to check on every iteration to see if this function should return early.
+The event should be an object which has an <cite>is_set()</cite> method which returns a boolean.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>See below.</p>
+</dd>
+</dl>
+<p>Return values have the following meanings:</p>
+<ul class="simple">
+<li><p>Change details as a <cite>set</cite> of <cite>(event_type, path)</cite> tuples, the event types are ints which match
+[<cite>Change</cite>][watchfiles.Change], <cite>path</cite> is a string representing the path of the file that changed</p></li>
+<li><p><cite>‘signal’</cite> string, if a signal was received</p></li>
+<li><p><cite>‘stop’</cite> string, if the <cite>stop_event</cite> was set</p></li>
+<li><p><cite>‘timeout’</cite> string, if <cite>timeout_ms</cite> was exceeded</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, beaux44, sockheadrps.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -8,26 +8,31 @@ rpaudio Documentation
 
 Welcome to the rpaudio documentation!
 
-rpaudio is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
 
-Contents
---------
+API Documentation
+=================
+
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
 
-   autoapi/index
+   autoapi/rpaudio/index
+   autoapi/effects/index
+   autoapi/exceptions/index
 
 
-Quickstart
------------
-.. toctree::
-   :maxdepth: 1
+Example and quickstart:
+=======================
 
-   quickstart
-
-Examples
---------
 .. toctree::
    :maxdepth: 2
 
+   quickstart
    examples/index
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
@@ -6,23 +8,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>rpaudio Documentation &mdash; rpaudio 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=7ab3649f" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d45e8c67"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="autoapi/index.html" /> 
+    <link rel="next" title="rpaudio" href="autoapi/rpaudio/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,13 +43,13 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/rpaudio/index.html">rpaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/effects/index.html">effects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/exceptions/index.html">exceptions</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Aplications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a></li>
 </ul>
 
         </div>
@@ -81,23 +79,37 @@
   <section id="rpaudio-documentation">
 <h1>rpaudio Documentation<a class="headerlink" href="#rpaudio-documentation" title="Link to this heading"></a></h1>
 <p>Welcome to the rpaudio documentation!</p>
-<p>rpaudio is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust’s performance and concurrency safety to offer a robust solution for Python audio applications.</p>
-<section id="contents">
-<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
+</section>
+<section id="api-documentation">
+<h1>API Documentation<a class="headerlink" href="#api-documentation" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/rpaudio/index.html">rpaudio</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.EffectConflictException"><code class="docutils literal notranslate"><span class="pre">EffectConflictException</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.AudioChannel"><code class="docutils literal notranslate"><span class="pre">AudioChannel</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.AudioSink"><code class="docutils literal notranslate"><span class="pre">AudioSink</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.ChangeSpeed"><code class="docutils literal notranslate"><span class="pre">ChangeSpeed</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.ChannelManager"><code class="docutils literal notranslate"><span class="pre">ChannelManager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.FadeIn"><code class="docutils literal notranslate"><span class="pre">FadeIn</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.FadeOut"><code class="docutils literal notranslate"><span class="pre">FadeOut</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/rpaudio/index.html">rpaudio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/rpaudio/index.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/effects/index.html">rpaudio.effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/exceptions/index.html">rpaudio.exceptions</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/rpaudio/index.html#package-contents">Package Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.AudioChannel"><code class="docutils literal notranslate"><span class="pre">AudioChannel</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.AudioSink"><code class="docutils literal notranslate"><span class="pre">AudioSink</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/rpaudio/index.html#rpaudio.ChannelManager"><code class="docutils literal notranslate"><span class="pre">ChannelManager</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/effects/index.html">effects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/effects/index.html#module-contents">Module Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/effects/index.html#effects.ChangeSpeed"><code class="docutils literal notranslate"><span class="pre">ChangeSpeed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/effects/index.html#effects.FadeIn"><code class="docutils literal notranslate"><span class="pre">FadeIn</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/effects/index.html#effects.FadeOut"><code class="docutils literal notranslate"><span class="pre">FadeOut</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/exceptions/index.html">exceptions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/exceptions/index.html#module-contents">Module Contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/exceptions/index.html#exceptions.EffectConflictException"><code class="docutils literal notranslate"><span class="pre">EffectConflictException</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -105,19 +117,12 @@
 </ul>
 </div>
 </section>
-<section id="quickstart">
-<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
+<section id="example-and-quickstart">
+<h1>Example and quickstart:<a class="headerlink" href="#example-and-quickstart" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
-</ul>
-</div>
-</section>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Aplications</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/exaudiosink.html">AudioSink</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/exaudiochannel.html">AudioChannel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/exchannelmanager.html">AudioManager</a></li>
@@ -126,13 +131,20 @@
 </ul>
 </div>
 </section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="autoapi/rpaudio/index.html" class="btn btn-neutral float-right" title="rpaudio" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
