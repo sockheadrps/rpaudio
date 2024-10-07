@@ -16,12 +16,12 @@ API Documentation
    :maxdepth: 3
 
    autoapi/rpaudio/index
-   autoapi/rpaudio/effects/index
-   autoapi/rpaudio/rpaudio_exceptions/index
+   autoapi/effects/index
+   autoapi/exceptions/index
 
 
-Contents:
----------
+Example and quickstart:
+=======================
 
 .. toctree::
    :maxdepth: 2

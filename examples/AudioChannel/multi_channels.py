@@ -1,7 +1,5 @@
-import python.rpaudio.rpaudio as rpaudio
-from python.rpaudio.rpaudio import FadeIn, FadeOut
+import rpaudio
 import asyncio
-from datetime import datetime, timedelta
 
 
 """

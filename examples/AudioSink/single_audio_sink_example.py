@@ -1,4 +1,4 @@
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio
 import asyncio
 
 
@@ -36,23 +36,23 @@ async def play_audio():
             # Resume the audio
             handler.play()
 
-        # if count == 7:
-        #     # turn down the volume
-        #     print("Resuming audio, raise volume")
-        #     handler.set_volume(0.2)
-        #     handler.play()
+        if count == 7:
+            # turn down the volume
+            print("Resuming audio, raise volume")
+            handler.set_volume(0.2)
+            handler.play()
 
-        # if count == 8:
-        #     # Seek to 33.5 seconds
-        #     print(f"Current position: {handler.get_pos()}")
-        #     handler.try_seek(10)
-        #     await asyncio.sleep(1)
-        #     print(f"Position after seek: {handler.get_pos()}")
+        if count == 8:
+            # Seek to 10 seconds
+            print(f"Current position: {handler.get_pos()}")
+            handler.try_seek(10)
+            await asyncio.sleep(1)
+            print(f"Position after seek: {handler.get_pos()}")
 
-        # if count == 10:
-        #     # Stop the audio
-        #     print(handler.get_volume())
-        #     handler.stop()
+        if count == 10:
+            # Stop the audio
+            print(handler.get_volume())
+            handler.stop()
 
 
 async def sleep_loop():

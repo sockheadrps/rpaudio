@@ -9,7 +9,6 @@ __all__ = [
     "ActionType",
     "effects" 
 ]
-
 class AudioSink:
     """
     Interface that wraps functionality for audio files.
@@ -523,99 +522,3 @@ class ChannelManager:
         """
 
 
-class FadeIn:
-    """
-    Represents a fade-in effect for audio.
-
-    :param duration: Duration of the fade-in effect in seconds. Defaults to 5.0.
-    :param start_val: Starting volume value. Defaults to None.
-    :param end_val: Ending volume value. Defaults to 1.0.
-    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
-
-    Example:
-
-    .. code-block:: python
-
-        fade_in = FadeIn(duration=3.0, start_val=0.2, end_val=1.0)
-        # Applies a fade-in effect over 3 seconds, starting from 0.2 volume to full volume (1.0)
-    """
-
-    def __init__(self, duration=5.0, start_val=None, end_val=1.0, apply_after=None):
-        pass
-
-
-class FadeOut:
-    """
-    Represents a fade-out effect for audio.
-
-    :param duration: Duration of the fade-out effect in seconds. Defaults to 5.0.
-    :param start_val: Starting volume value. Defaults to 1.0.
-    :param end_val: Ending volume value. Defaults to None.
-    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
-
-    Example:
-
-    .. code-block:: python
-
-        fade_out = FadeOut(duration=4.0, start_val=1.0, end_val=0.0)
-        # Applies a fade-out effect over 4 seconds, fading from full volume (1.0) to silence (0.0)
-    """
-
-    def __init__(self, duration=5.0, start_val=1.0, end_val=None, apply_after=None):
-        pass
-
-
-class ChangeSpeed:
-    """
-    Represents a speed change effect for audio.
-
-    :param duration: Duration of the speed change effect in seconds. Defaults to 0.0.
-    :param start_val: Starting speed value. Defaults to 1.0.
-    :param end_val: Ending speed value. Defaults to 1.5.
-    :param apply_after: Time in seconds after which to apply the effect. Defaults to None.
-
-    Example:
-
-    .. code-block:: python
-
-        change_speed = ChangeSpeed(duration=2.0, start_val=1.0, end_val=1.2)
-        # Changes audio speed over 2 seconds from normal speed (1.0) to faster (1.2)
-    """
-
-    def __init__(self, duration=0.0, start_val=1.0, end_val=1.5, apply_after=None):
-        pass
-
-
-class EffectConflictException(Exception):
-    """
-    Exception raised when an effect manipulation conflict occurs.
-
-    This exception is raised when a user tries to change the volume or speed of the audio
-    while effects are currently being applied.
-
-    Example:
-
-    .. code-block:: python
-
-        handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
-        await asyncio.sleep(0.3)
-        handler.set_volume(0.0)
-
-        fade_in_effect = FadeIn(duration=10.0, apply_after=0.0)
-
-        effects_list = [fade_in_effect]
-        handler.apply_effects(effects_list)
-        handler.play()
-
-        i = 0
-
-        while not kill_audio:
-            i+=1
-            await asyncio.sleep(1)
-            print(f"volume: {handler.get_volume()}")
-            if i == 4:
-                try:
-                    handler.set_volume(0.5)
-                except EffectConflictException as e:
-                    print(f"Error: {e}")
-    """

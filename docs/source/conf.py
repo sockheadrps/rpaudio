@@ -1,11 +1,6 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../python/rpaudio')) 
 project = 'rpaudio'
 copyright = '2024, beaux44, sockheadrps'
 author = 'beaux44, sockheadrps'
@@ -35,7 +30,7 @@ templates_path = ['_templates']
 
 
 # AutoAPI configuration
-autoapi_dirs = ['../../']
+autoapi_dirs = ['../../python/rpaudio']
 autoapi_generate_api_docs = True
 autoapi_root = 'autoapi'
 autoapi_type = 'python'

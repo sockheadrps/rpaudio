@@ -1,4 +1,4 @@
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio
 import asyncio
 from datetime import datetime, timedelta
 

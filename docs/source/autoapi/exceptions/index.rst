@@ -1,7 +1,7 @@
-rpaudio.rpaudio_exceptions.EffectConflictException
-==================================================
+exceptions
+==========
 
-.. py:module:: rpaudio.rpaudio_exceptions.EffectConflictException
+.. py:module:: exceptions
 
 
 
