@@ -222,9 +222,7 @@ impl AudioChannel {
             .map(|effect| match effect {
                 ActionType::FadeIn(fade_in) => Py::new(py, fade_in.clone()).unwrap().into_py(py),
                 ActionType::FadeOut(fade_out) => Py::new(py, fade_out.clone()).unwrap().into_py(py),
-                ActionType::ChangeSpeed(change_speed) => {
-                    Py::new(py, change_speed.clone()).unwrap().into_py(py)
-                }
+                ActionType::ChangeSpeed(change_speed) => Py::new(py, change_speed.clone()).unwrap().into_py(py)
             })
             .collect();
         let py_list = PyList::new_bound(py, effects_list);

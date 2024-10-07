@@ -171,22 +171,22 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                 .read_from_path(path)
                 .map_err(|e| PyRuntimeError::new_err(format!("Failed to read tag: {}", e)));
 
-                match tag_result {
-                    Ok(tag) => {
-                        let id3_tag = Id3v2Tag::from(tag);
-                        let mut metadata = id3_tag.metadata_fields();
-                        if metadata.duration.is_none() {
-                            let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
-                        }
-                        Ok(metadata)
-                    },
-                    Err(e) => {
-                        eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
-                        Ok(MetaData::default())
+            match tag_result {
+                Ok(tag) => {
+                    let id3_tag = Id3v2Tag::from(tag);
+                    let mut metadata = id3_tag.metadata_fields();
+                    if metadata.duration.is_none() {
+                        let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                        let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                        metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
                     }
+                    Ok(metadata)
+                },
+                Err(e) => {
+                    eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
+                    Ok(MetaData::default())
                 }
+            }
         },
         Some("wav") => {
             let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
