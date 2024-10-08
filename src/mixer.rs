@@ -52,7 +52,6 @@ impl ChannelManager {
         }
     }
 
-
     pub fn start_all(&self) {
         let mut channels = self.channels.lock().unwrap();
         for (_, channel) in channels.iter_mut() {
@@ -69,7 +68,7 @@ impl ChannelManager {
 }
 
 #[pymodule]
-pub fn channelmanager(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn channel_manager(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<ChannelManager>()?;
     Ok(())
 }

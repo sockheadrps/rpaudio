@@ -1,8 +1,8 @@
-use crate::timesync::{self, ActionType};
-use crate::AudioSink;
+use crate::timesync::{self, ActionType, ExtractableEffect};
+use crate::{AudioSink, MetaData};
 use pyo3::exceptions::{PyRuntimeError, PyTypeError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::{IntoPyDict, PyDict, PyList};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{fmt, thread};
@@ -245,18 +245,7 @@ impl AudioChannel {
 
             let rust_effect_list: Vec<ActionType> = _effect_list
                 .into_iter()
-                .map(|effect| {
-                    let effect = effect.downcast_bound(py).unwrap();
-                    if let Ok(fade_in) = effect.extract::<FadeIn>() {
-                        Ok(ActionType::FadeIn(fade_in))
-                    } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
-                        Ok(ActionType::FadeOut(fade_out))
-                    } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
-                        Ok(ActionType::ChangeSpeed(change_speed))
-                    } else {
-                        Err(PyTypeError::new_err("Unknown effect type"))
-                    }
-                })
+                .map(|effect| effect.downcast_bound(py).unwrap().extract_action())
                 .collect::<Result<Vec<ActionType>, PyErr>>()?;
 
             *effects_guard = rust_effect_list;
@@ -271,70 +260,17 @@ impl AudioChannel {
                 if let Some(ref sink) = *playing_guard {
                     let metadata = sink.metadata.clone();
 
-                    let dict = PyDict::new_bound(py);
-                    dict.set_item("album_artist", metadata.album_artist)?;
-                    dict.set_item("album_title", metadata.album_title)?;
-                    dict.set_item("artist", metadata.artist)?;
-                    dict.set_item("channels", metadata.channels)?;
-                    dict.set_item("comment", metadata.comment)?;
-                    dict.set_item("composer", metadata.composer)?;
-                    dict.set_item("date", metadata.date)?;
-                    dict.set_item("disc_number", metadata.disc_number)?;
-                    dict.set_item("duration", metadata.duration)?;
-                    dict.set_item("genre", metadata.genre)?;
-                    dict.set_item("sample_rate", metadata.sample_rate)?;
-                    dict.set_item("title", metadata.title)?;
-                    dict.set_item("total_discs", metadata.total_discs)?;
-                    dict.set_item("total_tracks", metadata.total_tracks)?;
-                    dict.set_item("track_number", metadata.track_number)?;
-                    dict.set_item("year", metadata.year)?;
-                    dict.set_item("speed", sink.get_speed())?;
-                    dict.set_item("position", sink.get_pos()?)?;
-                    dict.set_item("volume", sink.get_volume()?)?;
+                    let dict = metadata.into_py_dict_bound(py);
 
-                    let effects_list: Vec<PyObject> = Vec::new();
-                    let effects_list = PyList::new_bound(py, &effects_list);
+                    // let effects_list = self.effects(py).unwrap();
+                    let effects_list = PyList::new_bound(py, &Vec::<PyObject>::new());
 
                     for effect in self.effects_chain.try_lock().unwrap().iter() {
-                        let effect_dict = PyDict::new_bound(py);
-                        match effect {
-                            ActionType::FadeIn(FadeIn {
-                                duration,
-                                apply_after,
-                                start_val,
-                                end_val,
-                            }) => {
-                                let fadein_dict = PyDict::new_bound(py);
-                                fadein_dict.set_item("duration", duration)?;
-                                fadein_dict.set_item("apply_after", apply_after)?;
-                                fadein_dict.set_item("start_val", start_val)?;
-                                fadein_dict.set_item("end_val", end_val)?;
-                                effect_dict.set_item("FadeIn", fadein_dict)?;
-                            }
-                            ActionType::FadeOut(FadeOut {
-                                duration,
-                                apply_after,
-                                ..
-                            }) => {
-                                let fadeout_dict = PyDict::new_bound(py);
-                                fadeout_dict.set_item("duration", duration)?;
-                                fadeout_dict.set_item("apply_after", apply_after)?;
-                                effect_dict.set_item("FadeOut", fadeout_dict)?;
-                            }
-                            ActionType::ChangeSpeed(ChangeSpeed {
-                                duration,
-                                end_val,
-                                apply_after,
-                                ..
-                            }) => {
-                                let changespeed_dict = PyDict::new_bound(py);
-                                changespeed_dict.set_item("duration", duration)?;
-                                changespeed_dict.set_item("end_val", end_val)?;
-                                changespeed_dict.set_item("apply_after", apply_after)?;
-                                effect_dict.set_item("ChangeSpeed", changespeed_dict)?;
-                            }
-                            _ => {}
-                        }
+                        let effect_dict = match effect {
+                            ActionType::FadeIn(fi)=> fi.into_py_dict_bound(py),
+                            ActionType::FadeOut(fo) => fo.into_py_dict_bound(py),
+                            ActionType::ChangeSpeed(cs) => cs.into_py_dict_bound(py)
+                        };
                         effects_list.append(effect_dict)?;
                     }
                     dict.set_item("effects", effects_list)?;

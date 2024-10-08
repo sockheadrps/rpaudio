@@ -1,8 +1,11 @@
 use std::fmt;
 
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::IntoPyDict};
+use serde::Serialize;
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+use crate::utils::json_to_py;
+
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct FadeIn {
     #[pyo3(get, set)]
@@ -15,9 +18,20 @@ pub struct FadeIn {
     pub apply_after: Option<f32>,
 }
 
+pub trait ExtractableEffect {
+    fn extract_action<'py>(&'py self) -> PyResult<ActionType>;
+}
+
+impl ExtractableEffect for Bound<'_, PyAny> {
+    fn extract_action<'py>(&'py self) -> PyResult<ActionType> {
+        self.extract::<FadeIn>().map(ActionType::FadeIn)
+            .or_else(|_| self.extract::<FadeOut>().map(ActionType::FadeOut))
+            .or_else(|_| self.extract::<ChangeSpeed>().map(ActionType::ChangeSpeed))
+    }
+}
+
 #[pymethods]
 impl FadeIn {
-    
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
     pub fn new(
@@ -35,7 +49,7 @@ impl FadeIn {
     }
 }
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct FadeOut {
     #[pyo3(get, set)]
@@ -52,7 +66,6 @@ pub struct FadeOut {
 impl FadeOut {
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
-
     pub fn new(
         duration: Option<f32>,
         start_val: Option<f32>,
@@ -68,7 +81,7 @@ impl FadeOut {
     }
 }
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct ChangeSpeed {
     #[pyo3(get, set)]
@@ -85,7 +98,6 @@ pub struct ChangeSpeed {
 impl ChangeSpeed {
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
-
     pub fn new(
         duration: Option<f32>,
         start_val: Option<f32>,
@@ -108,10 +120,24 @@ impl fmt::Display for FadeIn {
     }
 }
 
+impl IntoPyDict for FadeIn {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        json_to_py(py, &value).extract().unwrap()
+    }
+}
+
 impl fmt::Display for FadeOut {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "FadeOut {{ duration: {:?}, start_val: {:?}, end_val: {:?} apply_after: {:?} }}", 
             self.duration, self.start_val, self.end_val, self.apply_after)
+    }
+}
+
+impl IntoPyDict for FadeOut {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        json_to_py(py, &value).extract().unwrap()
     }
 }
 
@@ -122,7 +148,14 @@ impl fmt::Display for ChangeSpeed {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl IntoPyDict for ChangeSpeed {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        json_to_py(py, &value).extract().unwrap()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[allow(non_upper_case_globals)]
 #[pyclass]
 pub enum ActionType {

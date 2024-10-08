@@ -1,7 +1,7 @@
 use ::std::sync::mpsc::{Receiver, Sender};
 use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyList;
 use rodio::{Decoder, OutputStream, Sink};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -11,51 +11,53 @@ use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
 use crate::exceptions::EffectConflictException;
-use crate::timesync::{ActionType, ChangeSpeed, EffectResult, EffectSync, FadeIn, FadeOut};
+use crate::timesync::{ActionType, ChangeSpeed, ExtractableEffect, EffectResult, EffectSync, FadeIn, FadeOut};
 use crate::{exmetadata, MetaData};
 
 
 unsafe impl Send for AudioSink {}
 
+#[pyclass]
 #[derive(Serialize)]
 struct AudioInfo {
+    #[pyo3(get)]
     position: f32,
+    #[pyo3(get)]
     speed: f32,
-    effects: Vec<String>,
+    #[pyo3(get)]
+    effects: Vec<ActionType>,
+    #[pyo3(get)]
     volume: f32,
-    metadata: String,
 }
 
-#[pyfunction]
-fn get_audio_info(
-    audio_sink: &AudioSink,
-    metadata: String,
-    effects: Vec<String>,
-) -> PyResult<String> {
-    let sink = audio_sink.sink.as_ref().unwrap().lock().unwrap();
-
-    let start_time = audio_sink.start_time.as_ref();
-    let position = if let Some(start_time) = start_time {
-        start_time.elapsed().as_secs_f32()
-    } else {
-        0.0
-    };
-
-    let speed = 1.0;
-    let volume = sink.volume();
-    let info = AudioInfo {
-        position,
-        speed,
-        effects,
-        volume,
-        metadata,
-    };
-
-    let json_str = serde_json::to_string(&info).unwrap();
-    Ok(json_str)
-}
 
 impl AudioSink {
+    fn get_audio_info(
+        audio_sink: &AudioSink,
+    ) -> PyResult<AudioInfo> {
+        let sink = audio_sink.sink.as_ref().unwrap().lock().unwrap();
+
+        let start_time = audio_sink.start_time.as_ref();
+        let position = if let Some(start_time) = start_time {
+            start_time.elapsed().as_secs_f32()
+        } else {
+            0.0
+        };
+        
+        let effects = audio_sink.effects.lock().unwrap();
+
+        let speed = 1.0;
+        let volume = sink.volume();
+        let info = AudioInfo {
+            position,
+            speed,
+            effects: effects.iter().map(|e| e.action.clone()).collect(),
+            volume,
+        };
+
+        Ok(info)
+    }
+
     pub fn handle_action_and_effects(&mut self, sink: Arc<Mutex<Sink>>) {
         if let Some(receiver) = &self.action_receiver {
             if let Ok(action) = receiver.try_recv() {
@@ -211,55 +213,8 @@ impl AudioSink {
     }
 
     #[getter]
-    pub fn metadata(&self, py: Python) -> PyResult<Py<PyDict>> {
-        let mut dict = HashMap::new();
-        dict.insert("title", self.metadata.title.clone());
-        dict.insert("artist", self.metadata.artist.clone());
-        dict.insert("date", self.metadata.date.clone());
-        dict.insert("year", self.metadata.year.clone());
-        dict.insert("album_title", self.metadata.album_title.clone());
-        dict.insert("album_artist", self.metadata.album_artist.clone());
-        dict.insert("track_number", self.metadata.track_number.clone());
-        dict.insert("total_tracks", self.metadata.total_tracks.clone());
-        dict.insert("disc_number", self.metadata.disc_number.clone());
-        dict.insert("total_discs", self.metadata.total_discs.clone());
-        dict.insert("genre", self.metadata.genre.clone());
-        dict.insert("composer", self.metadata.composer.clone());
-        dict.insert("comment", self.metadata.comment.clone());
-        dict.insert(
-            "sample_rate",
-            self.metadata.sample_rate.map(|rate| rate.to_string()),
-        );
-        dict.insert("position", Some(self.get_pos()?.to_string()));
-        dict.insert("speed", Some(self.get_speed().to_string()));
-        dict.insert("volume", Some(self.get_volume()?.to_string()));
-
-        dict.insert("channels", self.metadata.channels.clone());
-        dict.insert(
-            "duration",
-            self.metadata
-                .duration
-                .map(|duration| format!("{:.1}", duration)),
-        );
-
-        let effects_string = self
-            .effects
-            .lock()
-            .unwrap()
-            .iter()
-            .map(|effect| effect.to_string())
-            .collect::<Vec<String>>()
-            .join(", ");
-
-        dict.insert("effects", Some(effects_string));
-
-        let py_dict = PyDict::new_bound(py);
-
-        for (key, value) in dict {
-            py_dict.set_item(key, value)?;
-        }
-
-        Ok(py_dict.into())
+    pub fn metadata(&self, py: Python) -> PyResult<Py<PyAny>> {
+        Ok(self.metadata.clone().into_py(py))
     }
 
     #[getter]
@@ -530,15 +485,7 @@ impl AudioSink {
                 .into_iter()
                 .map(|effect| {
                     let effect = effect.downcast_bound::<PyAny>(py).unwrap();
-                    if let Ok(fade_in) = effect.extract::<FadeIn>() {
-                        Ok(ActionType::FadeIn(fade_in))
-                    } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
-                        Ok(ActionType::FadeOut(fade_out))
-                    } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
-                        Ok(ActionType::ChangeSpeed(change_speed))
-                    } else {
-                        Err(PyTypeError::new_err("Unknown effect type"))
-                    }
+                    effect.extract_action()
                 })
                 .collect();
 
