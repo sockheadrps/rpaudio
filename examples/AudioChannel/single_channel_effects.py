@@ -1,5 +1,5 @@
 import rpaudio
-from rpaudio.effects import FadeIn, FadeOut
+from rpaudio.effects import FadeIn, FadeOut, ChangeSpeed
 import asyncio
 
 
@@ -23,7 +23,7 @@ async def play_audio(channel) -> None:
 
     while not complete_1:
         await asyncio.sleep(1)
-        print(f"metadata: {channel.current_audio_data()}")
+        # print(f"metadata: {channel.current_audio_data()}")
 
 
         if channel.current_audio is None or not first.is_playing:
@@ -49,21 +49,21 @@ async def sleep_loop() -> None:
 
 async def main() -> None:
     audio_1 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_1.load_audio("examples/ex.wav")
+    audio_1.load_audio("examples/ex.wav", force=True)
 
     channels = audio_1.metadata["channels"]
     duration = audio_1.metadata["duration"]
     print(f"Channels: {channels}, Duration: {duration}")
 
     audio_2 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3", force=True)
     print(f"metadata: {audio_2.metadata}")
 
     channel_1 = rpaudio.AudioChannel()
     fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
     fade_out_effect = FadeOut(end_val=0.0, duration=10.0)
-    speed_up_effect = rpaudio.ChangeSpeed(end_val=1.5, duration=5.0)
-    audio_2.try_seek(100)
+    speed_up_effect = ChangeSpeed(end_val=1.5, duration=5.0)
+    audio_2.try_seek(210)
 
     effects = [fade_in_effect, fade_out_effect, speed_up_effect]
     channel_1.set_effects_chain(effects)

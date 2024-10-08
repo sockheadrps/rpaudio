@@ -45,7 +45,7 @@ impl AudioChannel {
 
                 let should_consume = {
                     let auto_consume_guard = match channel.auto_consume.lock() {
-                        Ok(guard) => guard,
+                        Ok(guard) => *guard,
                         Err(_) => {
                             println!(
                                 "Failed to acquire lock on auto_consume, retrying after backoff"
@@ -55,7 +55,7 @@ impl AudioChannel {
                             continue;
                         }
                     };
-                    *auto_consume_guard
+                    auto_consume_guard
                 };
 
                 if !should_consume {
@@ -63,61 +63,67 @@ impl AudioChannel {
                     continue;
                 }
 
+                if let (Ok(mut playing_guard), Ok(mut queue_guard)) =
+                    (channel.currently_playing.lock(), channel.queue.lock())
                 {
-                    if let (Ok(mut playing_guard), Ok(mut queue_guard)) =
-                        (channel.currently_playing.lock(), channel.queue.lock())
-                    {
-                        if playing_guard.is_none() && !queue_guard.is_empty() {
-                            let mut next_sink = queue_guard.remove(0);
+                    if playing_guard.is_none() && !queue_guard.is_empty() {
+                        let mut next_sink = queue_guard.remove(0);
 
-                            if let Err(e) = next_sink.play() {
-                                eprintln!("Failed to play sink: {}", e);
+                        drop(queue_guard); 
+
+                        if let Err(e) = next_sink.play() {
+                            eprintln!("Failed to play sink: {}", e);
+                            continue;
+                        }
+
+                        *playing_guard = Some(next_sink);
+
+                        let effects_guard = match channel.effects_chain.lock() {
+                            Ok(guard) => guard,
+                            Err(_) => {
+                                eprintln!("Failed to acquire lock on effects_chain");
                                 continue;
                             }
+                        };
 
-                            *playing_guard = Some(next_sink);
-
-                            let effects_guard = match channel.effects_chain.lock() {
-                                Ok(guard) => guard,
-                                Err(_) => {
-                                    eprintln!("Failed to acquire lock on effects_chain");
-                                    continue;
+                        if let Some(sender) = playing_guard.as_mut().unwrap().action_sender.take() {
+                            for effect in effects_guard.iter() {
+                                if let Err(e) = sender.send(effect.clone()) {
+                                    eprintln!("Failed to send effect: {}", e);
                                 }
-                            };
-
-                            if let Some(sender) =
-                                playing_guard.as_mut().unwrap().action_sender.take()
-                            {
-                                for effect in effects_guard.iter() {
-                                    if let Err(e) = sender.send(effect.clone()) {
-                                        eprintln!("Failed to send effect: {}", e);
-                                    }
-                                }
-                            } else {
-                                eprintln!("Action sender is None");
                             }
+                        } else {
+                            eprintln!("Action sender is None");
                         }
-                    } else {
-                        eprintln!("Failed to acquire locks on currently_playing or queue");
                     }
-
-                    if let Ok(mut playing_guard) = channel.currently_playing.lock() {
-                        if let Some(ref mut sink) = *playing_guard {
-                            if !sink.is_playing()
-                                && sink.sink.as_ref().unwrap().lock().unwrap().empty()
-                            {
-                                if let Err(e) = sink.stop() {
-                                    eprintln!("Failed to stop sink: {}", e);
-                                }
-                                *playing_guard = None;
-                            }
-                        }
-                    } else {
-                        eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
-                    }
+                } else {
+                    eprintln!("Failed to acquire locks on currently_playing or queue");
                 }
 
-                thread::sleep(Duration::from_millis(100));
+                if let Ok(mut playing_guard) = channel.currently_playing.lock() {
+                    if let Some(ref mut sink) = *playing_guard {
+                        let force_stop = {
+                            let force_stop_guard = sink.force_stop.read().unwrap();
+                            *force_stop_guard
+                        };
+
+                        let is_sink_empty = {
+                            let sink_guard = sink.sink.as_ref().unwrap().lock().unwrap();
+                            sink_guard.empty()
+                        };
+
+                        if (!sink.is_playing() && is_sink_empty) || force_stop {
+                            if let Err(e) = sink.stop() {
+                                eprintln!("Failed to stop sink: {}", e);
+                            }
+                            *playing_guard = None;
+                        }
+                    }
+                } else {
+                    eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
+                }
+
+                thread::sleep(Duration::from_millis(100)); 
             }
         });
 
@@ -126,7 +132,7 @@ impl AudioChannel {
     }
 
     pub fn push(&mut self, sink: AudioSink) {
-        if let Ok(mut queue_guard) = self.queue.try_lock() {
+        if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.push(sink);
         } else {
             eprintln!("Failed to acquire lock on queue in push()");
@@ -134,7 +140,7 @@ impl AudioChannel {
     }
 
     pub fn pop(&mut self) -> Option<AudioSink> {
-        if let Ok(mut queue_guard) = self.queue.try_lock() {
+        if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.pop()
         } else {
             eprintln!("Failed to acquire lock on queue in pop()");
@@ -150,7 +156,7 @@ impl AudioChannel {
 
     #[setter]
     pub fn set_auto_consume(&mut self, value: bool) {
-        if let Ok(mut auto_consume_guard) = self.auto_consume.try_lock() {
+        if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard = value;
         } else {
             eprintln!("Failed to acquire lock on auto_consume in set_auto_consume()");
@@ -159,7 +165,7 @@ impl AudioChannel {
 
     #[getter]
     pub fn auto_consume(&self) -> bool {
-        if let Ok(auto_consume_guard) = self.auto_consume.try_lock() {
+        if let Ok(auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard
         } else {
             eprintln!("Failed to acquire lock on auto_consume in auto_consume()");
@@ -169,7 +175,7 @@ impl AudioChannel {
 
     #[getter]
     pub fn current_audio(&self) -> Option<AudioSink> {
-        if let Ok(playing_guard) = self.currently_playing.try_lock() {
+        if let Ok(playing_guard) = self.currently_playing.lock() {
             playing_guard.clone()
         } else {
             println!("Failed to acquire lock on currently_playing in current_audio()");
@@ -178,7 +184,7 @@ impl AudioChannel {
     }
 
     pub fn drop_current_audio(&mut self) {
-        if let Ok(mut currently_playing_guard) = self.currently_playing.try_lock() {
+        if let Ok(mut currently_playing_guard) = self.currently_playing.lock() {
             if let Some(mut sink) = currently_playing_guard.take() {
                 let _ = sink.stop();
             }
@@ -189,7 +195,7 @@ impl AudioChannel {
 
     #[getter]
     pub fn queue_contents(&self) -> Vec<AudioSink> {
-        if let Ok(queue_guard) = self.queue.try_lock() {
+        if let Ok(queue_guard) = self.queue.lock() {
             queue_guard.clone()
         } else {
             eprintln!("Failed to acquire lock on queue in queue_contents()");
@@ -199,7 +205,7 @@ impl AudioChannel {
 
     #[getter]
     pub fn is_playing(&self) -> bool {
-        if let Ok(currently_playing_guard) = self.currently_playing.try_lock() {
+        if let Ok(currently_playing_guard) = self.currently_playing.lock() {
             if let Some(ref sink) = *currently_playing_guard {
                 let playing_state = sink.is_playing();
                 playing_state
@@ -214,7 +220,7 @@ impl AudioChannel {
 
     #[getter]
     pub fn effects(&self, py: Python) -> PyResult<Py<PyList>> {
-        let effects_guard = self.effects_chain.try_lock().unwrap();
+        let effects_guard = self.effects_chain.lock().unwrap();
         println!("lock acquired for effects_chain");
 
         let effects_list: Vec<PyObject> = effects_guard
@@ -222,7 +228,9 @@ impl AudioChannel {
             .map(|effect| match effect {
                 ActionType::FadeIn(fade_in) => Py::new(py, fade_in.clone()).unwrap().into_py(py),
                 ActionType::FadeOut(fade_out) => Py::new(py, fade_out.clone()).unwrap().into_py(py),
-                ActionType::ChangeSpeed(change_speed) => Py::new(py, change_speed.clone()).unwrap().into_py(py)
+                ActionType::ChangeSpeed(change_speed) => {
+                    Py::new(py, change_speed.clone()).unwrap().into_py(py)
+                }
             })
             .collect();
         let py_list = PyList::new_bound(py, effects_list);
@@ -267,7 +275,7 @@ impl AudioChannel {
 
     pub fn current_audio_data(&self) -> PyResult<PyObject> {
         Python::with_gil(|py| {
-            if let Ok(playing_guard) = self.currently_playing.try_lock() {
+            if let Ok(playing_guard) = self.currently_playing.lock() {
                 if let Some(ref sink) = *playing_guard {
                     let metadata = sink.metadata.clone();
 
@@ -295,7 +303,7 @@ impl AudioChannel {
                     let effects_list: Vec<PyObject> = Vec::new();
                     let effects_list = PyList::new_bound(py, &effects_list);
 
-                    for effect in self.effects_chain.try_lock().unwrap().iter() {
+                    for effect in self.effects_chain.lock().unwrap().iter() {
                         let effect_dict = PyDict::new_bound(py);
                         match effect {
                             ActionType::FadeIn(FadeIn {

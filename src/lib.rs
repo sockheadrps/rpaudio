@@ -9,6 +9,7 @@ mod exmetadata;
 mod audiosink;
 mod mixer;
 mod timesync;
+mod audiotimer;
 use crate::exceptions::EffectConflictException;
 pub use exmetadata::MetaData;
 

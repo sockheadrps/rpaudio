@@ -18,7 +18,10 @@ async def play_audio(channel) -> None:
     start_time: datetime = datetime.now()
     paused_once: bool = False
     channel.auto_consume = True
+    await asyncio.sleep(0.2)
+    channel.current_audio.set_volume(0.5)
 
+    resumed_once = False
     while not complete_1:
         await asyncio.sleep(1)
 
@@ -27,27 +30,39 @@ async def play_audio(channel) -> None:
                 print("Pause audio after 5 seconds")
                 channel.current_audio.pause()
                 await asyncio.sleep(1)
-                channel.current_audio.play()
                 paused_once = True
                 start_time = datetime.now()
-            elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
+
+            elif paused_once and not resumed_once and (datetime.now() - start_time > timedelta(seconds=1)):
+                print("start audio after 2 seconds")
+                print(channel.current_audio.is_playing)
+
+                channel.current_audio.play()
+                await asyncio.sleep(1)
+
+                print(channel.current_audio.is_playing)
+
+                resumed_once = True
+                start_time = datetime.now()
+
+            elif (paused_once and resumed_once) and datetime.now() - start_time > timedelta(seconds=4):
                 print("Stop audio after 2 seconds")
                 channel.current_audio.stop()
                 paused_once = False
+                resumed_once = False
                 start_time = datetime.now()
-        
-        # Check if the current audio has stopped
-        await asyncio.sleep(1)
+                complete_1 = True
+                print("Complete phase 1")
 
-        if channel.current_audio is None or not channel.current_audio.is_playing:
-            print("Complete phase 1")
-            complete_1 = True
 
     # Wait until complete_1 is True before starting the second phase
     start_time = datetime.now()
     paused_once = False
+    print("Starting phase 2")
+    await asyncio.sleep(0.5)
+    channel.current_audio.set_volume(0.5)
+
     while complete_1 and not complete_2:
-        print("Starting phase 2")
         await asyncio.sleep(1)
 
         if channel.current_audio is not None:
@@ -55,18 +70,26 @@ async def play_audio(channel) -> None:
                 print("Pause audio after 5 seconds")
                 channel.current_audio.pause()
                 await asyncio.sleep(1)
-                channel.current_audio.play()
                 paused_once = True
                 start_time = datetime.now()
-            elif paused_once and datetime.now() - start_time > timedelta(seconds=2):
+
+            elif paused_once and not resumed_once and (datetime.now() - start_time > timedelta(seconds=1)):
+                print("start audio after 2 seconds")
+                channel.current_audio.play()
+                await asyncio.sleep(1)
+                resumed_once = True
+                start_time = datetime.now()
+
+            elif (paused_once and resumed_once) and datetime.now() - start_time > timedelta(seconds=4):
                 print("Stop audio after 2 seconds")
                 channel.current_audio.stop()
                 paused_once = False
+                resumed_once = False
                 start_time = datetime.now()
+                complete_2 = True
+                print("Complete phase 2")
         
-        # Check if the current audio has stopped
-        if channel.current_audio is None or not channel.current_audio.is_playing:
-            complete_2 = True
+
 
     print("Playback complete for both phases")
 

@@ -178,6 +178,7 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                     if metadata.duration.is_none() {
                         let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
                         let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                        print!("Duration: {:?}", source.total_duration());
                         metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
                     }
                     Ok(metadata)

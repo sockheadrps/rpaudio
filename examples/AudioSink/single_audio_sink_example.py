@@ -3,7 +3,7 @@ import asyncio
 
 
 AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"
-AUDIO_FILE = r"examples/ex.wav"
+# AUDIO_FILE = r"examples/ex.wav"
 
 
 def on_audio_stop():
@@ -11,8 +11,10 @@ def on_audio_stop():
 
 
 async def play_audio():
-    handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
+    handler = rpaudio.AudioSink(
+        callback=on_audio_stop).load_audio(AUDIO_FILE, force=True)
     print(handler.metadata)
+    handler.set_volume(0.5)
 
     handler.play()
 
@@ -26,23 +28,19 @@ async def play_audio():
         if count == 4:
             # Pause the audio for 2 seconds
             print("Pausing audio")
+            handler.set_volume(0.2)
             print(handler.get_volume())
-            handler.stop()
+            handler.pause()
             await asyncio.sleep(1)
-
             print(handler.is_playing)
 
-        if count == 6:
-            # Resume the audio
+        if count == 5:
+            # turn down the volume
+            print("Resuming audio, raise volume")
+            handler.set_volume(0.5)
             handler.play()
 
         if count == 7:
-            # turn down the volume
-            print("Resuming audio, raise volume")
-            handler.set_volume(0.2)
-            handler.play()
-
-        if count == 8:
             # Seek to 10 seconds
             print(f"Current position: {handler.get_pos()}")
             handler.try_seek(10)
