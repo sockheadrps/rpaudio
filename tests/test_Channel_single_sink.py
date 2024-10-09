@@ -1,7 +1,7 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio
 
 
 @pytest.fixture
@@ -11,10 +11,10 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"examples/ex.wav", force=True)
 
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"examples/ex.wav", force=True)
 
     channel_1 = rpaudio.AudioChannel()
     channel_1.auto_consume = True

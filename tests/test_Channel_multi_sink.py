@@ -1,9 +1,9 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio as rpaudio
 from unittest.mock import Mock
-from python.rpaudio.rpaudio import FadeIn, FadeOut, ChangeSpeed
+from rpaudio.effects import FadeIn, FadeOut, ChangeSpeed
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"examples/ex.wav", force=True)
 
     return handler, mock_callback
 
@@ -28,7 +28,7 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"examples/ex.wav", force=True)
 
     channel = rpaudio.AudioChannel()
     channel.auto_consume = True
@@ -40,7 +40,7 @@ def audio_channel():
 def test_audio_channel_effects_chain(audio_callback):
     """Test if effects are applied correctly to the audio channel."""
     audio_2 = rpaudio.AudioSink(callback=audio_callback)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3", force=True)
 
     channel_1 = rpaudio.AudioChannel()
 
@@ -85,9 +85,9 @@ async def test_audio_channel_auto_consume(audio_callback):
     """Test if the AudioChannel can auto-consume and switch between audio sinks."""
     # Initialize AudioSinks
     audio_1 = rpaudio.AudioSink(callback=audio_callback)
-    audio_1.load_audio("examples/ex.wav")
+    audio_1.load_audio("examples/ex.wav", force=True)
     audio_2 = rpaudio.AudioSink(callback=audio_callback)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    audio_2.load_audio("examples/ex.wav", force=True)
     channel_1 = rpaudio.AudioChannel()
     channel_1.push(audio_1)
     channel_1.push(audio_2)
@@ -106,7 +106,7 @@ async def test_audio_channel_auto_consume(audio_callback):
 async def test_audiochannel_multiple_sink_pushes(audio_channel):
     channel, mock_callback_1, mock_callback_2 = audio_channel
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"examples/ex.wav", force=True)
 
     channel.push(audio_2)
     await asyncio.sleep(0.1)
@@ -149,19 +149,19 @@ async def test_autoplay_songs():
     mock_callback_4 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"examples/ex.wav", force=True)
     channel.push(audio_1)
 
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"examples/ex.wav", force=True)
     channel.push(audio_2)
 
     audio_3 = rpaudio.AudioSink(callback=mock_callback_3)
-    audio_3.load_audio(r"examples/ex.wav")
+    audio_3.load_audio(r"examples/ex.wav", force=True)
     channel.push(audio_3)
 
     audio_4 = rpaudio.AudioSink(callback=mock_callback_4)
-    audio_4.load_audio(r"examples/ex.wav")
+    audio_4.load_audio(r"examples/ex.wav", force=True)
     channel.push(audio_4)
 
     await asyncio.sleep(0.5)

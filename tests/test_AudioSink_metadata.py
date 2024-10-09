@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import MagicMock
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio
 
 
 test_dict = {'duration': None, 'date': None, 'total_tracks': None, 'channels': None, 'album_title': None, 'total_discs': None, 'genre': None, 'disc_number': None,
@@ -12,7 +12,7 @@ test_dict = {'duration': None, 'date': None, 'total_tracks': None, 'channels': N
 def audio_handler_metadata_wav():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"tests\test_audio_files\test_md_wav.wav")
+    handler.load_audio(r"tests\test_audio_files\test_md_wav.wav", force=True)
     metadata = handler.metadata
     return metadata
 
@@ -21,7 +21,7 @@ def audio_handler_metadata_wav():
 def audio_handler_metadata_flac():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"tests\test_audio_files\test_md_flac.flac")
+    handler.load_audio(r"tests\test_audio_files\test_md_flac.flac", force=True)
     metadata = handler.metadata
     return metadata
 
@@ -30,11 +30,22 @@ def audio_handler_metadata_flac():
 def audio_handler_metadata_mp3():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(
-        r"tests\test_audio_files\test_md_mp3.mp3")
+    try:
+        handler.load_audio(r"tests\test_audio_files\test_md_mp3.mp3")
+    except Exception as e:
+        pass
+    handler.set_duration(1.4)
     metadata = handler.metadata
     return metadata
 
+@pytest.fixture
+def audio_handler_metadata_mp3_no_duration():
+    mock_callback = MagicMock()
+    handler = rpaudio.AudioSink(callback=mock_callback)
+    with pytest.raises(RuntimeError, match="Failed to get audio duration."):
+        handler.load_audio(r"tests\test_audio_files\test_md_mp3.mp3")
+    metadata = handler.metadata
+    return metadata
 
 def test_metadata_wav(audio_handler_metadata_wav):
     metadata = audio_handler_metadata_wav

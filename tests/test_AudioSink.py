@@ -1,7 +1,9 @@
 import pytest
 import asyncio
 from unittest.mock import MagicMock
-import python.rpaudio.rpaudio as rpaudio
+from rpaudio.effects import FadeIn, FadeOut, ChangeSpeed
+import rpaudio
+import rpaudio.exceptions
 
 
 @pytest.fixture
@@ -9,7 +11,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"examples/ex.wav", force=True)
 
     return handler, mock_callback
 
@@ -17,7 +19,7 @@ def audio_handler():
 @pytest.mark.asyncio
 async def test_fade_in(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(
+    fade_in_effect = FadeIn(
         apply_after=handler.get_pos(), start_val=0.0, end_val=1.0, duration=1.0)
     handler.apply_effects([fade_in_effect])
     handler.play()
@@ -31,7 +33,7 @@ async def test_fade_in(audio_handler):
 @pytest.mark.asyncio
 async def test_fade_out(audio_handler):
     handler, _ = audio_handler
-    fade_out_effect = rpaudio.FadeOut(
+    fade_out_effect = FadeOut(
         duration=1.0, apply_after=handler.get_pos())
     handler.apply_effects([fade_out_effect])
     handler.play()
@@ -46,7 +48,7 @@ async def test_fade_out(audio_handler):
 @pytest.mark.asyncio
 async def test_change_speed(audio_handler):
     handler, _ = audio_handler
-    change_speed_effect = rpaudio.ChangeSpeed(end_val=1.5)
+    change_speed_effect = ChangeSpeed(end_val=1.5)
     handler.apply_effects([change_speed_effect])
     handler.play()
     await asyncio.sleep(0.5)
@@ -58,7 +60,7 @@ async def test_change_speed(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(
+    fade_in_effect = FadeIn(
         start_val=0.0, end_val=1.0, duration=1.0)
     handler.apply_effects([fade_in_effect])
     handler.play()
@@ -72,12 +74,12 @@ async def test_effects_applied_over_time(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time_vol_exception(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(start_val=0.0, end_val=1.0, duration=1.0)
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=1.0)
     handler.apply_effects([fade_in_effect])
     handler.play()
     await asyncio.sleep(0.1)
 
-    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+    with pytest.raises(rpaudio.exceptions.EffectConflictException) as exc_info:
         handler.set_volume(0.0)
 
     handler.stop()
@@ -86,12 +88,12 @@ async def test_effects_applied_over_time_vol_exception(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time_speed_exception(audio_handler):
     handler, _ = audio_handler
-    speed_effect = rpaudio.ChangeSpeed(end_val=1.5, duration=1.0)
+    speed_effect = ChangeSpeed(end_val=1.5, duration=1.0)
     handler.apply_effects([speed_effect])
     handler.play()
     await asyncio.sleep(0.1)
 
-    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+    with pytest.raises(rpaudio.exceptions.EffectConflictException) as exc_info:
         handler.set_speed(0.9)
 
     handler.stop()
@@ -99,14 +101,14 @@ async def test_effects_applied_over_time_speed_exception(audio_handler):
 @pytest.mark.asyncio
 async def test_effect_completion(audio_handler):
     handler, _ = audio_handler
-    fade_out_effect = rpaudio.FadeOut(apply_after=handler.get_pos(),
+    fade_out_effect = FadeOut(apply_after=handler.get_pos(),
                                       duration=1.0)
     handler.apply_effects([fade_out_effect])
     handler.play()
     await asyncio.sleep(1.2)
     final_volume = handler.get_volume()
     assert final_volume == 0
-    change_speed_effect = rpaudio.ChangeSpeed(end_val=1.0, duration=0.1)
+    change_speed_effect = ChangeSpeed(end_val=1.0, duration=0.1)
     handler.apply_effects([change_speed_effect])
     await asyncio.sleep(1)
     final_speed = handler.get_speed()
@@ -296,7 +298,7 @@ async def test_set_speed(audio_handler):
     handler.set_speed(1.5)
     handler.play()
     await asyncio.sleep(0.1)
-    speed_up = rpaudio.ChangeSpeed(end_val=1.5)
+    speed_up = ChangeSpeed(end_val=1.5)
     effects_list = [speed_up]
     handler.apply_effects(effects_list)
     await asyncio.sleep(0.1)
