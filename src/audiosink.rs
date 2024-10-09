@@ -249,8 +249,9 @@ impl AudioSink {
             .map_err(|_| PyRuntimeError::new_err("Failed to extract metadata"))?;
 
         {
-            sink.lock().unwrap().append(source);
-            sink.lock().unwrap().pause();
+            let sink = sink.lock().unwrap();
+            sink.append(source);
+            sink.pause();
         }
 
         self.stream = Some(Arc::new(new_stream));
@@ -273,20 +274,16 @@ impl AudioSink {
                 let mut self_clone = self_clone;
 
                 loop {
-                    let sink_guard = sink.lock().unwrap();
-
-                    if sink_guard.empty() {
+                    if sink.lock().unwrap().empty() {
                         let mut is_playing_guard = is_playing_clone.write().unwrap();
                         *is_playing_guard = false;
 
                         if !*cancel_callback_clone.read().unwrap() {
                             Self::invoke_callback(&*callback);
                         }
-                        drop(self_clone);
-                        break;
+                        return;
                     }
 
-                    drop(sink_guard);
                     self_clone.handle_action_and_effects(Arc::clone(&sink));
 
                     thread::sleep(Duration::from_millis(100));
