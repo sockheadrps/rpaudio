@@ -29,7 +29,6 @@ test = [
   "pytest-asyncio",
   "maturin",
   "pytest-json-report",
-  "rpaudio"
 ]
 
 docs = [
