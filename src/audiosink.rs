@@ -1,22 +1,19 @@
 use crate::audiotimer::AudioTimer;
 use crate::exceptions::EffectConflictException;
-use crate::timesync::{ActionType, ChangeSpeed, EffectResult, EffectSync, FadeIn, FadeOut};
+use crate::timesync::{ActionType, EffectResult, EffectSync};
 use crate::{exmetadata, MetaData};
 use ::std::sync::mpsc::{Receiver, Sender};
-use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
-use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+use pyo3::types::PyList;
+use rodio::{Decoder, OutputStream, Sink};
 use serde::Serialize;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
-use crate::exceptions::EffectConflictException;
-use crate::timesync::{ActionType, ChangeSpeed, ExtractableEffect, EffectResult, EffectSync, FadeIn, FadeOut};
-use crate::{exmetadata, MetaData};
+use crate::timesync::ExtractableEffect;
 
 
 unsafe impl Send for AudioSink {}
@@ -244,9 +241,9 @@ impl AudioSink {
         }
 
         let stream_result = if force {
-            None // No stream when forced
+            None 
         } else {
-            Some(OutputStream::try_default()) // Try to get the default stream if not forced
+            Some(OutputStream::try_default())
         };
 
         let (new_stream, stream_handle) = match stream_result {
@@ -263,8 +260,7 @@ impl AudioSink {
                         "Failed to create an audio output stream and force is not enabled.",
                     ));
                 }
-                println!("Forcing audio loading without an output device.");
-                (None, None) // Proceed without a stream and handle
+                (None, None) 
             }
         };
 
@@ -273,7 +269,6 @@ impl AudioSink {
                 PyRuntimeError::new_err(format!("Failed to create sink: {}", e))
             })?))
         } else {
-            println!("Creating sink without an output device.");
             Arc::new(Mutex::new(
                 Sink::try_new(&OutputStream::try_default().unwrap().1).map_err(|e| {
                     PyRuntimeError::new_err(format!("Failed to create dummy sink: {}", e))
@@ -310,12 +305,8 @@ impl AudioSink {
         let callback = self.callback.clone();
         let cancel_callback_clone = self.cancel_callback.clone();
         let steam_is_none = self.stream.is_none();
-        if self.metadata.duration.is_none() {
-            let audio_duration = 0.0;
-            self.metadata.duration = audio_duration.into();
-            return Err(PyRuntimeError::new_err("Failed to get audio duration."));
-        }
-        let audio_duration = self.metadata.duration.unwrap();
+        let audio_duration = self.metadata.duration.unwrap_or_default();
+
 
         thread::spawn({
             let sink = Arc::clone(&sink);
@@ -330,7 +321,6 @@ impl AudioSink {
                         *force_stop_guard
                     };
                 
-                    // Lock the sink only when necessary
                     let should_drop_sink = {
                         let sink_guard = sink.lock().unwrap();
                         sink_guard.empty() || force_stop
@@ -343,7 +333,6 @@ impl AudioSink {
                         if !*cancel_callback_clone.read().unwrap() {
                             Self::invoke_callback(&*callback);
                         }
-                        println!("dropping");
                         drop(self_clone);
                         break;
                     }
@@ -376,7 +365,7 @@ impl AudioSink {
     pub fn play(&mut self) -> PyResult<()> {
         if let Some(sink) = &self.sink {
             *self.is_playing.write().unwrap() = true;
-            println!("is_playing: {}", *self.is_playing.read().unwrap());
+
             if self.initial_play {
                 sink.lock().unwrap().play();
                 self.initial_play = false;
@@ -610,9 +599,7 @@ impl AudioSink {
                     })
                     .ok();
             }
-        } else {
-            eprintln!("Action sender is None");
-        }
+        } 
 
         Ok(())
     }

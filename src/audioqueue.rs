@@ -12,7 +12,7 @@ use timesync::{ChangeSpeed, FadeIn, FadeOut};
 #[pyclass]
 pub struct AudioChannel {
     pub queue: Arc<Mutex<Vec<AudioSink>>>,
-    auto_consume: Arc<Mutex<bool>>,
+    pub auto_consume: Arc<Mutex<bool>>,
     currently_playing: Arc<Mutex<Option<AudioSink>>>,
     effects_chain: Arc<Mutex<Vec<ActionType>>>,
 }
@@ -47,9 +47,7 @@ impl AudioChannel {
                     let auto_consume_guard = match channel.auto_consume.lock() {
                         Ok(guard) => *guard,
                         Err(_) => {
-                            println!(
-                                "Failed to acquire lock on auto_consume, retrying after backoff"
-                            );
+                            
                             thread::sleep(Duration::from_millis(backoff));
                             backoff = std::cmp::min(backoff * 2, 1000);
                             continue;
@@ -92,13 +90,9 @@ impl AudioChannel {
                                     eprintln!("Failed to send effect: {}", e);
                                 }
                             }
-                        } else {
-                            eprintln!("Action sender is None");
-                        }
+                        } 
                     }
-                } else {
-                    eprintln!("Failed to acquire locks on currently_playing or queue");
-                }
+                } 
 
                 if let Ok(mut playing_guard) = channel.currently_playing.lock() {
                     if let Some(ref mut sink) = *playing_guard {
@@ -119,9 +113,7 @@ impl AudioChannel {
                             *playing_guard = None;
                         }
                     }
-                } else {
-                    eprintln!("Failed to acquire lock on currently_playing in _channel_loop()");
-                }
+                } 
 
                 thread::sleep(Duration::from_millis(100)); 
             }
@@ -134,16 +126,13 @@ impl AudioChannel {
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.push(sink);
-        } else {
-            eprintln!("Failed to acquire lock on queue in push()");
-        }
+        } 
     }
 
     pub fn pop(&mut self) -> Option<AudioSink> {
         if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.pop()
         } else {
-            eprintln!("Failed to acquire lock on queue in pop()");
             None
         }
     }
@@ -158,9 +147,7 @@ impl AudioChannel {
     pub fn set_auto_consume(&mut self, value: bool) {
         if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard = value;
-        } else {
-            eprintln!("Failed to acquire lock on auto_consume in set_auto_consume()");
-        }
+        } 
     }
 
     #[getter]
@@ -168,7 +155,6 @@ impl AudioChannel {
         if let Ok(auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard
         } else {
-            eprintln!("Failed to acquire lock on auto_consume in auto_consume()");
             false
         }
     }
@@ -178,7 +164,6 @@ impl AudioChannel {
         if let Ok(playing_guard) = self.currently_playing.lock() {
             playing_guard.clone()
         } else {
-            println!("Failed to acquire lock on currently_playing in current_audio()");
             None
         }
     }
@@ -188,9 +173,7 @@ impl AudioChannel {
             if let Some(mut sink) = currently_playing_guard.take() {
                 let _ = sink.stop();
             }
-        } else {
-            eprintln!("Failed to acquire lock on currently_playing in drop_current_audio()");
-        }
+        } 
     }
 
     #[getter]
@@ -198,7 +181,6 @@ impl AudioChannel {
         if let Ok(queue_guard) = self.queue.lock() {
             queue_guard.clone()
         } else {
-            eprintln!("Failed to acquire lock on queue in queue_contents()");
             Vec::new()
         }
     }
@@ -221,7 +203,6 @@ impl AudioChannel {
     #[getter]
     pub fn effects(&self, py: Python) -> PyResult<Py<PyList>> {
         let effects_guard = self.effects_chain.lock().unwrap();
-        println!("lock acquired for effects_chain");
 
         let effects_list: Vec<PyObject> = effects_guard
             .iter()
@@ -270,7 +251,6 @@ impl AudioChannel {
 
                     let dict = metadata.into_py_dict_bound(py);
 
-                    // let effects_list = self.effects(py).unwrap();
                     let effects_list = PyList::new_bound(py, &Vec::<PyObject>::new());
 
                     for effect in self.effects_chain.try_lock().unwrap().iter() {

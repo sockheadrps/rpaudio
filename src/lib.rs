@@ -40,6 +40,12 @@ mod rpaudio {
     }
 
     #[pymodule]
+    mod metadata {
+        #[pymodule_export]
+        use super::MetaData;
+    }
+
+    #[pymodule]
     #[pyo3(name = "exceptions")]
     mod rpaudio_exceptions {
         #[pymodule_export]

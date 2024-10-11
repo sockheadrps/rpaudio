@@ -49,14 +49,14 @@ async def sleep_loop() -> None:
 
 async def main() -> None:
     audio_1 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_1.load_audio("examples/ex.wav", force=True)
+    audio_1.load_audio("examples/ex.wav")
 
     channels = audio_1.metadata.channels
     duration = audio_1.metadata.duration
     print(f"Channels: {channels}, Duration: {duration}")
 
     audio_2 = rpaudio.AudioSink(callback=on_audio_stop)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3", force=True)
+    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
     print(f"metadata: {audio_2.metadata}")
 
     channel_1 = rpaudio.AudioChannel()

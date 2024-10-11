@@ -12,7 +12,7 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(
-        callback=on_audio_stop).load_audio(AUDIO_FILE, force=True)
+        callback=on_audio_stop).load_audio(AUDIO_FILE)
     print(handler.metadata)
     handler.set_volume(0.5)
 

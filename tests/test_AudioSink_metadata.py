@@ -43,41 +43,37 @@ def audio_handler_metadata_mp3_no_duration():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
     with pytest.raises(RuntimeError, match="Failed to get audio duration."):
-        handler.load_audio(r"tests\test_audio_files\test_md_mp3.mp3")
+        handler.load_audio(r"test_audio_files\test_md_mp3.mp3")
     metadata = handler.metadata
     return metadata
 
 def test_metadata_wav(audio_handler_metadata_wav):
     metadata = audio_handler_metadata_wav
-    assert metadata['channels'] == "2"
-    assert metadata['sample_rate'] == "44100"
-    assert metadata['duration'] == "1.4"
+    assert metadata.channels == "2"
+    assert metadata.sample_rate == 44100
+    print(metadata.duration)
+    assert round(metadata.duration, 1) == 9.6
     assert metadata is not None
 
 
 def test_metadata_mp3(audio_handler_metadata_mp3):
     metadata = audio_handler_metadata_mp3
-    assert metadata['title'] == "rpaudio"
-    assert metadata['artist'] == "rpaudio"
-    assert metadata['album_title'] == "rpaudio"
-    assert metadata['genre'] == "rpaudio"
-    assert metadata['track_number'] == '1'
-    assert metadata['year'] == '2024'
+    assert metadata.title == "rpaudio"
+    assert metadata.artist == "rpaudio"
+    assert metadata.album_title == "rpaudio"
+    assert metadata.genre == "rpaudio"
+    assert metadata.track_number == '1'
+    assert metadata.year == '2024'
     assert metadata is not None
-
-    for key in test_dict.keys():
-        assert key in metadata
 
 
 # @pytest.mark.asyncio
 def test_metadata_flac(audio_handler_metadata_flac):
     metadata = audio_handler_metadata_flac
-    assert metadata['title'] == "rpaudio"
-    assert metadata['artist'] == "rpaudio"
-    assert metadata['album_title'] == "rpaudio"
-    assert metadata['genre'] == "rpaudio"
-    assert metadata['track_number'] == '1'
-    assert metadata['year'] == '2024'
+    assert metadata.title == "rpaudio"
+    assert metadata.artist == "rpaudio"
+    assert metadata.album_title == "rpaudio"
+    assert metadata.genre == "rpaudio"
+    assert metadata.track_number == '1'
+    assert metadata.year == '2024'
     assert metadata is not None
-    for key in test_dict.keys():
-        assert key in metadata

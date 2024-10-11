@@ -28,6 +28,8 @@ test = [
   "pytest <= 8.3.2",
   "pytest-asyncio",
   "maturin",
+  "pytest-json-report",
+  "tomli"
 ]
 
 docs = [
@@ -45,4 +47,5 @@ dev = [
 
 [tool.maturin]
 python-source = "python"
-module-name = "rpaudio.rpaudio"
+module-name = "rpaudio"
+
