@@ -43,6 +43,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
           pip install .[test]
 
       - name: Run Pytest
