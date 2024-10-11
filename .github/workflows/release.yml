@@ -69,11 +69,12 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
+            yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware
+            echo "modprobe"
 
             modprobe snd-dummy
 
-            export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+            # export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
 
             # echo "pcm.!default {" > ~/.asoundrc
             # echo "    type plug" >> ~/.asoundrc
@@ -85,7 +86,7 @@ jobs:
             # echo "    card Dummy" >> ~/.asoundrc
             # echo "}" >> ~/.asoundrc
 
-            aplay -l
+            # aplay -l
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
