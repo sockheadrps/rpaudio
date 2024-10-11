@@ -69,11 +69,17 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            yum-config-manager --enable extras
-            yum list kernel kernel-devel kernel-headers
-            yum install kernel-devel-$(uname -r) kernel-headers-$(uname -r)
+            sudo yum install kernel-modules-6.5.0-1016-azure
+            sudo yum install kernel-modules
+            sudo yum install kernel-devel kernel-headers
+
+
             yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware epel-release
             echo "modprobe"
+            sudo modprobe snd-dummy
+            lsmod | grep snd_dummy
+
+
 
       - name: Echo Troubleshooting Information
         run: |
