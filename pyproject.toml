@@ -30,8 +30,7 @@ test = [
   "maturin",
   "pytest-json-report",
   "tomli",
-  "maturin"
-
+  "rpaudio"
 ]
 
 docs = [
