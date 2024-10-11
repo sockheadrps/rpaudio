@@ -69,28 +69,37 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            # Install ALSA libraries and utilities
             yum install -y alsa-lib-devel pkgconfig
 
-            # # Load the dummy sound driver
-            # modprobe snd-dummy
+            modprobe snd-dummy
 
-            # # Set PKG_CONFIG_PATH to include the directory with alsa.pc
-            # export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+            export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-            # # Create ALSA configuration for dummy output
-            # echo "pcm.!default {" > ~/.asoundrc
-            # echo "    type plug" >> ~/.asoundrc
-            # echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
-            # echo "}" >> ~/.asoundrc
-            # echo "" >> ~/.asoundrc
-            # echo "ctl.!default {" >> ~/.asoundrc
-            # echo "    type hw" >> ~/.asoundrc
-            # echo "    card Dummy" >> ~/.asoundrc
-            # echo "}" >> ~/.asoundrc
+            echo "pcm.!default {" > ~/.asoundrc
+            echo "    type plug" >> ~/.asoundrc
+            echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
+            echo "}" >> ~/.asoundrc
+            echo "" >> ~/.asoundrc
+            echo "ctl.!default {" >> ~/.asoundrc
+            echo "    type hw" >> ~/.asoundrc
+            echo "    card Dummy" >> ~/.asoundrc
+            echo "}" >> ~/.asoundrc
 
-            # # Optional: Verify that the dummy device is set up correctly
-            # aplay -l
+            aplay -l
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+          pip install .[test]
+
+      - name: Run Pytest
+        run: |
+          pytest --json-report --json-report-file=tests/report.json
 
       - name: Install built wheel
         if: matrix.target == 'x86_64'
