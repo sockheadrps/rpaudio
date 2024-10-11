@@ -36,19 +36,19 @@ jobs:
           name: windows-${{ matrix.target }}
           path: dist/
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+      # - name: Set up Python 3.11
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: 3.11
 
-      - name: Install dependencies
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          pip install .[test]
+      # - name: Install dependencies
+      #   run: |
+      #     pip install rpaudio --no-index --find-links dist --force-reinstall
+      #     pip install .[test]
 
-      - name: Run Pytest
-        run: |
-          pytest --json-report --json-report-file=tests/report.json
+      # - name: Run Pytest
+      #   run: |
+      #     pytest --json-report --json-report-file=tests/report.json
 
   linux:
     runs-on: ubuntu-latest
@@ -82,6 +82,20 @@ jobs:
         with:
           name: wheels-${{ matrix.target }}
           path: dist/
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+          pip install .[test]
+
+      - name: Run Pytest
+        run: |
+          pytest --json-report --json-report-file=tests/report.json
 
   macos:
     runs-on: macos-13

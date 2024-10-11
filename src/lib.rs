@@ -3,6 +3,7 @@ use audioqueue::AudioChannel;
 use mixer::ChannelManager;
 use pyo3::prelude::*;
 use timesync::{ActionType, ChangeSpeed, FadeIn, FadeOut};
+mod mockoutputstream;
 mod audioqueue;
 mod exceptions;
 mod exmetadata;
