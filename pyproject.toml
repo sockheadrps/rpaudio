@@ -29,7 +29,9 @@ test = [
   "pytest-asyncio",
   "maturin",
   "pytest-json-report",
-  "tomli"
+  "tomli",
+  "maturin"
+
 ]
 
 docs = [
