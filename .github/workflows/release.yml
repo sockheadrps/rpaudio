@@ -69,49 +69,18 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            sudo yum install kernel-modules-6.5.0-1016-azure
-            sudo yum install kernel-modules
-            sudo yum install kernel-devel kernel-headers
+            # Install ALSA libraries and utilities
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
 
-
-            yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware epel-release
-            echo "modprobe"
-            sudo modprobe snd-dummy
-            lsmod | grep snd_dummy
-
-
-
-      - name: Echo Troubleshooting Information
+      - name: Install ALSA libraries
         run: |
-          echo "=== Environment Variables ==="
-          printenv
-
-          echo "=== Current PATH ==="
-          echo "$PATH"
-
-          echo "=== Available Commands ==="
-          echo "which modprobe: $(which modprobe || echo 'modprobe not found')"
-          echo "which sudo: $(which sudo || echo 'sudo not found')"
-          echo "which alsa-utils: $(which aplay || echo 'alsa-utils not found')"
+          sudo apt-get update
+          sudo apt-get install -y alsa-utils alsa-lib-dev
 
       - name: Load snd-dummy module
         run: |
-          echo "Loading snd-dummy module..."
-          modprobe snd-dummy || echo "Failed to load snd-dummy module"
-
-      - name: Configure ALSA to use dummy output
-        run: |
-          echo "Configuring ALSA to use dummy output..."
-          echo "pcm.!default {" > ~/.asoundrc
-          echo "    type plug" >> ~/.asoundrc
-          echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
-          echo "}" >> ~/.asoundrc
-          echo "" >> ~/.asoundrc
-          echo "ctl.!default {" >> ~/.asoundrc
-          echo "    type hw" >> ~/.asoundrc
-          echo "    card Dummy" >> ~/.asoundrc
-          echo "}" >> ~/.asoundrc
-
+          sudo modprobe snd-dummy
+        
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
