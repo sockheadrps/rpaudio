@@ -69,7 +69,9 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            uname -r
+            yum-config-manager --enable extras
+            yum list kernel kernel-devel kernel-headers
+            yum install kernel-devel-$(uname -r) kernel-headers-$(uname -r)
             yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware epel-release
             echo "modprobe"
 
