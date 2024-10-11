@@ -70,7 +70,7 @@ jobs:
           args: --release --out dist
           before-script-linux: |
             # Install ALSA libraries and utilities
-            yum install -y alsa-lib-devel pkgconfig
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
 
             # Load the dummy sound driver
             modprobe snd-dummy
