@@ -75,15 +75,15 @@ jobs:
 
             export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-            echo "pcm.!default {" > ~/.asoundrc
-            echo "    type plug" >> ~/.asoundrc
-            echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
-            echo "}" >> ~/.asoundrc
-            echo "" >> ~/.asoundrc
-            echo "ctl.!default {" >> ~/.asoundrc
-            echo "    type hw" >> ~/.asoundrc
-            echo "    card Dummy" >> ~/.asoundrc
-            echo "}" >> ~/.asoundrc
+            # echo "pcm.!default {" > ~/.asoundrc
+            # echo "    type plug" >> ~/.asoundrc
+            # echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
+            # echo "}" >> ~/.asoundrc
+            # echo "" >> ~/.asoundrc
+            # echo "ctl.!default {" >> ~/.asoundrc
+            # echo "    type hw" >> ~/.asoundrc
+            # echo "    card Dummy" >> ~/.asoundrc
+            # echo "}" >> ~/.asoundrc
 
             aplay -l
 
