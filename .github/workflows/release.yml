@@ -69,7 +69,7 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware
+            yum install -y alsa-lib-devel pkgconfig alsa-utils alsa-firmware kernel-modules-extra-$(uname -r)
             echo "modprobe"
 
       - name: Echo Troubleshooting Information
