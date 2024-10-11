@@ -70,27 +70,27 @@ jobs:
           args: --release --out dist
           before-script-linux: |
             # Install ALSA libraries and utilities
-            yum install -y alsa-lib-devel pkgconfig alsa-utils
+            yum install -y alsa-lib-devel pkgconfig
 
-            # Load the dummy sound driver
-            modprobe snd-dummy
+            # # Load the dummy sound driver
+            # modprobe snd-dummy
 
-            # Set PKG_CONFIG_PATH to include the directory with alsa.pc
-            export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
+            # # Set PKG_CONFIG_PATH to include the directory with alsa.pc
+            # export PKG_CONFIG_PATH="/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-            # Create ALSA configuration for dummy output
-            echo "pcm.!default {" > ~/.asoundrc
-            echo "    type plug" >> ~/.asoundrc
-            echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
-            echo "}" >> ~/.asoundrc
-            echo "" >> ~/.asoundrc
-            echo "ctl.!default {" >> ~/.asoundrc
-            echo "    type hw" >> ~/.asoundrc
-            echo "    card Dummy" >> ~/.asoundrc
-            echo "}" >> ~/.asoundrc
+            # # Create ALSA configuration for dummy output
+            # echo "pcm.!default {" > ~/.asoundrc
+            # echo "    type plug" >> ~/.asoundrc
+            # echo "    slave.pcm \"dummy\"" >> ~/.asoundrc
+            # echo "}" >> ~/.asoundrc
+            # echo "" >> ~/.asoundrc
+            # echo "ctl.!default {" >> ~/.asoundrc
+            # echo "    type hw" >> ~/.asoundrc
+            # echo "    card Dummy" >> ~/.asoundrc
+            # echo "}" >> ~/.asoundrc
 
-            # Optional: Verify that the dummy device is set up correctly
-            aplay -l
+            # # Optional: Verify that the dummy device is set up correctly
+            # aplay -l
 
       - name: Install built wheel
         if: matrix.target == 'x86_64'
