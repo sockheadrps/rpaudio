@@ -69,7 +69,7 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
