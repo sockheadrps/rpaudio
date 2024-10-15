@@ -1,5 +1,5 @@
 ![Pytest](https://img.shields.io/badge/Pytest-56/56-brightgreen)
-![Version](https://img.shields.io/badge/Version-0.0.13-blue)
+![Version](https://img.shields.io/badge/Version-0.0.14-blue)
 # rpaudio
 
 `rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
