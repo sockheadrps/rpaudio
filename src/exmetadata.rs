@@ -1,4 +1,4 @@
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use pyo3::{prelude::*, types::IntoPyDict};
 use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};

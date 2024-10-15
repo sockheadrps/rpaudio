@@ -1,12 +1,11 @@
-use crate::timesync::{self, ActionType, ExtractableEffect};
-use crate::{AudioSink, MetaData};
-use pyo3::exceptions::{PyRuntimeError, PyTypeError};
+use crate::timesync::{ActionType, ExtractableEffect};
+use crate::AudioSink;
+use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
-use pyo3::types::{IntoPyDict, PyDict, PyList};
+use pyo3::types::{IntoPyDict, PyList};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{fmt, thread};
-use timesync::{ChangeSpeed, FadeIn, FadeOut};
 
 #[derive(Debug, Clone)]
 #[pyclass]
@@ -47,7 +46,6 @@ impl AudioChannel {
                     let auto_consume_guard = match channel.auto_consume.lock() {
                         Ok(guard) => *guard,
                         Err(_) => {
-                            
                             thread::sleep(Duration::from_millis(backoff));
                             backoff = std::cmp::min(backoff * 2, 1000);
                             continue;
@@ -67,7 +65,7 @@ impl AudioChannel {
                     if playing_guard.is_none() && !queue_guard.is_empty() {
                         let mut next_sink = queue_guard.remove(0);
 
-                        drop(queue_guard); 
+                        drop(queue_guard);
 
                         if let Err(e) = next_sink.play() {
                             eprintln!("Failed to play sink: {}", e);
@@ -90,32 +88,27 @@ impl AudioChannel {
                                     eprintln!("Failed to send effect: {}", e);
                                 }
                             }
-                        } 
+                        }
                     }
-                } 
+                }
 
                 if let Ok(mut playing_guard) = channel.currently_playing.lock() {
                     if let Some(ref mut sink) = *playing_guard {
-                        let force_stop = {
-                            let force_stop_guard = sink.force_stop.read().unwrap();
-                            *force_stop_guard
-                        };
-
                         let is_sink_empty = {
                             let sink_guard = sink.sink.as_ref().unwrap().lock().unwrap();
                             sink_guard.empty()
                         };
 
-                        if (!sink.is_playing() && is_sink_empty) || force_stop {
+                        if !sink.is_playing() && is_sink_empty {
                             if let Err(e) = sink.stop() {
                                 eprintln!("Failed to stop sink: {}", e);
                             }
                             *playing_guard = None;
                         }
                     }
-                } 
+                }
 
-                thread::sleep(Duration::from_millis(100)); 
+                thread::sleep(Duration::from_millis(100));
             }
         });
 
@@ -126,7 +119,7 @@ impl AudioChannel {
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.push(sink);
-        } 
+        }
     }
 
     pub fn pop(&mut self) -> Option<AudioSink> {
@@ -147,7 +140,7 @@ impl AudioChannel {
     pub fn set_auto_consume(&mut self, value: bool) {
         if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard = value;
-        } 
+        }
     }
 
     #[getter]
@@ -173,7 +166,7 @@ impl AudioChannel {
             if let Some(mut sink) = currently_playing_guard.take() {
                 let _ = sink.stop();
             }
-        } 
+        }
     }
 
     #[getter]
@@ -255,9 +248,9 @@ impl AudioChannel {
 
                     for effect in self.effects_chain.try_lock().unwrap().iter() {
                         let effect_dict = match effect {
-                            ActionType::FadeIn(fi)=> fi.into_py_dict_bound(py),
+                            ActionType::FadeIn(fi) => fi.into_py_dict_bound(py),
                             ActionType::FadeOut(fo) => fo.into_py_dict_bound(py),
-                            ActionType::ChangeSpeed(cs) => cs.into_py_dict_bound(py)
+                            ActionType::ChangeSpeed(cs) => cs.into_py_dict_bound(py),
                         };
                         effects_list.append(effect_dict)?;
                     }

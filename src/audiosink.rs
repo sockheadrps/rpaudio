@@ -5,7 +5,7 @@ use crate::{exmetadata, MetaData};
 use ::std::sync::mpsc::{Receiver, Sender};
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyList;
+use pyo3::types::{IntoPyDict, PyList};
 use rodio::{Decoder, OutputStream, Sink};
 use serde::Serialize;
 use std::fs::File;
@@ -30,30 +30,6 @@ struct AudioInfo {
 }
 
 impl AudioSink {
-    fn get_audio_info(audio_sink: &AudioSink) -> PyResult<AudioInfo> {
-        let sink = audio_sink.sink.as_ref().unwrap().lock().unwrap();
-
-        let start_time = audio_sink.start_time.as_ref();
-        let position = if let Some(start_time) = start_time {
-            start_time.elapsed().as_secs_f32()
-        } else {
-            0.0
-        };
-
-        let effects = audio_sink.effects.lock().unwrap();
-
-        let speed = 1.0;
-        let volume = sink.volume();
-        let info = AudioInfo {
-            position,
-            speed,
-            effects: effects.iter().map(|e| e.action.clone()).collect(),
-            volume,
-        };
-
-        Ok(info)
-    }
-
     pub fn handle_action_and_effects(&mut self, sink: Arc<Mutex<Sink>>) {
         if let Some(receiver) = &self.action_receiver {
             if let Ok(action) = receiver.try_recv() {
@@ -166,7 +142,6 @@ pub struct AudioSink {
     resume: bool,
     vol_manipulation_lock: Arc<RwLock<bool>>,
     speed_manipulation_lock: Arc<RwLock<bool>>,
-    pub force_stop: Arc<RwLock<bool>>,
 }
 
 impl AudioSink {
@@ -205,7 +180,6 @@ impl AudioSink {
             resume: false,
             vol_manipulation_lock: Arc::new(RwLock::new(false)),
             speed_manipulation_lock: Arc::new(RwLock::new(false)),
-            force_stop: Arc::new(RwLock::new(false)),
         }
     }
 
@@ -505,5 +479,27 @@ impl AudioSink {
         }
 
         Ok(())
+    }
+
+    pub fn playback_data(&self) -> PyResult<PyObject> {
+        let self_clone = self.clone();
+        Python::with_gil(|py| {
+            let metadata = self_clone.metadata.clone();
+
+            let dict = metadata.into_py_dict_bound(py);
+
+            let effects_list = PyList::new_bound(py, &Vec::<PyObject>::new());
+
+            for effect in self.effects.lock().unwrap().iter() {
+                let effect_dict = match &effect.action {
+                    ActionType::FadeIn(fi) => fi.into_py_dict_bound(py),
+                    ActionType::FadeOut(fo) => fo.into_py_dict_bound(py),
+                    ActionType::ChangeSpeed(cs) => cs.into_py_dict_bound(py),
+                };
+                effects_list.append(effect_dict)?;
+            }
+            dict.set_item("effects", effects_list)?;
+            return Ok(dict.into());
+        })
     }
 }
