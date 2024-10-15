@@ -9,6 +9,71 @@ on:
       - 'v*'
 
 jobs:
+  build-for-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: --release --out dist
+          before-script-linux: |
+            # Install ALSA libraries and utilities
+            sudo apt-get update
+            sudo apt-get install -y alsa-utils libasound2-dev
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-x86_64
+          path: dist/
+
+  test-with-modprobe:
+    runs-on: ubuntu-latest
+    needs: build-for-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download wheels
+        uses: actions/download-artifact@v2
+        with:
+          name: wheels-x86_64
+          path: ./dist
+
+      - name: Install kmod
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y kmod
+
+      - name: Install dependencies
+        run: |
+          pip install ./dist/*.whl
+          pip install .[test]
+
+      - name: Run Pytest
+        run: |
+          pytest --json-report --json-report-file=tests/report.json
+          
   # windows:
   #   runs-on: windows-latest
   #   strategy:
@@ -50,63 +115,58 @@ jobs:
       #   run: |
       #     pytest --json-report --json-report-file=tests/report.json
 
-  linux:
-    runs-on: ubuntu-latest
-    # needs: windows
-    strategy:
-      matrix:
-        target: [x86_64, i686]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-          architecture: x64
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
-          manylinux: auto
-          args: --release --out dist
-          before-script-linux: |
-            # Install ALSA libraries and utilities
-            yum install -y alsa-lib-devel pkgconfig alsa-utils
+  # linux:
+  #   runs-on: ubuntu-latest
+  #   # needs: windows
+  #   strategy:
+  #     matrix:
+  #       target: [x86_64, i686]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.8
+  #         architecture: x64
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         manylinux: auto
+  #         args: --release --out dist
+  #         before-script-linux: |
+  #           # Install ALSA libraries and utilities
+  #           yum install -y alsa-lib-devel pkgconfig alsa-utils
 
-      - name: Install ALSA libraries
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y alsa-utils alsa-lib-dev
+  #     - name: Install ALSA libraries
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get install -y alsa-utils alsa-lib-dev
 
-      - name: Load snd-dummy module
-        run: |
-          sudo modprobe snd-dummy
+  #     - name: Load snd-dummy module
+  #       run: |
+  #         sudo modprobe snd-dummy
         
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+  #     - name: Set up Python 3.11
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: 3.11
 
-      - name: Install dependencies
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          pip install .[test]
+  #     - name: Install dependencies
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
 
-      - name: Run Pytest
-        run: |
-          pytest --json-report --json-report-file=tests/report.json
-
-      - name: Install built wheel
-        if: matrix.target == 'x86_64'
-        run: |
-          pip install rpaudio --no-index --find-links dist --force-reinstall
-          python -c "import rpaudio"
-      - name: List contents of dist/
-        run: ls -R dist/
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-${{ matrix.target }}
-          path: dist/
+  #     - name: Install built wheel
+  #       if: matrix.target == 'x86_64'
+  #       run: |
+  #         pip install rpaudio --no-index --find-links dist --force-reinstall
+  #         python -c "import rpaudio"
+  #     - name: List contents of dist/
+  #       run: ls -R dist/
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-${{ matrix.target }}
+  #         path: dist/
 
   # macos:
   #   runs-on: macos-13
