@@ -106,9 +106,10 @@ async def test_get_speed(audio_channel):
 async def test_stop(audio_channel):
     """Test stopping the audio playback."""
     channel, _, _ = audio_channel
-    channel.current_audio.play()
     await asyncio.sleep(0.5)
     while channel.current_audio is not None:
+        channel.current_audio.play()
+        await asyncio.sleep(0.5)
         channel.current_audio.stop()
         await asyncio.sleep(0.5)
     assert channel.current_audio is None
