@@ -1,11 +1,13 @@
 import json
 import re
-import tomllib 
+import tomllib
+
 
 def get_version_from_pyproject():
     with open('pyproject.toml', 'rb') as f:
         toml_data = tomllib.load(f)
         return toml_data['project']['version']
+
 
 def pytest_sessionfinish(session, exitstatus):
     report_file = "tests/report.json"
@@ -15,7 +17,7 @@ def pytest_sessionfinish(session, exitstatus):
         data = json.load(f)
 
     total_tests = data['summary']['total']
-    passed_tests = data['summary']['passed']
+    passed_tests = data['summary'].get('passed', 0)
 
     coverage = f"{passed_tests}/{total_tests}"
 
@@ -30,14 +32,18 @@ def pytest_sessionfinish(session, exitstatus):
     with open(readme_file, 'r') as f:
         readme_content = f.read()
 
-    updated_content = re.sub(pytest_badge_pattern, new_pytest_badge, readme_content)
+    updated_content = re.sub(pytest_badge_pattern,
+                             new_pytest_badge, readme_content)
 
     if re.search(version_badge_pattern, updated_content):
-        updated_content = re.sub(version_badge_pattern, new_version_badge, updated_content)
+        updated_content = re.sub(
+            version_badge_pattern, new_version_badge, updated_content)
     else:
-        updated_content = new_pytest_badge + "\n" + new_version_badge + "\n" + updated_content
+        updated_content = new_pytest_badge + "\n" + \
+            new_version_badge + "\n" + updated_content
 
     with open(readme_file, 'w') as f:
         f.write(updated_content)
 
-    print(f"Updated README.md with Pytest coverage: {coverage} and Version: {version}")
+    print(
+        f"Updated README.md with Pytest coverage: {coverage} and Version: {version}")

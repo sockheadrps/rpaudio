@@ -27,7 +27,6 @@ Issues = "https://github.com/sockheadrps/rpaudio/issues"
 test = [
   "pytest <= 8.3.2",
   "pytest-asyncio",
-  "maturin",
   "pytest-json-report",
 ]
 

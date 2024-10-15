@@ -1,7 +1,5 @@
 ![Pytest](https://img.shields.io/badge/Pytest-56/56-brightgreen)
 ![Version](https://img.shields.io/badge/Version-0.0.13-blue)
-![PyPi](https://img.shields.io/pypi/dd/rpaudio
-)
 # rpaudio
 
 `rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
@@ -76,7 +74,7 @@ asyncio.run(main())
 
 ### Windows
 
-No additional OS-level dependencies are required for `rpaudio` on Windows. Ensure you have Python 3.8+ installed, and you can directly use `pip` to install the library:
+No additional OS-level dependencies are required for `rpaudio` on Windows. Ensure you have the latest version of Python installed, and you can directly use `pip` to install the library:
 
 ```bash
 pip install rpaudio

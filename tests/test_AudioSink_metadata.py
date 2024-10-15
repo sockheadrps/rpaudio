@@ -12,7 +12,7 @@ test_dict = {'duration': None, 'date': None, 'total_tracks': None, 'channels': N
 def audio_handler_metadata_wav():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"tests\test_audio_files\test_md_wav.wav", force=True)
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     metadata = handler.metadata
     return metadata
 
@@ -21,7 +21,7 @@ def audio_handler_metadata_wav():
 def audio_handler_metadata_flac():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"tests\test_audio_files\test_md_flac.flac", force=True)
+    handler.load_audio(r"tests/test_audio_files/test_md_flac.flac")
     metadata = handler.metadata
     return metadata
 
@@ -31,7 +31,7 @@ def audio_handler_metadata_mp3():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
     try:
-        handler.load_audio(r"tests\test_audio_files\test_md_mp3.mp3")
+        handler.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     except Exception as e:
         pass
     handler.set_duration(1.4)

@@ -11,7 +11,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"tests\test_audio_files\test_md_wav.wav", force=True)
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     return handler, mock_callback
 
@@ -19,12 +19,14 @@ def audio_handler():
 @pytest.mark.asyncio
 async def test_fade_in(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = FadeIn(
-        apply_after=handler.get_pos(), start_val=0.0, end_val=1.0, duration=1.0)
+    fade_in_effect = FadeIn(apply_after=handler.get_pos(), duration=0.4, end_val=1.0)
     handler.apply_effects([fade_in_effect])
+    handler.set_volume(0.0)
+    await asyncio.sleep(0.1)
     handler.play()
+    await asyncio.sleep(0.1)
     initial_volume = handler.get_volume()
-    await asyncio.sleep(1)
+    await asyncio.sleep(2.0)
     new_volume = handler.get_volume()
     assert new_volume > initial_volume
     handler.stop()
@@ -161,7 +163,7 @@ async def test_cancel_callback():
     """Test that the callback is not called after cancellation."""
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     handler.play()
     mock_callback.assert_not_called()
     await asyncio.sleep(0.2)
@@ -200,7 +202,7 @@ async def test_no_file_provided():
 @pytest.mark.asyncio
 async def test_audio_handler_no_callback():
     handler = rpaudio.AudioSink()
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     assert handler.callback is None
 
 
@@ -208,14 +210,14 @@ async def test_audio_handler_no_callback():
 async def test_load_audio_multiple_times(audio_handler):
     handler, _ = audio_handler
     with pytest.raises(RuntimeError, match="Audio is already loaded. Please stop the current audio before loading a new one."):
-        handler.load_audio(r"examples/ex2.wav")
+        handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
 
 @pytest.mark.asyncio
 async def test_audio_handler_callback():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     assert handler.callback is not None
 
 
