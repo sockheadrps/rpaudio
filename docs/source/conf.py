@@ -1,11 +1,6 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../python/rpaudio')) 
 project = 'rpaudio'
 copyright = '2024, beaux44, sockheadrps'
 author = 'beaux44, sockheadrps'
@@ -26,6 +21,8 @@ extensions = [
     'sphinx.ext.napoleon',
     "sphinx.ext.viewcode",
     'sphinx_autodoc_typehints',
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
 ]
 
 html_theme = 'sphinx_rtd_theme'
@@ -33,17 +30,20 @@ templates_path = ['_templates']
 
 
 # AutoAPI configuration
-autoapi_dirs = ['../../']
+autoapi_dirs = ['../../python/rpaudio']
 autoapi_generate_api_docs = True
 autoapi_root = 'autoapi'
 autoapi_type = 'python'
 autodoc_typehints = 'description'
 autoapi_file_patterns = ['*.pyi']
 autoapi_ignore = ['__init__.py', '__init__.pyi', 'asynctest.py', 'threadtest.py', 'docs\source\conf.py']
-autoapi_keep_files = True  # To keep the generated _autoapi files
+autoapi_keep_files = True
 autoapi_member_order = 'groupwise'
 autoapi_options = [
     'members',
     'undoc-members',
+    'private-members',
+    'special-members',
+    'inherited-members',
     'show-inheritance',
 ]

@@ -1,7 +1,9 @@
 import pytest
 import asyncio
 from unittest.mock import MagicMock
+from rpaudio.effects import FadeIn, FadeOut, ChangeSpeed
 import rpaudio
+import rpaudio.exceptions
 
 
 @pytest.fixture
@@ -9,7 +11,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     return handler, mock_callback
 
@@ -17,12 +19,14 @@ def audio_handler():
 @pytest.mark.asyncio
 async def test_fade_in(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(
-        apply_after=handler.get_pos(), start_val=0.0, end_val=1.0, duration=1.0)
+    fade_in_effect = FadeIn(apply_after=handler.get_pos(), duration=0.4, end_val=1.0)
     handler.apply_effects([fade_in_effect])
+    handler.set_volume(0.0)
+    await asyncio.sleep(0.1)
     handler.play()
+    await asyncio.sleep(0.1)
     initial_volume = handler.get_volume()
-    await asyncio.sleep(1)
+    await asyncio.sleep(2.0)
     new_volume = handler.get_volume()
     assert new_volume > initial_volume
     handler.stop()
@@ -31,7 +35,7 @@ async def test_fade_in(audio_handler):
 @pytest.mark.asyncio
 async def test_fade_out(audio_handler):
     handler, _ = audio_handler
-    fade_out_effect = rpaudio.FadeOut(
+    fade_out_effect = FadeOut(
         duration=1.0, apply_after=handler.get_pos())
     handler.apply_effects([fade_out_effect])
     handler.play()
@@ -46,7 +50,7 @@ async def test_fade_out(audio_handler):
 @pytest.mark.asyncio
 async def test_change_speed(audio_handler):
     handler, _ = audio_handler
-    change_speed_effect = rpaudio.ChangeSpeed(end_val=1.5)
+    change_speed_effect = ChangeSpeed(end_val=1.5)
     handler.apply_effects([change_speed_effect])
     handler.play()
     await asyncio.sleep(0.5)
@@ -58,7 +62,7 @@ async def test_change_speed(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(
+    fade_in_effect = FadeIn(
         start_val=0.0, end_val=1.0, duration=1.0)
     handler.apply_effects([fade_in_effect])
     handler.play()
@@ -72,12 +76,12 @@ async def test_effects_applied_over_time(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time_vol_exception(audio_handler):
     handler, _ = audio_handler
-    fade_in_effect = rpaudio.FadeIn(start_val=0.0, end_val=1.0, duration=1.0)
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=1.0)
     handler.apply_effects([fade_in_effect])
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
 
-    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+    with pytest.raises(rpaudio.exceptions.EffectConflictException) as exc_info:
         handler.set_volume(0.0)
 
     handler.stop()
@@ -86,12 +90,12 @@ async def test_effects_applied_over_time_vol_exception(audio_handler):
 @pytest.mark.asyncio
 async def test_effects_applied_over_time_speed_exception(audio_handler):
     handler, _ = audio_handler
-    speed_effect = rpaudio.ChangeSpeed(end_val=1.5, duration=1.0)
+    speed_effect = ChangeSpeed(end_val=1.5, duration=1.0)
     handler.apply_effects([speed_effect])
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
 
-    with pytest.raises(rpaudio.EffectConflictException) as exc_info:
+    with pytest.raises(rpaudio.exceptions.EffectConflictException) as exc_info:
         handler.set_speed(0.9)
 
     handler.stop()
@@ -99,14 +103,14 @@ async def test_effects_applied_over_time_speed_exception(audio_handler):
 @pytest.mark.asyncio
 async def test_effect_completion(audio_handler):
     handler, _ = audio_handler
-    fade_out_effect = rpaudio.FadeOut(apply_after=handler.get_pos(),
+    fade_out_effect = FadeOut(apply_after=handler.get_pos(),
                                       duration=1.0)
     handler.apply_effects([fade_out_effect])
     handler.play()
     await asyncio.sleep(1.2)
     final_volume = handler.get_volume()
     assert final_volume == 0
-    change_speed_effect = rpaudio.ChangeSpeed(end_val=1.0, duration=0.1)
+    change_speed_effect = ChangeSpeed(end_val=1.0, duration=0.2)
     handler.apply_effects([change_speed_effect])
     await asyncio.sleep(1)
     final_speed = handler.get_speed()
@@ -120,7 +124,7 @@ async def test_set_duration(audio_handler):
     handler, _ = audio_handler
     new_duration = 120.0
     handler.set_duration(new_duration)
-    assert handler.metadata['duration'] == str(new_duration)
+    assert handler.metadata.duration == new_duration
 
 
 def test_set_volume_valid_input(audio_handler):
@@ -134,7 +138,7 @@ def test_set_volume_out_of_range(audio_handler):
     handler, _ = audio_handler
 
     with pytest.raises(ValueError, match="Volume must be between 0.0 and 1.0."):
-        handler.set_volume(-0.1)
+        handler.set_volume(-0.2)
     with pytest.raises(ValueError, match="Volume must be between 0.0 and 1.0."):
         handler.set_volume(1.1)
 
@@ -159,15 +163,15 @@ async def test_cancel_callback():
     """Test that the callback is not called after cancellation."""
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     handler.play()
     mock_callback.assert_not_called()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.cancel_callback()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     mock_callback.assert_not_called()
     handler.stop()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     mock_callback.assert_not_called()
 
 
@@ -198,7 +202,7 @@ async def test_no_file_provided():
 @pytest.mark.asyncio
 async def test_audio_handler_no_callback():
     handler = rpaudio.AudioSink()
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     assert handler.callback is None
 
 
@@ -206,14 +210,14 @@ async def test_audio_handler_no_callback():
 async def test_load_audio_multiple_times(audio_handler):
     handler, _ = audio_handler
     with pytest.raises(RuntimeError, match="Audio is already loaded. Please stop the current audio before loading a new one."):
-        handler.load_audio(r"examples/ex2.wav")
+        handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
 
 @pytest.mark.asyncio
 async def test_audio_handler_callback():
     mock_callback = MagicMock()
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     assert handler.callback is not None
 
 
@@ -229,7 +233,7 @@ async def test_default_values(audio_handler):
 async def test_play_audio(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.is_playing is True
     handler.stop()
 
@@ -238,9 +242,9 @@ async def test_play_audio(audio_handler):
 async def test_pause(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.pause()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.is_playing is False
     handler.stop()
 
@@ -249,11 +253,11 @@ async def test_pause(audio_handler):
 async def test_resume(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.pause()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.is_playing is True
     handler.stop()
 
@@ -262,9 +266,9 @@ async def test_resume(audio_handler):
 async def test_set_volume(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.set_volume(0.5)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.get_volume() == 0.5
     handler.stop()
 
@@ -273,9 +277,9 @@ async def test_set_volume(audio_handler):
 async def test_try_seek(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.try_seek(4)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.get_pos() >= 4
     handler.stop()
 
@@ -284,7 +288,7 @@ async def test_try_seek(audio_handler):
 async def test_get_pos(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     pos = handler.get_pos()
     assert pos >= 0
     handler.stop()
@@ -295,11 +299,11 @@ async def test_set_speed(audio_handler):
     handler, _ = audio_handler
     handler.set_speed(1.5)
     handler.play()
-    await asyncio.sleep(0.1)
-    speed_up = rpaudio.ChangeSpeed(end_val=1.5)
+    await asyncio.sleep(0.2)
+    speed_up = ChangeSpeed(end_val=1.5)
     effects_list = [speed_up]
     handler.apply_effects(effects_list)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     current_speed = handler.get_speed()
     assert current_speed == 1.5
     handler.stop()
@@ -309,7 +313,7 @@ async def test_set_speed(audio_handler):
 async def test_get_speed(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     speed = handler.get_speed()
     assert speed >= 1.0
     handler.stop()
@@ -319,9 +323,9 @@ async def test_get_speed(audio_handler):
 async def test_stop(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.stop()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert handler.is_playing is False
 
 
@@ -329,14 +333,9 @@ async def test_stop(audio_handler):
 async def test_metadata(audio_handler):
     handler, _ = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     metadata = handler.metadata
-    assert isinstance(metadata, dict)
-    assert 'album_artist' in metadata
-    assert 'album_title' in metadata
-    assert 'artist' in metadata
-    assert 'duration' in metadata
-    assert 'channels' in metadata
+    assert isinstance(metadata, rpaudio.metadata.MetaData)
     handler.stop()
 
 
@@ -344,7 +343,7 @@ async def test_metadata(audio_handler):
 async def test_callback_called(audio_handler):
     handler, mock_callback = audio_handler
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     handler.stop()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     mock_callback.assert_called_once()

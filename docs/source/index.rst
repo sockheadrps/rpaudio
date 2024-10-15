@@ -8,8 +8,20 @@ rpaudio Documentation
 
 Welcome to the rpaudio documentation!
 
-Contents:
----------
+
+API Documentation
+=================
+
+.. toctree::
+   :maxdepth: 3
+
+   autoapi/rpaudio/index
+   autoapi/effects/index
+   autoapi/exceptions/index
+
+
+Example and quickstart:
+=======================
 
 .. toctree::
    :maxdepth: 2

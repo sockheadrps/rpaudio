@@ -1,13 +1,13 @@
-rpaudio
-=======
+rpaudio.rpaudio
+===============
 
-.. py:module:: rpaudio
-
-
+.. py:module:: rpaudio.rpaudio
 
 
-Package Contents
-----------------
+
+
+Module Contents
+---------------
 
 .. py:class:: AudioChannel
 

@@ -1,8 +1,11 @@
 use std::fmt;
 
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::{IntoPyDict, PyDict}};
+use serde::Serialize;
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+use crate::utils::json_to_py;
+
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct FadeIn {
     #[pyo3(get, set)]
@@ -13,6 +16,18 @@ pub struct FadeIn {
     pub end_val: Option<f32>,
     #[pyo3(get, set)]
     pub apply_after: Option<f32>,
+}
+
+pub trait ExtractableEffect {
+    fn extract_action<'py>(&'py self) -> PyResult<ActionType>;
+}
+
+impl ExtractableEffect for Bound<'_, PyAny> {
+    fn extract_action<'py>(&'py self) -> PyResult<ActionType> {
+        self.extract::<FadeIn>().map(ActionType::FadeIn)
+            .or_else(|_| self.extract::<FadeOut>().map(ActionType::FadeOut))
+            .or_else(|_| self.extract::<ChangeSpeed>().map(ActionType::ChangeSpeed))
+    }
 }
 
 #[pymethods]
@@ -32,9 +47,13 @@ impl FadeIn {
             apply_after,
         })
     }
+
+    fn as_dict<'py>(&self, py: Python<'py>) -> Bound<'py, PyDict> {
+        self.clone().into_py_dict_bound(py)
+    }
 }
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct FadeOut {
     #[pyo3(get, set)]
@@ -51,7 +70,6 @@ pub struct FadeOut {
 impl FadeOut {
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
-
     pub fn new(
         duration: Option<f32>,
         start_val: Option<f32>,
@@ -67,7 +85,7 @@ impl FadeOut {
     }
 }
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+#[derive(Clone, Debug, Copy, PartialEq, Serialize)]
 #[pyclass]
 pub struct ChangeSpeed {
     #[pyo3(get, set)]
@@ -84,7 +102,6 @@ pub struct ChangeSpeed {
 impl ChangeSpeed {
     #[new]
     #[pyo3(signature = (duration=None, start_val=None, end_val=None, apply_after=None))]
-
     pub fn new(
         duration: Option<f32>,
         start_val: Option<f32>,
@@ -107,10 +124,28 @@ impl fmt::Display for FadeIn {
     }
 }
 
+impl IntoPyDict for FadeIn {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        let dict: Bound<'_, PyDict> = json_to_py(py, &value).extract().unwrap();
+        dict.set_item("type", "FadeIn").unwrap();
+        dict
+    }
+}
+
 impl fmt::Display for FadeOut {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "FadeOut {{ duration: {:?}, start_val: {:?}, end_val: {:?} apply_after: {:?} }}", 
             self.duration, self.start_val, self.end_val, self.apply_after)
+    }
+}
+
+impl IntoPyDict for FadeOut {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        let dict: Bound<'_, PyDict> = json_to_py(py, &value).extract().unwrap();
+        dict.set_item("type", "FadeOut").unwrap();
+        dict
     }
 }
 
@@ -121,7 +156,16 @@ impl fmt::Display for ChangeSpeed {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+impl IntoPyDict for ChangeSpeed {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        let dict: Bound<'_, PyDict> = json_to_py(py, &value).extract().unwrap();
+        dict.set_item("type", "ChangeSpeed").unwrap();
+        dict
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[allow(non_upper_case_globals)]
 #[pyclass]
 pub enum ActionType {
@@ -181,11 +225,7 @@ impl EffectSync {
                 let duration = fade_in.duration.unwrap_or(2.0);
                 let start_val = fade_in.start_val.unwrap_or(0.0);
                 let end_val = fade_in.end_val.unwrap_or(1.0);
-                let start_position = if fade_in.apply_after.is_none() {
-                    current_position
-                } else {
-                    current_position + fade_in.apply_after.unwrap()
-                };
+                let start_position = current_position + fade_in.apply_after.unwrap_or(0.0);
 
                 (
                     start_position,
@@ -217,11 +257,7 @@ impl EffectSync {
                 let duration = change_speed.duration.unwrap_or(0.0);
                 let start_val = change_speed.start_val.unwrap_or(1.0);
                 let end_val = change_speed.end_val.unwrap_or(1.5);
-                let start_position = if change_speed.apply_after.is_none() {
-                    current_position
-                } else {
-                    current_position + change_speed.apply_after.unwrap()
-                };
+                let start_position = current_position + change_speed.apply_after.unwrap_or(0.0);
 
                 (
                     start_position,
@@ -252,12 +288,12 @@ impl EffectSync {
             return EffectResult::Ignored;
         } else {
             if current_position >= self.completion_pos {
-                let rounded_end_val = format!("{:.2}", self.end_val).parse::<f32>().unwrap_or(self.end_val);
+                let rounded_end_val = (self.end_val * 100.0).round() / 100.0;
                 return EffectResult::Completed(rounded_end_val);
             } else {
                 let progress = (current_position - self.start_position)
                     / (self.completion_pos - self.start_position);
-                let rounded_progresss = format!("{:.2}", progress).parse::<f32>().unwrap_or(progress);
+                let rounded_progresss = (progress * 100.0).round() / 100.0;
                 let progress = rounded_progresss.clamp(0.0, 1.0);
                 let set_val = self.start_val + (self.end_val - self.start_val) * progress;
                 return EffectResult::Value(set_val);

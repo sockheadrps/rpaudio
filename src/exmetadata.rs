@@ -1,13 +1,16 @@
-use pyo3::prelude::*;
+use pyo3::types::PyDict;
+use pyo3::{prelude::*, types::IntoPyDict};
 use pyo3::exceptions::PyRuntimeError;
 use audiotags::{AudioTagEdit, Id3v2Tag, Tag};
+use serde::{Deserialize, Serialize};
 use std::{fs::File, path::Path};
 use rodio::{Decoder, Source};
 use std::io::BufReader;
 use crate::AudioSink;
+use crate::utils::json_to_py;
 
 #[pyclass]
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct MetaData {
     pub title: Option<String>,
     pub artist: Option<String>,
@@ -26,6 +29,15 @@ pub struct MetaData {
     pub channels: Option<String>,
     pub duration: Option<f64>,
 }
+
+
+impl IntoPyDict for MetaData {
+    fn into_py_dict_bound(self, py: Python<'_>) -> Bound<'_, pyo3::types::PyDict> {
+        let value = serde_json::to_value(self).unwrap();
+        json_to_py(py, &value).extract().unwrap()
+    }
+}
+
 
 #[pymethods]
 impl MetaData {
@@ -49,6 +61,10 @@ impl MetaData {
             channels: audio_sink.metadata.channels.clone(),
             duration: audio_sink.metadata.duration.clone(),
         }
+    }
+
+    fn as_dict<'py>(&self, py: Python<'py>) -> Bound<'py, PyDict> {
+        self.clone().into_py_dict_bound(py)
     }
 
     #[getter]
@@ -171,22 +187,22 @@ pub fn extract_metadata(path: &Path) -> PyResult<MetaData> {
                 .read_from_path(path)
                 .map_err(|e| PyRuntimeError::new_err(format!("Failed to read tag: {}", e)));
 
-                match tag_result {
-                    Ok(tag) => {
-                        let id3_tag = Id3v2Tag::from(tag);
-                        let mut metadata = id3_tag.metadata_fields();
-                        if metadata.duration.is_none() {
-                            let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-                            metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
-                        }
-                        Ok(metadata)
-                    },
-                    Err(e) => {
-                        eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
-                        Ok(MetaData::default())
+            match tag_result {
+                Ok(tag) => {
+                    let id3_tag = Id3v2Tag::from(tag);
+                    let mut metadata = id3_tag.metadata_fields();
+                    if metadata.duration.is_none() {
+                        let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                        let source = Decoder::new(BufReader::new(file)).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
+                        metadata.duration = source.total_duration().map(|d| d.as_secs_f64());
                     }
+                    Ok(metadata)
+                },
+                Err(e) => {
+                    eprintln!("Failed to read tag: {}. Returning empty metadata.", e);
+                    Ok(MetaData::default())
                 }
+            }
         },
         Some("wav") => {
             let file = File::open(path).map_err(|e| PyRuntimeError::new_err(e.to_string()))?;

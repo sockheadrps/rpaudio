@@ -4,45 +4,102 @@ on:
   push:
     branches:
       - main
-      - experimental
-    tags:
-      - 'v*'
 
 jobs:
-  check-output-date:
-    name: Check pytest output date
+  build-for-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Check output date
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: --release --out dist
+          before-script-linux: |
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
         run: |
-          # Extract the last line containing the timestamp
-          last_line=$(tail -n 4 pytest_output.txt | head -n 1)
+          pip install rpaudio --no-index --find-links dist --force-reinstall
 
-          # Extract the Unix timestamp from the last line (if printed)
-          pytest_timestamp=$(echo "$last_line" | grep -oP "\d{10}")
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-x86_64
+          path: dist/
 
-          # Get the current date in UTC
-          now=$(date -u +%s)
+  mock-audio-and-run-tests:
+    runs-on: ubuntu-latest
+    needs: build-for-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          echo "Pytest timestamp: $pytest_timestamp"
-          one_hour_ago=$(($now - 3600))
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-x86_64
+          path: ./dist
 
-          # Print one hour ago timestamp
-          echo "One hour ago timestamp: $one_hour_ago"
+      - name: Install audio packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pulseaudio pulseaudio-utils jackd2 alsa-utils dbus-x11 libasound2-plugins libasound2-dev libasound2
 
-          # Check if pytest_timestamp is older than one hour
-          if [ "$pytest_timestamp" -lt "$one_hour_ago" ]; then
-            echo "Pytest output is outdated or not from today. Please run the tests again."
-            exit 1
+      - name: Set up ~/.asoundrc
+        run: |
+          chmod +x .github/workflows/scripts/setup_asoundrc.sh
+          .github/workflows/scripts/setup_asoundrc.sh
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install rpaudio
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-json-report
+
+      - name: Run Pytest
+        run: |
+          pytest -v --json-report --json-report-file=tests/report.json
+
+      - name: Upload modified README
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git status
+
+          # Check if README.md has changes
+          if git diff --quiet README.md; then
+            echo "No changes to README.md, skipping commit."
+          else
+            git add README.md
+            git commit -m "generated README badges from GitHub Action"
+            git push
           fi
 
   windows:
     runs-on: windows-latest
-    needs: check-output-date
-
+    needs: mock-audio-and-run-tests
     strategy:
       matrix:
         target: [x64, x86]
@@ -70,7 +127,7 @@ jobs:
 
   linux:
     runs-on: ubuntu-latest
-    needs: check-output-date
+    needs: mock-audio-and-run-tests
     strategy:
       matrix:
         target: [x86_64, i686]
@@ -87,7 +144,17 @@ jobs:
           manylinux: auto
           args: --release --out dist
           before-script-linux: |
-            yum install -y alsa-lib-devel pkgconfig
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+
       - name: Install built wheel
         if: matrix.target == 'x86_64'
         run: |
@@ -103,7 +170,7 @@ jobs:
 
   macos:
     runs-on: macos-13
-    needs: check-output-date
+    needs: mock-audio-and-run-tests
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v4

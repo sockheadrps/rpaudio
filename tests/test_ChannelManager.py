@@ -25,13 +25,13 @@ def test_add_channel(setup_channel_manager):
     new_channel = AudioChannel()
     mock_callback = MagicMock()
     audio = AudioSink(callback=mock_callback)
-    audio.load_audio(r"examples/ex.wav")
+    audio.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     new_channel.push(audio)
 
     manager.add_channel("Channel3", new_channel)
 
     retrieved_channel = manager.channel("Channel3")
-    assert retrieved_channel.queue_contents[0].metadata == new_channel.queue_contents[0].metadata
+    assert retrieved_channel.queue_contents[0].metadata.as_dict() == new_channel.queue_contents[0].metadata.as_dict()
 
 
 def test_channel_retrieval(setup_channel_manager):
@@ -39,12 +39,12 @@ def test_channel_retrieval(setup_channel_manager):
     manager, _, _ = setup_channel_manager
     mock_callback = MagicMock()
     audio = AudioSink(callback=mock_callback)
-    audio.load_audio(r"examples/ex.wav")
+    audio.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel_1 = manager.channel("Channel1")
     channel_1.push(audio)
 
     retrieved_channel = manager.channel("Channel1")
-    assert retrieved_channel.queue_contents[0].metadata == channel_1.queue_contents[0].metadata
+    assert retrieved_channel.queue_contents[0].metadata.as_dict() == channel_1.queue_contents[0].metadata.as_dict()
 
 
 def test_channel_retrieval_not_found(setup_channel_manager):
@@ -60,9 +60,9 @@ async def test_start_all(setup_channel_manager):
     manager, channel_1, channel_2 = setup_channel_manager
 
     audio_1 = AudioSink()
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     audio_2 = AudioSink()
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     channel_1.push(audio_1)
     channel_2.push(audio_2)
@@ -70,7 +70,7 @@ async def test_start_all(setup_channel_manager):
     channel_2.auto_consume = True
 
     manager.start_all()
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.2)
 
     assert channel_1.current_audio.is_playing is True
     assert channel_2.current_audio.is_playing is True
@@ -82,9 +82,9 @@ async def test_stop_all(setup_channel_manager):
     manager, channel_1, channel_2 = setup_channel_manager
 
     audio_1 = AudioSink()
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     audio_2 = AudioSink()
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
 
     channel_1.push(audio_1)
     channel_2.push(audio_2)

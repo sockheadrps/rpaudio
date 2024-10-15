@@ -1,7 +1,5 @@
 import rpaudio
-from rpaudio import FadeIn, FadeOut
 import asyncio
-from datetime import datetime, timedelta
 
 
 """
@@ -29,37 +27,29 @@ async def play_audio(channel_1, channel_2) -> None:
     await asyncio.sleep(1)
     channel_1.current_audio.play()
 
-
-
-
-
     i = 0
     while True:
-      await asyncio.sleep(1)
-      i += 1
+        await asyncio.sleep(1)
+        i += 1
 
-      if i == 3:
-        channel_1.current_audio.pause()
-      
-      if i == 4:
-        channel_2.current_audio.pause()
+        if i == 3:
+            channel_1.current_audio.pause()
 
-      if i == 5:
-        channel_1.current_audio.play()
-        channel_2.current_audio.play()
+        if i == 4:
+            channel_2.current_audio.pause()
 
-      if i == 6:
-         channel_1.current_audio.set_volume(1.0)
-      
-      if i == 7:
-        channel_2.current_audio.set_volume(1.0)
+        if i == 5:
+            channel_1.current_audio.play()
+            channel_2.current_audio.play()
 
-      if i == 8:
-        channel_1.current_audio.stop()
-          
-        
-        
+        if i == 6:
+            channel_1.current_audio.set_volume(1.0)
 
+        if i == 7:
+            channel_2.current_audio.set_volume(1.0)
+
+        if i == 8:
+            channel_1.current_audio.stop()
 
 
 async def sleep_loop() -> None:
@@ -90,7 +80,6 @@ async def main() -> None:
     channel_2 = rpaudio.AudioChannel()
     channel_2.push(audio_3)
     channel_2.push(audio_4)
-
 
     await asyncio.gather(play_audio(channel_l, channel_2), sleep_loop())
 

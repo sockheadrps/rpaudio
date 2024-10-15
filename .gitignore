@@ -1,4 +1,3 @@
-*.mp3
 .venv
 
 build/
@@ -16,6 +15,8 @@ Cargo.lock
 /.idea/
 /.vscode/
 /*.iml
+
+requirements.txt
 
 requirements.txt
 
@@ -41,3 +42,5 @@ dockerfile
 __pycache__/
 .pytest_cache/
 temp/
+
+python/rpaudio/rpaudio.pyd
