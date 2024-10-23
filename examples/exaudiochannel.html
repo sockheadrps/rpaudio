@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AudioChannel &mdash; rpaudio 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=7ab3649f" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=d45e8c67"></script>
-      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -106,7 +106,10 @@
     <span class="n">start_time</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
     <span class="n">paused_once</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">channel</span><span class="o">.</span><span class="n">auto_consume</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 
+    <span class="n">resumed_once</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">complete_1</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
@@ -115,27 +118,39 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pause audio after 5 seconds&quot;</span><span class="p">)</span>
                 <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
                 <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
                 <span class="n">paused_once</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">paused_once</span> <span class="ow">and</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+
+            <span class="k">elif</span> <span class="n">paused_once</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">resumed_once</span> <span class="ow">and</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start audio after 2 seconds&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">is_playing</span><span class="p">)</span>
+
+                <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+                <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">is_playing</span><span class="p">)</span>
+
+                <span class="n">resumed_once</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+            <span class="k">elif</span> <span class="p">(</span><span class="n">paused_once</span> <span class="ow">and</span> <span class="n">resumed_once</span><span class="p">)</span> <span class="ow">and</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop audio after 2 seconds&quot;</span><span class="p">)</span>
                 <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                 <span class="n">paused_once</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">resumed_once</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        
-        <span class="c1"># Check if the current audio has stopped</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">complete_1</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Complete phase 1&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">is_playing</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Complete phase 1&quot;</span><span class="p">)</span>
-            <span class="n">complete_1</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># Wait until complete_1 is True before starting the second phase</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
     <span class="n">paused_once</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting phase 2&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+
     <span class="k">while</span> <span class="n">complete_1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">complete_2</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting phase 2&quot;</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -143,18 +158,26 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pause audio after 5 seconds&quot;</span><span class="p">)</span>
                 <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
                 <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
                 <span class="n">paused_once</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">paused_once</span> <span class="ow">and</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+
+            <span class="k">elif</span> <span class="n">paused_once</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">resumed_once</span> <span class="ow">and</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start audio after 2 seconds&quot;</span><span class="p">)</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+                <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">resumed_once</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+            <span class="k">elif</span> <span class="p">(</span><span class="n">paused_once</span> <span class="ow">and</span> <span class="n">resumed_once</span><span class="p">)</span> <span class="ow">and</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Stop audio after 2 seconds&quot;</span><span class="p">)</span>
                 <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                 <span class="n">paused_once</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">resumed_once</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                <span class="n">complete_2</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Complete phase 2&quot;</span><span class="p">)</span>
         
-        <span class="c1"># Check if the current audio has stopped</span>
-        <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">is_playing</span><span class="p">:</span>
-            <span class="n">complete_2</span> <span class="o">=</span> <span class="kc">True</span>
+
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Playback complete for both phases&quot;</span><span class="p">)</span>
 
@@ -186,7 +209,7 @@
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rpaudio</span>
-<span class="kn">from</span> <span class="nn">rpaudio.effects</span> <span class="kn">import</span> <span class="n">FadeIn</span><span class="p">,</span> <span class="n">FadeOut</span>
+<span class="kn">from</span> <span class="nn">rpaudio.effects</span> <span class="kn">import</span> <span class="n">FadeIn</span><span class="p">,</span> <span class="n">FadeOut</span><span class="p">,</span> <span class="n">ChangeSpeed</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
 
 
@@ -210,7 +233,7 @@
 
     <span class="k">while</span> <span class="ow">not</span> <span class="n">complete_1</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;metadata: </span><span class="si">{</span><span class="n">channel</span><span class="o">.</span><span class="n">current_audio_data</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># print(f&quot;metadata: {channel.current_audio_data()}&quot;)</span>
 
 
         <span class="k">if</span> <span class="n">channel</span><span class="o">.</span><span class="n">current_audio</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">first</span><span class="o">.</span><span class="n">is_playing</span><span class="p">:</span>
@@ -238,8 +261,8 @@
     <span class="n">audio_1</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
     <span class="n">audio_1</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;examples/ex.wav&quot;</span><span class="p">)</span>
 
-    <span class="n">channels</span> <span class="o">=</span> <span class="n">audio_1</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]</span>
-    <span class="n">duration</span> <span class="o">=</span> <span class="n">audio_1</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="n">audio_1</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">channels</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="n">audio_1</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">duration</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Channels: </span><span class="si">{</span><span class="n">channels</span><span class="si">}</span><span class="s2">, Duration: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">audio_2</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
@@ -249,8 +272,8 @@
     <span class="n">channel_1</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioChannel</span><span class="p">()</span>
     <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">start_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
     <span class="n">fade_out_effect</span> <span class="o">=</span> <span class="n">FadeOut</span><span class="p">(</span><span class="n">end_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
-    <span class="n">speed_up_effect</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">ChangeSpeed</span><span class="p">(</span><span class="n">end_val</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
-    <span class="n">audio_2</span><span class="o">.</span><span class="n">try_seek</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">speed_up_effect</span> <span class="o">=</span> <span class="n">ChangeSpeed</span><span class="p">(</span><span class="n">end_val</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+    <span class="n">audio_2</span><span class="o">.</span><span class="n">try_seek</span><span class="p">(</span><span class="mi">210</span><span class="p">)</span>
 
     <span class="n">effects</span> <span class="o">=</span> <span class="p">[</span><span class="n">fade_in_effect</span><span class="p">,</span> <span class="n">fade_out_effect</span><span class="p">,</span> <span class="n">speed_up_effect</span><span class="p">]</span>
     <span class="n">channel_1</span><span class="o">.</span><span class="n">set_effects_chain</span><span class="p">(</span><span class="n">effects</span><span class="p">)</span>

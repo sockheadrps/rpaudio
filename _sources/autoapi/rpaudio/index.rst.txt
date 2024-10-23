@@ -21,15 +21,6 @@ Package Contents
 
 .. py:class:: AudioChannel
 
-   .. py:method:: _control_loop()
-      :async:
-
-
-      Continuously monitors the queue and handles playback,
-      auto-consume, and callback execution. Not meant for python access
-
-
-
    .. py:method:: current_audio_data()
 
       Retrieves metadata and current playback information.
@@ -74,6 +65,19 @@ Package Contents
 
           channel = AudioChannel()
           channel.drop_current_audio()  # Stops and clears the currently playing audio
+
+
+
+   .. py:method:: effects()
+
+      Get the list of effects in the audio processing chain.
+
+      This method retrieves the effects currently applied to the audio sink
+      and returns them as a list. Each effect in the list is represented
+      by its corresponding effect class instance.
+
+      :returns: A list containing the effects.
+      :rtype: List[Union[FadeIn, FadeOut, ChangeSpeed]]
 
 
 
@@ -221,6 +225,15 @@ Package Contents
 
 
 
+   .. py:method:: callback()
+
+      Get the callback function associated with the audio sink.
+
+      :returns: The Python callable if set; otherwise, None.
+      :rtype: Optional[Callable]
+
+
+
    .. py:method:: cancel_callback()
 
       Cancels the current audio callback.
@@ -237,6 +250,15 @@ Package Contents
           print("Audio callback has been canceled.")
 
       :raises RuntimeError: If there is an issue acquiring the lock on the callback.
+
+
+
+   .. py:method:: empty()
+
+      Check if the audio sink is empty.
+
+      :returns: True if the audio sink is empty; otherwise, False.
+      :rtype: bool
 
 
 
@@ -322,6 +344,20 @@ Package Contents
           handler = AudioHandler(callback=my_callback)
           handler.load_audio("my_audio_file.mp3")
           handler.play()
+
+
+
+   .. py:method:: playback_data()
+
+      Retrieve playback metadata and effects associated with the audio sink.
+
+      :returns: A dictionary containing playback metadata, a list of effects,
+                and the current playback position. The dictionary includes the following keys:
+
+                - 'effects': A list of effect dictionaries, each representing an action (e.g.,
+                FadeIn, FadeOut, ChangeSpeed).
+                - 'position': The current playback position.
+      :rtype: Dict[str, Any]
 
 
 

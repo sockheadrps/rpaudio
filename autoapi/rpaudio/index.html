@@ -8,14 +8,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>rpaudio &mdash; rpaudio 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=7ab3649f" />
-      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
-      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -52,9 +52,9 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#package-contents">Package Contents</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#rpaudio.AudioChannel"><code class="docutils literal notranslate"><span class="pre">AudioChannel</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel._control_loop"><code class="docutils literal notranslate"><span class="pre">AudioChannel._control_loop()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.current_audio_data"><code class="docutils literal notranslate"><span class="pre">AudioChannel.current_audio_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.drop_current_audio"><code class="docutils literal notranslate"><span class="pre">AudioChannel.drop_current_audio()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.effects"><code class="docutils literal notranslate"><span class="pre">AudioChannel.effects()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.is_playing"><code class="docutils literal notranslate"><span class="pre">AudioChannel.is_playing()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.push"><code class="docutils literal notranslate"><span class="pre">AudioChannel.push()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioChannel.set_effects_chain"><code class="docutils literal notranslate"><span class="pre">AudioChannel.set_effects_chain()</span></code></a></li>
@@ -68,7 +68,9 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#rpaudio.AudioSink"><code class="docutils literal notranslate"><span class="pre">AudioSink</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.apply_effects"><code class="docutils literal notranslate"><span class="pre">AudioSink.apply_effects()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.callback"><code class="docutils literal notranslate"><span class="pre">AudioSink.callback()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.cancel_callback"><code class="docutils literal notranslate"><span class="pre">AudioSink.cancel_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.empty"><code class="docutils literal notranslate"><span class="pre">AudioSink.empty()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.get_pos"><code class="docutils literal notranslate"><span class="pre">AudioSink.get_pos()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.get_remaining_time"><code class="docutils literal notranslate"><span class="pre">AudioSink.get_remaining_time()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.get_speed"><code class="docutils literal notranslate"><span class="pre">AudioSink.get_speed()</span></code></a></li>
@@ -76,6 +78,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.load_audio"><code class="docutils literal notranslate"><span class="pre">AudioSink.load_audio()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.pause"><code class="docutils literal notranslate"><span class="pre">AudioSink.pause()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.play"><code class="docutils literal notranslate"><span class="pre">AudioSink.play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.playback_data"><code class="docutils literal notranslate"><span class="pre">AudioSink.playback_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.set_duration"><code class="docutils literal notranslate"><span class="pre">AudioSink.set_duration()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.set_speed"><code class="docutils literal notranslate"><span class="pre">AudioSink.set_speed()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#rpaudio.AudioSink.set_volume"><code class="docutils literal notranslate"><span class="pre">AudioSink.set_volume()</span></code></a></li>
@@ -147,18 +150,6 @@
 <dt class="sig sig-object py" id="rpaudio.AudioChannel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rpaudio.</span></span><span class="sig-name descname"><span class="pre">AudioChannel</span></span><a class="headerlink" href="#rpaudio.AudioChannel" title="Link to this definition"></a></dt>
 <dd><dl class="py method">
-<dt class="sig sig-object py" id="rpaudio.AudioChannel._control_loop">
-<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_control_loop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel._control_loop" title="Link to this definition"></a></dt>
-<dd><p>Continuously monitors the queue and handles playback,
-auto-consume, and callback execution. Not meant for python access</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rpaudio.AudioChannel.current_audio_data">
 <span class="sig-name descname"><span class="pre">current_audio_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel.current_audio_data" title="Link to this definition"></a></dt>
 <dd><p>Retrieves metadata and current playback information.</p>
@@ -213,6 +204,23 @@ metadata and playback details, including:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioChannel.effects">
+<span class="sig-name descname"><span class="pre">effects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioChannel.effects" title="Link to this definition"></a></dt>
+<dd><p>Get the list of effects in the audio processing chain.</p>
+<p>This method retrieves the effects currently applied to the audio sink
+and returns them as a list. Each effect in the list is represented
+by its corresponding effect class instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list containing the effects.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[Union[<a class="reference internal" href="../effects/index.html#effects.FadeIn" title="effects.FadeIn">FadeIn</a>, <a class="reference internal" href="../effects/index.html#effects.FadeOut" title="effects.FadeOut">FadeOut</a>, <a class="reference internal" href="../effects/index.html#effects.ChangeSpeed" title="effects.ChangeSpeed">ChangeSpeed</a>]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -393,6 +401,20 @@ the audio stops playing.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioSink.callback">
+<span class="sig-name descname"><span class="pre">callback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.callback" title="Link to this definition"></a></dt>
+<dd><p>Get the callback function associated with the audio sink.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The Python callable if set; otherwise, None.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optional[Callable]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rpaudio.AudioSink.cancel_callback">
 <span class="sig-name descname"><span class="pre">cancel_callback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.cancel_callback" title="Link to this definition"></a></dt>
 <dd><p>Cancels the current audio callback.</p>
@@ -410,6 +432,20 @@ Once called, the audio sink will stop processing the current audio callback.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioSink.empty">
+<span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.empty" title="Link to this definition"></a></dt>
+<dd><p>Check if the audio sink is empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the audio sink is empty; otherwise, False.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -534,6 +570,27 @@ If the audio is already playing, this method has no effect.</p>
 <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rpaudio.AudioSink.playback_data">
+<span class="sig-name descname"><span class="pre">playback_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rpaudio.AudioSink.playback_data" title="Link to this definition"></a></dt>
+<dd><p>Retrieve playback metadata and effects associated with the audio sink.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>A dictionary containing playback metadata, a list of effects,
+and the current playback position. The dictionary includes the following keys:</p>
+<ul class="simple">
+<li><p>’effects’: A list of effect dictionaries, each representing an action (e.g.,</p></li>
+</ul>
+<p>FadeIn, FadeOut, ChangeSpeed).
+- ‘position’: The current playback position.</p>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
