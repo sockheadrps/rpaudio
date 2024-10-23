@@ -22,6 +22,22 @@ impl fmt::Debug for AudioSink {
     }
 }
 
+impl AudioChannel {
+    pub fn pop(&mut self) -> Option<AudioSink> {
+        if let Ok(mut queue_guard) = self.queue.lock() {
+            queue_guard.pop()
+        } else {
+            None
+        }
+    }
+
+    pub fn consume(&mut self) {
+        if let Some(mut sink) = self.pop() {
+            let _ = sink.play();
+        }
+    }
+}
+
 #[pymethods]
 impl AudioChannel {
     #[new]
@@ -119,20 +135,6 @@ impl AudioChannel {
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.push(sink);
-        }
-    }
-
-    pub fn pop(&mut self) -> Option<AudioSink> {
-        if let Ok(mut queue_guard) = self.queue.lock() {
-            queue_guard.pop()
-        } else {
-            None
-        }
-    }
-
-    pub fn consume(&mut self) {
-        if let Some(mut sink) = self.pop() {
-            let _ = sink.play();
         }
     }
 

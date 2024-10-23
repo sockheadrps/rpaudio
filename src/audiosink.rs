@@ -499,6 +499,7 @@ impl AudioSink {
                 effects_list.append(effect_dict)?;
             }
             dict.set_item("effects", effects_list)?;
+            dict.set_item("position", self_clone.get_pos().unwrap())?;
             return Ok(dict.into());
         })
     }
