@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "rpaudio"
-version = "0.0.13"
+version = "0.0.14"
 authors = [
   { name="Ryan Skiles", email="r.p.skiles@gmail.com" },
   { name="Beaux44"}
@@ -27,7 +27,7 @@ Issues = "https://github.com/sockheadrps/rpaudio/issues"
 test = [
   "pytest <= 8.3.2",
   "pytest-asyncio",
-  "maturin",
+  "pytest-json-report",
 ]
 
 docs = [
@@ -45,4 +45,5 @@ dev = [
 
 [tool.maturin]
 python-source = "python"
-module-name = "rpaudio.rpaudio"
+module-name = "rpaudio"
+

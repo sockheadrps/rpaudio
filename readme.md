@@ -2,7 +2,6 @@
 
 `rpaudio` is a Rust-based Python library for handling audio operations, designed to provide simple and efficient audio management. It leverages Rust's performance and concurrency safety to offer a robust solution for Python audio applications.
 
-
 ## API
 
 - **AudioSink**: Simple audio access and control for individual files.

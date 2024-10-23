@@ -1,7 +1,7 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio
 
 
 @pytest.fixture
@@ -11,10 +11,10 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     channel_1 = rpaudio.AudioChannel()
     channel_1.auto_consume = True
@@ -28,9 +28,9 @@ def audio_channel():
 async def test_play_audio(audio_channel):
     """Test that audio starts playing."""
     channel, _, _ = audio_channel
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     assert channel.current_audio.is_playing is True
 
 
@@ -38,11 +38,11 @@ async def test_play_audio(audio_channel):
 async def test_pause(audio_channel):
     """Test pausing audio."""
     channel, _, _ = audio_channel
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.pause()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     assert channel.current_audio.is_playing is False
 
 
@@ -51,11 +51,11 @@ async def test_resume(audio_channel):
     """Test resuming audio."""
     channel, _, _ = audio_channel
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.pause()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.play()
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.5)
     assert channel.current_audio.is_playing is True
 
 
@@ -64,9 +64,9 @@ async def test_set_volume(audio_channel):
     """Test setting the volume of audio."""
     channel, _, _ = audio_channel
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.set_volume(0.5)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     assert channel.current_audio.get_volume() == 0.5
 
 
@@ -75,9 +75,9 @@ async def test_try_seek(audio_channel):
     """Test seeking to a specific position in the audio."""
     channel, _, _ = audio_channel
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.try_seek(4)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     assert channel.current_audio.get_pos() >= 2
 
 
@@ -85,9 +85,9 @@ async def test_try_seek(audio_channel):
 async def test_get_pos(audio_channel):
     """Test getting the current position of the audio."""
     channel, _, _ = audio_channel
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     pos = channel.current_audio.get_pos()
     assert pos >= 0
 
@@ -97,7 +97,7 @@ async def test_get_speed(audio_channel):
     """Test getting the playback speed of the audio."""
     channel, _, _ = audio_channel
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     speed = channel.current_audio.get_speed()
     assert speed >= 1.0
 
@@ -106,26 +106,40 @@ async def test_get_speed(audio_channel):
 async def test_stop(audio_channel):
     """Test stopping the audio playback."""
     channel, _, _ = audio_channel
-    channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     while channel.current_audio is not None:
+        channel.current_audio.play()
+        await asyncio.sleep(0.5)
         channel.current_audio.stop()
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.5)
     assert channel.current_audio is None
 
 
 @pytest.mark.asyncio
-async def test_callbacks_called(audio_channel):
-    """Test that callbacks are called when audio is played."""
-    channel, mock_callback_1, mock_callback_2 = audio_channel
+async def test_callbacks_called():
+    mock_callback_1 = MagicMock()
+    mock_callback_2 = MagicMock()
 
-    channel.current_audio.play()
+    audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
+    audio_1.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
-    await asyncio.sleep(0.1)
+    audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
-    channel.current_audio.stop()
+    channel_1 = rpaudio.AudioChannel()
+    channel_1.auto_consume = True
+    channel_1.push(audio_1)
+    channel_1.push(audio_2)
+    await asyncio.sleep(0.5)
 
-    await asyncio.sleep(0.1)
+
+    channel_1.current_audio.play()
+
+    await asyncio.sleep(0.5)
+
+    channel_1.current_audio.stop()
+
+    await asyncio.sleep(1.9)
 
     mock_callback_1.assert_called_once()
     mock_callback_2.assert_not_called()

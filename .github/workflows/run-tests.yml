@@ -1,0 +1,98 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - experimental
+
+jobs:
+  build-for-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: --release --out dist
+          before-script-linux: |
+            yum install -y alsa-lib-devel pkgconfig alsa-utils
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-x86_64
+          path: dist/
+
+  mock-audio-and-run-tests:
+    runs-on: ubuntu-latest
+    needs: build-for-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-x86_64
+          path: ./dist
+
+      - name: Install audio packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pulseaudio pulseaudio-utils jackd2 alsa-utils dbus-x11 libasound2-plugins libasound2-dev libasound2
+
+      - name: Set up ~/.asoundrc
+        run: |
+          chmod +x .github/workflows/scripts/setup_asoundrc.sh
+          .github/workflows/scripts/setup_asoundrc.sh
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install rpaudio
+        run: |
+          pip install rpaudio --no-index --find-links dist --force-reinstall
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-json-report
+
+      - name: Run Pytest
+        run: |
+          pytest -v --json-report --json-report-file=tests/report.json
+      
+      - name: Upload modified README
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git status
+
+          # Check if README.md has changes
+          if git diff --quiet README.md; then
+            echo "No changes to README.md, skipping commit."
+          else
+            git add README.md
+            git commit -m "generated README badges from GitHub Action"
+            git push
+          fi

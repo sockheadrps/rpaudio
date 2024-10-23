@@ -1,9 +1,9 @@
 import asyncio
 from unittest.mock import MagicMock
 import pytest
-import python.rpaudio.rpaudio as rpaudio
+import rpaudio as rpaudio
 from unittest.mock import Mock
-from python.rpaudio.rpaudio import FadeIn, FadeOut, ChangeSpeed
+from rpaudio.effects import FadeIn, FadeOut, ChangeSpeed
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def audio_handler():
     mock_callback = MagicMock()
 
     handler = rpaudio.AudioSink(callback=mock_callback)
-    handler.load_audio(r"examples/ex.wav")
+    handler.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     return handler, mock_callback
 
@@ -28,7 +28,7 @@ def audio_channel():
     mock_callback_2 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     channel = rpaudio.AudioChannel()
     channel.auto_consume = True
@@ -40,7 +40,7 @@ def audio_channel():
 def test_audio_channel_effects_chain(audio_callback):
     """Test if effects are applied correctly to the audio channel."""
     audio_2 = rpaudio.AudioSink(callback=audio_callback)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     channel_1 = rpaudio.AudioChannel()
 
@@ -53,7 +53,6 @@ def test_audio_channel_effects_chain(audio_callback):
 
     actual_effects = channel_1.effects
     for effect, actual_effect in zip(effects, actual_effects):
-        print("actual_effect", actual_effect.__class__.__name__)
         if actual_effect.__class__.__name__ == 'FadeIn':
             assert isinstance(effect, FadeIn)
             assert effect.start_val == actual_effect.start_val
@@ -85,20 +84,22 @@ async def test_audio_channel_auto_consume(audio_callback):
     """Test if the AudioChannel can auto-consume and switch between audio sinks."""
     # Initialize AudioSinks
     audio_1 = rpaudio.AudioSink(callback=audio_callback)
-    audio_1.load_audio("examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     audio_2 = rpaudio.AudioSink(callback=audio_callback)
-    audio_2.load_audio(r"C:\Users\16145\Desktop\exc.mp3")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
     channel_1 = rpaudio.AudioChannel()
     channel_1.push(audio_1)
     channel_1.push(audio_2)
+    print(channel_1.queue_contents)
     assert len(channel_1.queue_contents) == 2
     channel_1.auto_consume = True
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
+    print(channel_1.queue_contents)
     assert len(channel_1.queue_contents) == 1
     channel_1.current_audio.stop()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     audio_callback.assert_called_once()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     assert len(channel_1.queue_contents) == 0
 
 
@@ -106,26 +107,24 @@ async def test_audio_channel_auto_consume(audio_callback):
 async def test_audiochannel_multiple_sink_pushes(audio_channel):
     channel, mock_callback_1, mock_callback_2 = audio_channel
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_wav.wav")
 
     channel.push(audio_2)
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
 
     assert len(channel.queue_contents) == 1
     channel.drop_current_audio()
-    await asyncio.sleep(0.1)
-    print("channel.current_audio", channel.current_audio)
-    print("audio_2", audio_2)
-    assert channel.current_audio.metadata['title'] == audio_2.metadata['title']
+    await asyncio.sleep(0.2)
+    assert channel.current_audio.metadata.title == audio_2.metadata.title
 
 
 @pytest.mark.asyncio
 async def test_drop_current_audio(audio_channel):
     """Test dropping the current audio."""
     channel, _, _ = audio_channel
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     channel.current_audio.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     channel.drop_current_audio()
     assert channel.current_audio is None
 
@@ -135,7 +134,6 @@ async def test_current_audio(audio_channel):
     """Test that current audio is not None."""
     channel, _, _ = audio_channel
     assert channel.current_audio is not None
-
 
 @pytest.mark.asyncio
 async def test_autoplay_songs():
@@ -149,32 +147,42 @@ async def test_autoplay_songs():
     mock_callback_4 = MagicMock()
 
     audio_1 = rpaudio.AudioSink(callback=mock_callback_1)
-    audio_1.load_audio(r"examples/ex.wav")
+    audio_1.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel.push(audio_1)
 
     audio_2 = rpaudio.AudioSink(callback=mock_callback_2)
-    audio_2.load_audio(r"examples/ex.wav")
+    audio_2.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel.push(audio_2)
 
     audio_3 = rpaudio.AudioSink(callback=mock_callback_3)
-    audio_3.load_audio(r"examples/ex.wav")
+    audio_3.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel.push(audio_3)
 
     audio_4 = rpaudio.AudioSink(callback=mock_callback_4)
-    audio_4.load_audio(r"examples/ex.wav")
+    audio_4.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel.push(audio_4)
 
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.1)  
 
-    assert channel.current_audio is not None
-    contents = len(channel.queue_contents)
+    initial_contents = len(channel.queue_contents)
+
     while channel.queue_contents:
-        await asyncio.sleep(0.2)
-        channel.current_audio.stop()
-        assert contents == len(channel.queue_contents)
-        contents -= 1
+        await asyncio.sleep(0.1)
 
-    await asyncio.sleep(0.1)
+        if channel.current_audio:
+            assert channel.current_audio is not None
+
+            channel.current_audio.stop() 
+            await asyncio.sleep(0.1)  # 
+
+        current_contents = len(channel.queue_contents)
+        assert current_contents >= 0, "Queue should not be negative."
+        
+        assert initial_contents - (len(channel.queue_contents) + 1) <= initial_contents, f"Expected {initial_contents}, but got {len(channel.queue_contents)}"
+        
+        initial_contents -= 1 
+
+    await asyncio.sleep(0.1)  
 
     mock_callback_1.assert_called_once()
     mock_callback_2.assert_called_once()

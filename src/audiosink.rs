@@ -1,58 +1,32 @@
+use crate::exceptions::EffectConflictException;
+use crate::timesync::ExtractableEffect;
+use crate::timesync::{ActionType, EffectResult, EffectSync};
+use crate::{exmetadata, MetaData};
 use ::std::sync::mpsc::{Receiver, Sender};
-use pyo3::exceptions::{PyRuntimeError, PyTypeError, PyValueError};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::{IntoPyDict, PyList};
 use rodio::{Decoder, OutputStream, Sink};
 use serde::Serialize;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
-use crate::exceptions::EffectConflictException;
-use crate::timesync::{ActionType, ChangeSpeed, EffectResult, EffectSync, FadeIn, FadeOut};
-use crate::{exmetadata, MetaData};
-
 
 unsafe impl Send for AudioSink {}
 
+#[pyclass]
 #[derive(Serialize)]
 struct AudioInfo {
+    #[pyo3(get)]
     position: f32,
+    #[pyo3(get)]
     speed: f32,
-    effects: Vec<String>,
+    #[pyo3(get)]
+    effects: Vec<ActionType>,
+    #[pyo3(get)]
     volume: f32,
-    metadata: String,
-}
-
-#[pyfunction]
-fn get_audio_info(
-    audio_sink: &AudioSink,
-    metadata: String,
-    effects: Vec<String>,
-) -> PyResult<String> {
-    let sink = audio_sink.sink.as_ref().unwrap().lock().unwrap();
-
-    let start_time = audio_sink.start_time.as_ref();
-    let position = if let Some(start_time) = start_time {
-        start_time.elapsed().as_secs_f32()
-    } else {
-        0.0
-    };
-
-    let speed = 1.0;
-    let volume = sink.volume();
-    let info = AudioInfo {
-        position,
-        speed,
-        effects,
-        volume,
-        metadata,
-    };
-
-    let json_str = serde_json::to_string(&info).unwrap();
-    Ok(json_str)
 }
 
 impl AudioSink {
@@ -86,9 +60,8 @@ impl AudioSink {
             }
 
             let mut effects_guard = self.effects.lock().unwrap();
-
+            let current_position = self.get_pos().unwrap() as f32;
             effects_guard.retain(|effect| {
-                let current_position = sink.lock().unwrap().get_pos().as_secs_f32();
                 let keep_effect = match effect.action {
                     ActionType::FadeIn(_fade_in) => match effect.update(current_position) {
                         EffectResult::Value(val) => {
@@ -211,55 +184,8 @@ impl AudioSink {
     }
 
     #[getter]
-    pub fn metadata(&self, py: Python) -> PyResult<Py<PyDict>> {
-        let mut dict = HashMap::new();
-        dict.insert("title", self.metadata.title.clone());
-        dict.insert("artist", self.metadata.artist.clone());
-        dict.insert("date", self.metadata.date.clone());
-        dict.insert("year", self.metadata.year.clone());
-        dict.insert("album_title", self.metadata.album_title.clone());
-        dict.insert("album_artist", self.metadata.album_artist.clone());
-        dict.insert("track_number", self.metadata.track_number.clone());
-        dict.insert("total_tracks", self.metadata.total_tracks.clone());
-        dict.insert("disc_number", self.metadata.disc_number.clone());
-        dict.insert("total_discs", self.metadata.total_discs.clone());
-        dict.insert("genre", self.metadata.genre.clone());
-        dict.insert("composer", self.metadata.composer.clone());
-        dict.insert("comment", self.metadata.comment.clone());
-        dict.insert(
-            "sample_rate",
-            self.metadata.sample_rate.map(|rate| rate.to_string()),
-        );
-        dict.insert("position", Some(self.get_pos()?.to_string()));
-        dict.insert("speed", Some(self.get_speed().to_string()));
-        dict.insert("volume", Some(self.get_volume()?.to_string()));
-
-        dict.insert("channels", self.metadata.channels.clone());
-        dict.insert(
-            "duration",
-            self.metadata
-                .duration
-                .map(|duration| format!("{:.1}", duration)),
-        );
-
-        let effects_string = self
-            .effects
-            .lock()
-            .unwrap()
-            .iter()
-            .map(|effect| effect.to_string())
-            .collect::<Vec<String>>()
-            .join(", ");
-
-        dict.insert("effects", Some(effects_string));
-
-        let py_dict = PyDict::new_bound(py);
-
-        for (key, value) in dict {
-            py_dict.set_item(key, value)?;
-        }
-
-        Ok(py_dict.into())
+    pub fn metadata(&self, py: Python) -> PyResult<Py<PyAny>> {
+        Ok(self.metadata.clone().into_py(py))
     }
 
     #[getter]
@@ -484,7 +410,7 @@ impl AudioSink {
     }
 
     pub fn try_seek(&mut self, position: f32) -> PyResult<()> {
-        if position < 0.0 {
+        if position <= 0.0 {
             return Err(PyValueError::new_err("Position must be non-negative."));
         }
 
@@ -530,15 +456,7 @@ impl AudioSink {
                 .into_iter()
                 .map(|effect| {
                     let effect = effect.downcast_bound::<PyAny>(py).unwrap();
-                    if let Ok(fade_in) = effect.extract::<FadeIn>() {
-                        Ok(ActionType::FadeIn(fade_in))
-                    } else if let Ok(fade_out) = effect.extract::<FadeOut>() {
-                        Ok(ActionType::FadeOut(fade_out))
-                    } else if let Ok(change_speed) = effect.extract::<ChangeSpeed>() {
-                        Ok(ActionType::ChangeSpeed(change_speed))
-                    } else {
-                        Err(PyTypeError::new_err("Unknown effect type"))
-                    }
+                    effect.extract_action()
                 })
                 .collect();
 
@@ -558,10 +476,31 @@ impl AudioSink {
                     })
                     .ok();
             }
-        } else {
-            eprintln!("Action sender is None");
         }
 
         Ok(())
+    }
+
+    pub fn playback_data(&self) -> PyResult<PyObject> {
+        let self_clone = self.clone();
+        Python::with_gil(|py| {
+            let metadata = self_clone.metadata.clone();
+
+            let dict = metadata.into_py_dict_bound(py);
+
+            let effects_list = PyList::new_bound(py, &Vec::<PyObject>::new());
+
+            for effect in self.effects.lock().unwrap().iter() {
+                let effect_dict = match &effect.action {
+                    ActionType::FadeIn(fi) => fi.into_py_dict_bound(py),
+                    ActionType::FadeOut(fo) => fo.into_py_dict_bound(py),
+                    ActionType::ChangeSpeed(cs) => cs.into_py_dict_bound(py),
+                };
+                effects_list.append(effect_dict)?;
+            }
+            dict.set_item("effects", effects_list)?;
+            dict.set_item("position", self_clone.get_pos().unwrap())?;
+            return Ok(dict.into());
+        })
     }
 }

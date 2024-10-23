@@ -9,6 +9,7 @@ mod exmetadata;
 mod audiosink;
 mod mixer;
 mod timesync;
+mod utils;
 use crate::exceptions::EffectConflictException;
 pub use exmetadata::MetaData;
 
@@ -35,6 +36,12 @@ mod rpaudio {
         use super::FadeOut;
         #[pymodule_export]
         use super::ChangeSpeed;
+    }
+
+    #[pymodule]
+    mod metadata {
+        #[pymodule_export]
+        use super::MetaData;
     }
 
     #[pymodule]

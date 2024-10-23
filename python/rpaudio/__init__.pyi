@@ -56,6 +56,22 @@ class AudioSink:
             handler = AudioHandler(callback=on_audio_end)
         """
 
+    def callback(self) -> Optional[Callable]:
+        """
+        Get the callback function associated with the audio sink.
+
+        Returns:
+            Optional[Callable]: The Python callable if set; otherwise, None.
+        """
+
+    def empty(self) -> bool:
+        """
+        Check if the audio sink is empty.
+
+        Returns:
+            bool: True if the audio sink is empty; otherwise, False.
+        """
+
     @property
     def is_playing(self) -> bool:
         """
@@ -259,6 +275,19 @@ class AudioSink:
         :raises RuntimeError: If there is an issue acquiring the lock on the callback.
         """
 
+    def playback_data(self) -> Dict[str, Any]:
+        """
+        Retrieve playback metadata and effects associated with the audio sink.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing playback metadata, a list of effects, 
+            and the current playback position. The dictionary includes the following keys:
+            
+            - 'effects': A list of effect dictionaries, each representing an action (e.g., 
+            FadeIn, FadeOut, ChangeSpeed).
+            - 'position': The current playback position.
+        """
+
 
 class AudioChannel:
     queue: List[AudioSink]
@@ -348,12 +377,6 @@ class AudioChannel:
         :rtype: AudioSink
         """
 
-    async def _control_loop(self) -> None:
-        """
-        Continuously monitors the queue and handles playback,
-        auto-consume, and callback execution. Not meant for python access
-        """
-
     @property
     def queue_contents(self) -> List[AudioSink]:
         """
@@ -437,6 +460,18 @@ class AudioChannel:
                 - position (float): The current playback position in seconds.
                 - volume (float): The current volume level.
                 - effects (List[Dict[str, Any]]): List of effects applied to the audio.
+        """
+
+    def effects(self) -> List[Union[effects.FadeIn, effects.FadeOut, effects.ChangeSpeed]]:
+        """
+        Get the list of effects in the audio processing chain.
+
+        This method retrieves the effects currently applied to the audio sink 
+        and returns them as a list. Each effect in the list is represented 
+        by its corresponding effect class instance.
+
+        Returns:
+            List[Union[FadeIn, FadeOut, ChangeSpeed]]: A list containing the effects.
         """
 
 

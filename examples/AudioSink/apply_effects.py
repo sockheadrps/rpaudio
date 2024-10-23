@@ -12,7 +12,7 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
-    print(handler.metadata)
+    print(handler.metadata.as_dict())
     await asyncio.sleep(0.3)
     handler.set_volume(0.0)
 
@@ -24,8 +24,14 @@ async def play_audio():
     handler.apply_effects(effects_list)
     handler.play()
 
+    i = 0
+
     while not kill_audio:
+        i += 1
         await asyncio.sleep(1)
+        print(i)
+        if i == 15:
+            handler.stop()
 
 async def sleep_loop():
     global kill_audio
