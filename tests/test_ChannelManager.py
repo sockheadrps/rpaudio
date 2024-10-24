@@ -33,8 +33,8 @@ def test_add_channel(setup_channel_manager):
     retrieved_channel = manager.channel("Channel3")
     assert retrieved_channel.queue_contents[0].metadata.as_dict() == new_channel.queue_contents[0].metadata.as_dict()
 
-
-def test_channel_retrieval(setup_channel_manager):
+@pytest.mark.asyncio
+async def test_channel_retrieval(setup_channel_manager):
     """Test retrieving a channel by its identifier."""
     manager, _, _ = setup_channel_manager
     mock_callback = MagicMock()
@@ -42,6 +42,7 @@ def test_channel_retrieval(setup_channel_manager):
     audio.load_audio(r"tests/test_audio_files/test_md_mp3.mp3")
     channel_1 = manager.channel("Channel1")
     channel_1.push(audio)
+    await asyncio.sleep(0.2)
 
     retrieved_channel = manager.channel("Channel1")
     assert retrieved_channel.queue_contents[0].metadata.as_dict() == channel_1.queue_contents[0].metadata.as_dict()
@@ -92,7 +93,7 @@ async def test_stop_all(setup_channel_manager):
     channel_2.auto_consume = True
 
     manager.stop_all()
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.1)
 
     assert channel_1.current_audio is None
     assert channel_2.current_audio is None

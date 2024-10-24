@@ -63,6 +63,7 @@ impl ChannelManager {
         let mut channels = self.channels.lock().unwrap();
         for (_, channel) in channels.iter_mut() {
             channel.set_auto_consume(false);
+            channel.drop_current_audio();
         }
     }
 }

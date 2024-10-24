@@ -189,6 +189,12 @@ impl AudioSink {
     }
 
     #[getter]
+    pub fn metadata_dict(&self, py: Python) -> PyResult<PyObject> {
+        let metadata = self.metadata.clone();
+        Ok(metadata.into_py_dict_bound(py).into())
+    }
+
+    #[getter]
     pub fn is_playing(&self) -> bool {
         *self.is_playing.read().unwrap()
     }
@@ -260,7 +266,7 @@ impl AudioSink {
                     drop(sink_guard);
                     self_clone.handle_action_and_effects(Arc::clone(&sink));
 
-                    thread::sleep(Duration::from_millis(100));
+                    thread::sleep(Duration::from_millis(3));
                 }
             }
         });
@@ -499,6 +505,7 @@ impl AudioSink {
                 effects_list.append(effect_dict)?;
             }
             dict.set_item("effects", effects_list)?;
+            dict.set_item("position", self_clone.get_pos().unwrap())?;
             return Ok(dict.into());
         })
     }

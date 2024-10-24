@@ -12,7 +12,7 @@ def on_audio_stop():
 
 async def play_audio():
     handler = rpaudio.AudioSink(callback=on_audio_stop).load_audio(AUDIO_FILE)
-    print(handler.metadata.as_dict())
+    print(handler.metadata_dict)
     await asyncio.sleep(0.3)
     handler.set_volume(0.0)
 

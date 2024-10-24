@@ -7,8 +7,99 @@ __all__ = [
     "AudioChannel",
     "rpaudio_exceptions",
     "ActionType",
-    "effects" 
+    "effects"
 ]
+
+
+class MetaData:
+    """
+    Represents metadata for an audio file.
+
+    Attributes:
+        title (str): The title of the audio file.
+        artist (str): The artist of the audio file.
+        date (str): The date the audio file was created or released.
+        year (str): The year of the audio file.
+        album_title (str): The title of the album.
+        album_artist (str): The artist of the album.
+        track_number (str): The track number on the album.
+        total_tracks (str): The total number of tracks on the album.
+        disc_number (str): The disc number (if a multi-disc album).
+        total_discs (str): The total number of discs in the album.
+        genre (str): The genre of the audio file.
+        composer (str): The composer of the audio file.
+        comment (str): Any comments in the metadata.
+        sample_rate (int): The sample rate of the audio file.
+        channels (int): The number of channels in the audio file.
+        duration (float): The duration of the audio file in seconds.
+    """
+
+    @property
+    def title(self) -> str:
+        ...
+
+    @property
+    def artist(self) -> str:
+        ...
+
+    @property
+    def date(self) -> str:
+        ...
+
+    @property
+    def year(self) -> str:
+        ...
+
+    @property
+    def album_title(self) -> str:
+        ...
+
+    @property
+    def album_artist(self) -> str:
+        ...
+
+    @property
+    def track_number(self) -> str:
+        ...
+
+    @property
+    def total_tracks(self) -> str:
+        ...
+
+    @property
+    def disc_number(self) -> str:
+        ...
+
+    @property
+    def total_discs(self) -> str:
+        ...
+
+    @property
+    def genre(self) -> str:
+        ...
+
+    @property
+    def composer(self) -> str:
+        ...
+
+    @property
+    def comment(self) -> str:
+        ...
+
+    @property
+    def sample_rate(self) -> int:
+        ...
+
+    @property
+    def channels(self) -> int:
+        ...
+
+    @property
+    def duration(self) -> float:
+        ...
+
+
+
 class AudioSink:
     """
     Interface that wraps functionality for audio files.
@@ -54,6 +145,22 @@ class AudioSink:
                 print("Audio has ended.")
 
             handler = AudioHandler(callback=on_audio_end)
+        """
+
+    def callback(self) -> Optional[Callable]:
+        """
+        Get the callback function associated with the audio sink.
+
+        Returns:
+            Optional[Callable]: The Python callable if set; otherwise, None.
+        """
+
+    def empty(self) -> bool:
+        """
+        Check if the audio sink is empty.
+
+        Returns:
+            bool: True if the audio sink is empty; otherwise, False.
         """
 
     @property
@@ -136,7 +243,7 @@ class AudioSink:
         """
 
     @property
-    def metadata(self) -> dict[str, any]:
+    def metadata(self) -> MetaData:
         """
         Get metadata for the audio file.
 
@@ -147,6 +254,23 @@ class AudioSink:
             audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
             audio_1.load_audio("ex.wav")
             data = audio_1.metadata
+
+        :return: An instance of the MetaData class containing metadata for the audio file.
+        :rtype: MetaData
+        """
+
+    @property
+    def metadata_dict(self) -> dict[str, any]:
+        """
+        Get metadata for the audio file as a dictionary.
+
+        Example:
+
+        .. code-block:: python
+
+            audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+            audio_1.load_audio("ex.wav")
+            data_dict = audio_1.metadata_dict
 
         :return: A dictionary containing metadata for the audio file.
         :rtype: dict[str, any]
@@ -259,6 +383,19 @@ class AudioSink:
         :raises RuntimeError: If there is an issue acquiring the lock on the callback.
         """
 
+    def playback_data(self) -> Dict[str, Any]:
+        """
+        Retrieve playback metadata and effects associated with the audio sink.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing playback metadata, a list of effects, 
+            and the current playback position. The dictionary includes the following keys:
+
+            - 'effects': A list of effect dictionaries, each representing an action (e.g., 
+            FadeIn, FadeOut, ChangeSpeed).
+            - 'position': The current playback position.
+        """
+
 
 class AudioChannel:
     queue: List[AudioSink]
@@ -299,7 +436,6 @@ class AudioChannel:
 
         :rtype: bool
         """
-        return self._auto_consume
 
     @auto_consume.setter
     def auto_consume(self, value: bool) -> None:
@@ -346,12 +482,6 @@ class AudioChannel:
                 print("No audio is playing")
 
         :rtype: AudioSink
-        """
-
-    async def _control_loop(self) -> None:
-        """
-        Continuously monitors the queue and handles playback,
-        auto-consume, and callback execution. Not meant for python access
         """
 
     @property
@@ -439,6 +569,18 @@ class AudioChannel:
                 - effects (List[Dict[str, Any]]): List of effects applied to the audio.
         """
 
+    def effects(self) -> List[Union[effects.FadeIn, effects.FadeOut, effects.ChangeSpeed]]:
+        """
+        Get the list of effects in the audio processing chain.
+
+        This method retrieves the effects currently applied to the audio sink 
+        and returns them as a list. Each effect in the list is represented 
+        by its corresponding effect class instance.
+
+        Returns:
+            List[Union[FadeIn, FadeOut, ChangeSpeed]]: A list containing the effects.
+        """
+
 
 class ChannelManager:
     """
@@ -520,5 +662,3 @@ class ChannelManager:
         """
         Stops auto-consuming audio on all channels.
         """
-
-

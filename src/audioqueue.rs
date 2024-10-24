@@ -22,6 +22,22 @@ impl fmt::Debug for AudioSink {
     }
 }
 
+impl AudioChannel {
+    pub fn pop(&mut self) -> Option<AudioSink> {
+        if let Ok(mut queue_guard) = self.queue.lock() {
+            queue_guard.pop()
+        } else {
+            None
+        }
+    }
+
+    pub fn consume(&mut self) {
+        if let Some(mut sink) = self.pop() {
+            let _ = sink.play();
+        }
+    }
+}
+
 #[pymethods]
 impl AudioChannel {
     #[new]
@@ -37,25 +53,17 @@ impl AudioChannel {
         let channel_clone = Arc::clone(&channel_arc);
 
         thread::spawn(move || {
-            let mut backoff = 10;
 
             loop {
                 let channel = channel_clone.lock().unwrap();
 
-                let should_consume = {
-                    let auto_consume_guard = match channel.auto_consume.lock() {
-                        Ok(guard) => *guard,
-                        Err(_) => {
-                            thread::sleep(Duration::from_millis(backoff));
-                            backoff = std::cmp::min(backoff * 2, 1000);
-                            continue;
-                        }
-                    };
-                    auto_consume_guard
+                let should_consume = match channel.auto_consume.lock() {
+                    Ok(guard) => *guard,
+                    Err(_) => continue,
                 };
 
                 if !should_consume {
-                    thread::sleep(Duration::from_millis(100));
+                    thread::sleep(Duration::from_millis(3));
                     continue;
                 }
 
@@ -108,7 +116,7 @@ impl AudioChannel {
                     }
                 }
 
-                thread::sleep(Duration::from_millis(100));
+                thread::sleep(Duration::from_millis(3));
             }
         });
 
@@ -119,20 +127,6 @@ impl AudioChannel {
     pub fn push(&mut self, sink: AudioSink) {
         if let Ok(mut queue_guard) = self.queue.lock() {
             queue_guard.push(sink);
-        }
-    }
-
-    pub fn pop(&mut self) -> Option<AudioSink> {
-        if let Ok(mut queue_guard) = self.queue.lock() {
-            queue_guard.pop()
-        } else {
-            None
-        }
-    }
-
-    pub fn consume(&mut self) {
-        if let Some(mut sink) = self.pop() {
-            let _ = sink.play();
         }
     }
 
