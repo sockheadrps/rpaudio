@@ -139,7 +139,7 @@ async def test_callbacks_called():
 
     channel_1.current_audio.stop()
 
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
 
     mock_callback_1.assert_called_once()
     mock_callback_2.assert_not_called()

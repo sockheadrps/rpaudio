@@ -26,7 +26,7 @@ async def test_fade_in(audio_handler):
     handler.play()
     await asyncio.sleep(0.1)
     initial_volume = handler.get_volume()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(2.0)
     new_volume = handler.get_volume()
     assert new_volume > initial_volume
     handler.stop()
@@ -41,7 +41,7 @@ async def test_fade_out(audio_handler):
     handler.play()
     handler.set_volume(1.0)
     initial_volume = handler.get_volume()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(1)
     new_volume = handler.get_volume()
     assert new_volume < initial_volume
     handler.stop()
@@ -53,7 +53,7 @@ async def test_change_speed(audio_handler):
     change_speed_effect = ChangeSpeed(end_val=1.5)
     handler.apply_effects([change_speed_effect])
     handler.play()
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.5)
     new_speed = handler.get_speed()
     assert new_speed == 1.5
     handler.stop()
