@@ -9,7 +9,18 @@ def get_version_from_pyproject():
         return toml_data['project']['version']
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--local", action="store_true", default=False, help="Run tests in local mode and skip README update"
+    )
+
+
 def pytest_sessionfinish(session, exitstatus):
+    # Check if the flag --skip-readme-update was passed
+    if session.config.getoption("--local"):
+        print("Skipping README update due to --local flag")
+        return
+
     report_file = "tests/report.json"
     readme_file = "README.md"
 

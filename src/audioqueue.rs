@@ -53,25 +53,17 @@ impl AudioChannel {
         let channel_clone = Arc::clone(&channel_arc);
 
         thread::spawn(move || {
-            let mut backoff = 10;
 
             loop {
                 let channel = channel_clone.lock().unwrap();
 
-                let should_consume = {
-                    let auto_consume_guard = match channel.auto_consume.lock() {
-                        Ok(guard) => *guard,
-                        Err(_) => {
-                            thread::sleep(Duration::from_millis(backoff));
-                            backoff = std::cmp::min(backoff * 2, 1000);
-                            continue;
-                        }
-                    };
-                    auto_consume_guard
+                let should_consume = match channel.auto_consume.lock() {
+                    Ok(guard) => *guard,
+                    Err(_) => continue,
                 };
 
                 if !should_consume {
-                    thread::sleep(Duration::from_millis(100));
+                    thread::sleep(Duration::from_millis(3));
                     continue;
                 }
 
@@ -124,7 +116,7 @@ impl AudioChannel {
                     }
                 }
 
-                thread::sleep(Duration::from_millis(100));
+                thread::sleep(Duration::from_millis(3));
             }
         });
 

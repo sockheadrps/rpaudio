@@ -1,5 +1,6 @@
 import asyncio
 from rpaudio import AudioSink, AudioChannel, ChannelManager
+from rpaudio.effects import FadeIn
 
 
 
@@ -17,7 +18,7 @@ async def run_manager(manager: ChannelManager):
     await asyncio.sleep(3)
 
     # Get the current audio metadata of channel1
-    print(f"{manager.channel('Channel1').current_audio.metadata} is playing in Channel1")
+    print(f"{manager.channel('Channel1').current_audio.metadata.title} is playing in Channel1")
 
     # Pause channel1
     manager.channel("Channel1").current_audio.pause()
@@ -45,25 +46,29 @@ async def run_manager(manager: ChannelManager):
 async def main():
     # Intializing 2 audio sinks
     audio_1 = AudioSink(callback=on_audio_stop)
-    audio_1.load_audio("ex.wav")
+    audio_1.load_audio("examples/ex.wav")
     audio_2 = AudioSink(callback=on_audio_stop)
     audio_2.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
-    print(audio_1.metadata)
+    print(audio_1.metadata_dict)
 
     # Intializing 1st audio channel
     channel_1 = AudioChannel()
     channel_1.push(audio_1)
     channel_1.push(audio_2)
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+    channel_1.set_effects_chain([fade_in_effect])
 
     # Intializing 2 more audio sinks
     audio_3 = AudioSink(callback=on_audio_stop)
-    audio_3.load_audio("ex.wav")
+    audio_3.load_audio("examples/ex.wav")
     audio_4 = AudioSink(callback=on_audio_stop)
     audio_4.load_audio(r"C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3")
     # Intializing 2nd audio channel
     channel_2 = AudioChannel()
     channel_2.push(audio_3)
     channel_2.push(audio_4)
+    fade_in_effect = FadeIn(start_val=0.0, end_val=1.0, duration=3.0)
+    channel_2.set_effects_chain([fade_in_effect])
 
     # Intializing ChannelManager
     manager = ChannelManager()

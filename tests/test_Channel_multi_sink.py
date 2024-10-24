@@ -90,11 +90,9 @@ async def test_audio_channel_auto_consume(audio_callback):
     channel_1 = rpaudio.AudioChannel()
     channel_1.push(audio_1)
     channel_1.push(audio_2)
-    print(channel_1.queue_contents)
     assert len(channel_1.queue_contents) == 2
     channel_1.auto_consume = True
     await asyncio.sleep(0.2)
-    print(channel_1.queue_contents)
     assert len(channel_1.queue_contents) == 1
     channel_1.current_audio.stop()
     await asyncio.sleep(0.2)
@@ -173,7 +171,10 @@ async def test_autoplay_songs():
             assert channel.current_audio is not None
 
             channel.current_audio.stop() 
-            await asyncio.sleep(0.1)  # 
+            await asyncio.sleep(0.1)
+            print("finished")
+
+        
 
         current_contents = len(channel.queue_contents)
         assert current_contents >= 0, "Queue should not be negative."
@@ -182,7 +183,8 @@ async def test_autoplay_songs():
         
         initial_contents -= 1 
 
-    await asyncio.sleep(0.1)  
+    channel.current_audio.stop()
+    await asyncio.sleep(0.1)
 
     mock_callback_1.assert_called_once()
     mock_callback_2.assert_called_once()

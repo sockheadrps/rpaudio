@@ -23,8 +23,6 @@ async def play_audio(channel) -> None:
 
     while not complete_1:
         await asyncio.sleep(1)
-        # print(f"metadata: {channel.current_audio_data()}")
-
 
         if channel.current_audio is None or not first.is_playing:
             complete_1 = True

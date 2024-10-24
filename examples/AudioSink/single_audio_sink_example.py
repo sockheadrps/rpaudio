@@ -3,7 +3,6 @@ import asyncio
 
 
 AUDIO_FILE = r"C:\Users\16145\Desktop\exc.mp3"
-# AUDIO_FILE = r"examples/ex.wav"
 
 
 def on_audio_stop():
@@ -13,7 +12,7 @@ def on_audio_stop():
 async def play_audio():
     handler = rpaudio.AudioSink(
         callback=on_audio_stop).load_audio(AUDIO_FILE)
-    print(handler.metadata)
+    print(handler.metadata_dict)
     handler.set_volume(0.5)
 
     handler.play()
