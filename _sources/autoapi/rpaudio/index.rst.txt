@@ -444,7 +444,7 @@ Package Contents
 
 
    .. py:property:: metadata
-      :type: dict[str, any]
+      :type: MetaData
 
       Get metadata for the audio file.
 
@@ -455,6 +455,23 @@ Package Contents
           audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
           audio_1.load_audio("ex.wav")
           data = audio_1.metadata
+
+      :return: An instance of the MetaData class containing metadata for the audio file.
+      :rtype: MetaData
+
+
+   .. py:property:: metadata_dict
+      :type: dict[str, any]
+
+      Get metadata for the audio file as a dictionary.
+
+      Example:
+
+      .. code-block:: python
+
+          audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+          audio_1.load_audio("ex.wav")
+          data_dict = audio_1.metadata_dict
 
       :return: A dictionary containing metadata for the audio file.
       :rtype: dict[str, any]

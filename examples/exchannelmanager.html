@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AudioManager &mdash; rpaudio 0.0.1 documentation</title>
+  <title>AudioManager &mdash; rpaudio 0.0.16 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/documentation_options.js?v=c7cdf6fe"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -87,6 +87,7 @@
 <p>This example demonstrates how to use the <cite>AudioManager</cite> class.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">rpaudio</span> <span class="kn">import</span> <span class="n">AudioSink</span><span class="p">,</span> <span class="n">AudioChannel</span><span class="p">,</span> <span class="n">ChannelManager</span>
+<span class="kn">from</span> <span class="nn">rpaudio.effects</span> <span class="kn">import</span> <span class="n">FadeIn</span>
 
 
 
@@ -104,7 +105,7 @@
     <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 
     <span class="c1"># Get the current audio metadata of channel1</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">manager</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s1">&#39;Channel1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">metadata</span><span class="si">}</span><span class="s2"> is playing in Channel1&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">manager</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s1">&#39;Channel1&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> is playing in Channel1&quot;</span><span class="p">)</span>
 
     <span class="c1"># Pause channel1</span>
     <span class="n">manager</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;Channel1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">current_audio</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
@@ -132,25 +133,29 @@
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="c1"># Intializing 2 audio sinks</span>
     <span class="n">audio_1</span> <span class="o">=</span> <span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
-    <span class="n">audio_1</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;ex.wav&quot;</span><span class="p">)</span>
+    <span class="n">audio_1</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;examples/ex.wav&quot;</span><span class="p">)</span>
     <span class="n">audio_2</span> <span class="o">=</span> <span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
     <span class="n">audio_2</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">audio_1</span><span class="o">.</span><span class="n">metadata</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">audio_1</span><span class="o">.</span><span class="n">metadata_dict</span><span class="p">)</span>
 
     <span class="c1"># Intializing 1st audio channel</span>
     <span class="n">channel_1</span> <span class="o">=</span> <span class="n">AudioChannel</span><span class="p">()</span>
     <span class="n">channel_1</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_1</span><span class="p">)</span>
     <span class="n">channel_1</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_2</span><span class="p">)</span>
+    <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">start_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">channel_1</span><span class="o">.</span><span class="n">set_effects_chain</span><span class="p">([</span><span class="n">fade_in_effect</span><span class="p">])</span>
 
     <span class="c1"># Intializing 2 more audio sinks</span>
     <span class="n">audio_3</span> <span class="o">=</span> <span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
-    <span class="n">audio_3</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;ex.wav&quot;</span><span class="p">)</span>
+    <span class="n">audio_3</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="s2">&quot;examples/ex.wav&quot;</span><span class="p">)</span>
     <span class="n">audio_4</span> <span class="o">=</span> <span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span>
     <span class="n">audio_4</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;C:\Users\16145\Desktop\code_24\rpaudio\examples\Acrylic.mp3&quot;</span><span class="p">)</span>
     <span class="c1"># Intializing 2nd audio channel</span>
     <span class="n">channel_2</span> <span class="o">=</span> <span class="n">AudioChannel</span><span class="p">()</span>
     <span class="n">channel_2</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_3</span><span class="p">)</span>
     <span class="n">channel_2</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">audio_4</span><span class="p">)</span>
+    <span class="n">fade_in_effect</span> <span class="o">=</span> <span class="n">FadeIn</span><span class="p">(</span><span class="n">start_val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+    <span class="n">channel_2</span><span class="o">.</span><span class="n">set_effects_chain</span><span class="p">([</span><span class="n">fade_in_effect</span><span class="p">])</span>
 
     <span class="c1"># Intializing ChannelManager</span>
     <span class="n">manager</span> <span class="o">=</span> <span class="n">ChannelManager</span><span class="p">()</span>
