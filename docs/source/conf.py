@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath('../../python/rpaudio'))
 project = 'rpaudio'
 copyright = '2024, beaux44, sockheadrps'
 author = 'beaux44, sockheadrps'
-release = '0.0.1'
+release = '0.0.16'
 
 
 napoleon_google_docstring = True
