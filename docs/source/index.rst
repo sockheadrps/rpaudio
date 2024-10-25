@@ -37,11 +37,11 @@ Examples
 
    * - **Internal Documentation**
      - **External Resources**
-   * - `AudioSink <docs/build/examples/exaudiosink.html>`_
+   * - `AudioSink <examples/exaudiosink.html>`_
      - `FastAPI Server-side Audio Control <https://github.com/sockheadrps/RpaudioFastAPIExample>`_
-   * - `AudioChannel <docs/build/examples/exaudiochannel.html>`_
+   * - `AudioChannel <examples/exaudiochannel.html>`_
      - 
-   * - `ChannelManager <docs/build/examples/exchannelmanager.html>`_
+   * - `ChannelManager <examples/exchannelmanager.html>`_
      - 
 
  
