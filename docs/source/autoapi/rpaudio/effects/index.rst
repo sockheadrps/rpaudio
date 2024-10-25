@@ -1,16 +1,17 @@
-effects
-=======
+rpaudio.effects
+===============
 
-.. py:module:: effects
-
-
+.. py:module:: rpaudio.effects
 
 
-Module Contents
----------------
+
+
+Package Contents
+----------------
 
 .. py:class:: ChangeSpeed(duration=0.0, start_val=1.0, end_val=1.5, apply_after=None)
 
+   
    Represents a speed change effect for audio.
 
    :param duration: Duration of the speed change effect in seconds. Defaults to 0.0.
@@ -26,8 +27,25 @@ Module Contents
        # Changes audio speed over 2 seconds from normal speed (1.0) to faster (1.2)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:class:: FadeIn(duration=5.0, start_val=None, end_val=1.0, apply_after=None)
 
+   
    Represents a fade-in effect for audio.
 
    :param duration: Duration of the fade-in effect in seconds. Defaults to 5.0.
@@ -43,8 +61,25 @@ Module Contents
        # Applies a fade-in effect over 3 seconds, starting from 0.2 volume to full volume (1.0)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:class:: FadeOut(duration=5.0, start_val=1.0, end_val=None, apply_after=None)
 
+   
    Represents a fade-out effect for audio.
 
    :param duration: Duration of the fade-out effect in seconds. Defaults to 5.0.
@@ -59,4 +94,20 @@ Module Contents
        fade_out = FadeOut(duration=4.0, start_val=1.0, end_val=0.0)
        # Applies a fade-out effect over 4 seconds, fading from full volume (1.0) to silence (0.0)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 

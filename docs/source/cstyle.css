@@ -1,0 +1,141 @@
+/**** Overriding theme defaults ****/
+
+html[data-theme=light]{
+  --pst-color-primary: rgb(52, 54, 99);
+  --pst-color-secondary: rgb(107, 161, 174);
+  --pst-color-link: rgb(74, 105, 145);
+  --pst-color-inline-code: rgb(96, 141, 130);
+}
+
+html[data-theme=dark] {
+  --pst-color-primary: rgb(220, 220, 220);
+  --pst-color-secondary: rgb(150, 150, 150);
+  --pst-color-link: rgb(0, 191, 255);
+  --pst-color-inline-code: rgb(178, 223, 219);
+  background-color: #1e1e1e; /* Dark background */
+  color: #6a6c75; /* Light text */
+}
+
+:root {
+  --pst-font-size-h1: 38px;
+  --pst-font-size-h2: 32px;
+  --pst-font-size-h3: 27px;
+  --pst-font-size-h4: 22px;
+  --pst-font-size-h5: 18px;
+  --pst-font-size-h6: 15px;
+
+}
+
+/* Syntax highlighting */
+html[data-theme=light] .highlight .s2,
+html[data-theme=dark] .highlight .s2 {
+  color: rgb(74, 105, 145);
+  font-weight: normal;
+}
+
+html[data-theme=dark] .highlight .mi {
+  color: rgb(255, 165, 0); /* Adjusted for dark theme */
+}
+
+
+/* string literals */
+html[data-theme=light] .highlight .s2 {
+  color: rgb(74, 105, 145);
+  font-weight: normal;
+}
+/* number literals */
+html[data-theme=light] .highlight .mi {
+  color: rgb(136, 97, 153);
+  font-weight: normal;
+}
+html[data-theme=light] .highlight .mf {
+  color: rgb(136, 97, 153);
+  font-weight: normal;
+}
+/* operators */
+html[data-theme=light] .highlight .o {
+  color: rgb(219, 164, 117);
+  font-weight: bold;
+}
+/* builtins */
+html[data-theme=light] .highlight .kc {
+  color: rgb(107, 161, 174);
+  font-weight: bold;
+}
+
+/* Use full page width without sidebars */
+.bd-content {
+  max-width: 100%;
+  flex-grow: 1;
+}
+
+/* Function signature customization */
+dt {
+  font-weight: 500;
+  color: rgb(138, 162, 247);
+}
+
+span.default_value {
+  color: rgb(124, 141, 138);
+}
+
+/* highlight over function signature after link */
+dt:target, span.highlighted {
+  background-color: #fdebba;
+}
+
+/* *********************************************************************** */
+
+/* --- Badges for categorizing release notes --- */
+
+.label,
+.badge {
+  display: inline-block;
+  padding: 2px 4px;
+  font-size: 11.844px;
+  /* font-weight: bold; */
+  line-height: 13px;
+  color: #ffffff;
+  vertical-align: baseline;
+  white-space: nowrap;
+  /* text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); */
+  background-color: #999999;
+}
+.badge {
+  padding-left: 9px;
+  padding-right: 9px;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+  opacity: 70%;
+}
+.badge-api {
+  background-color: #c44e52;
+}
+.badge-defaults {
+  background-color: #dd8452;
+}
+.badge-docs {
+  background-color: #8172b3;
+}
+.badge-feature {
+  background-color: #55a868;
+}
+.badge-enhancement {
+  background-color: #4c72b0;
+}
+.badge-fix {
+    background-color: #ccb974;
+}
+.badge-build {
+    background-color: #937860;
+}
+
+/* Hide the row colors in tables */
+.table, .table tr {
+  background-color: transparent !important;
+}
+
+.table tr:nth-child(even) {
+  background-color: transparent !important;
+}

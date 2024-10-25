@@ -50,12 +50,18 @@ jobs:
         run: |
           pip install rpaudio
           pip install sphinx
-          pip install sphinx-rtd-theme
+          pip install cloud-sptheme
           pip install sphinxcontrib-napoleon
           pip install sphinx-autodoc-typehints
           pip install sphinx-autoapi
           pip install ghp-import
           pip install maturin
+          pip install numpydoc
+          pip install sphinx-copybutton
+          pip install sphinx-issues
+          pip install sphinx-design
+          pip install pydata-sphinx-theme
+
 
       - name: Build Rust extension
         run: maturin build --release

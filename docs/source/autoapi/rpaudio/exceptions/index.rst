@@ -1,19 +1,20 @@
-exceptions
-==========
+rpaudio.exceptions
+==================
 
-.. py:module:: exceptions
-
-
+.. py:module:: rpaudio.exceptions
 
 
-Module Contents
----------------
+
+
+Package Contents
+----------------
 
 .. py:exception:: EffectConflictException
 
    Bases: :py:obj:`Exception`
 
 
+   
    Exception raised when an effect manipulation conflict occurs.
 
    This exception is raised when a user tries to change the volume or speed of the audio
@@ -45,4 +46,20 @@ Module Contents
                except EffectConflictException as e:
                    print(f"Error: {e}")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 

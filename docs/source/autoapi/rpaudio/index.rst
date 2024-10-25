@@ -4,6 +4,16 @@ rpaudio
 .. py:module:: rpaudio
 
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/rpaudio/effects/index
+   /autoapi/rpaudio/exceptions/index
+
+
 
 
 Package Contents
@@ -11,51 +21,60 @@ Package Contents
 
 .. py:class:: AudioChannel
 
-   .. py:method:: _control_loop()
-      :async:
-
-
-      Continuously monitors the queue and handles playback,
-      auto-consume, and callback execution. Not meant for python access
-
-
-
    .. py:method:: current_audio_data()
 
+      
       Retrieves metadata and current playback information.
 
       This method returns a dictionary containing various metadata fields such
       as album artist, album title, artist, channels, duration, and more,
       along with current playback information like volume and position.
 
-      :returns: A dictionary with audio
-                metadata and playback details, including:
-                    - album_artist (str): The artist of the album.
-                    - album_title (str): The title of the album.
-                    - artist (str): The artist of the audio track.
-                    - channels (int): The number of audio channels.
-                    - comment (Optional[str]): Comments about the track.
-                    - composer (Optional[str]): The composer of the audio.
-                    - date (Optional[str]): The release date of the audio.
-                    - disc_number (Optional[int]): The disc number in a multi-disc set.
-                    - duration (float): The duration of the audio in seconds.
-                    - genre (Optional[str]): The genre of the audio.
-                    - sample_rate (int): The sample rate of the audio in Hz.
-                    - title (str): The title of the audio track.
-                    - total_discs (Optional[int]): The total number of discs in a multi-disc set.
-                    - total_tracks (Optional[int]): The total number of tracks in the album.
-                    - track_number (Optional[int]): The track number on the album.
-                    - year (Optional[int]): The year the audio was released.
-                    - speed (float): The current playback speed.
-                    - position (float): The current playback position in seconds.
-                    - volume (float): The current volume level.
-                    - effects (List[Dict[str, Any]]): List of effects applied to the audio.
-      :rtype: Dict[str, Union[str, float, int, None]]
+      Returns:
+          Dict[str, Union[str, float, int, None]]: A dictionary with audio
+          metadata and playback details, including:
+              - album_artist (str): The artist of the album.
+              - album_title (str): The title of the album.
+              - artist (str): The artist of the audio track.
+              - channels (int): The number of audio channels.
+              - comment (Optional[str]): Comments about the track.
+              - composer (Optional[str]): The composer of the audio.
+              - date (Optional[str]): The release date of the audio.
+              - disc_number (Optional[int]): The disc number in a multi-disc set.
+              - duration (float): The duration of the audio in seconds.
+              - genre (Optional[str]): The genre of the audio.
+              - sample_rate (int): The sample rate of the audio in Hz.
+              - title (str): The title of the audio track.
+              - total_discs (Optional[int]): The total number of discs in a multi-disc set.
+              - total_tracks (Optional[int]): The total number of tracks in the album.
+              - track_number (Optional[int]): The track number on the album.
+              - year (Optional[int]): The year the audio was released.
+              - speed (float): The current playback speed.
+              - position (float): The current playback position in seconds.
+              - volume (float): The current volume level.
+              - effects (List[Dict[str, Any]]): List of effects applied to the audio.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: drop_current_audio()
 
+      
       Stops the currently playing audio, if any, and removes it from the channel.
 
       Example:
@@ -67,8 +86,55 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: effects()
+
+      
+      Get the list of effects in the audio processing chain.
+
+      This method retrieves the effects currently applied to the audio sink 
+      and returns them as a list. Each effect in the list is represented 
+      by its corresponding effect class instance.
+
+      Returns:
+          List[Union[FadeIn, FadeOut, ChangeSpeed]]: A list containing the effects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: is_playing()
 
+      
       Returns True if audio is currently playing, otherwise False.
 
       Example:
@@ -83,8 +149,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: push(audio)
 
+      
       Adds an AudioSink object to the queue.
 
       Example:
@@ -97,11 +180,28 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: set_effects_chain(effect_list)
 
+      
       Sets the effects chain for the audio channel.
 
-      This method accepts a list of effects and applies them to the audio channel.
+      This method accepts a list of effects and applies them to the audio channel. 
       The effects can include FadeIn, FadeOut, and ChangeSpeed.
 
       Example:
@@ -121,17 +221,52 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:property:: auto_consume
       :type: bool
 
+      
       Returns whether the channel automatically consumes the queue.
 
       :rtype: bool
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:property:: current_audio
       :type: AudioSink
 
+      
       Returns the currently playing AudioSink object.
 
       Example:
@@ -146,6 +281,23 @@ Package Contents
               print("No audio is playing")
 
       :rtype: AudioSink
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:attribute:: currently_playing
@@ -163,6 +315,7 @@ Package Contents
    .. py:property:: queue_contents
       :type: List[AudioSink]
 
+      
       Returns the current queue of AudioSink objects.
 
       Example:
@@ -174,8 +327,26 @@ Package Contents
           print(f"Queue has {len(queue)} items")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
 .. py:class:: AudioSink(callback = None)
 
+   
    Interface that wraps functionality for audio files.
 
    This class provides methods to load, play, pause, stop audio playback, manage audio effects,
@@ -192,16 +363,32 @@ Package Contents
        handler.pause()
        handler.stop()
 
-   :param callback: A function that will be called when the audio stops playing.
-   :type callback: :py:class:`Optional[Callable[[], None]]`
+   Args:
+       callback (Optional[Callable[[], None]]): A function that will be called when the audio stops playing.
 
-   :ivar is_playing: Flag indicating whether the audio is currently playing.
+   Attributes:
+       is_playing (bool): Flag indicating whether the audio is currently playing.
 
-   :vartype is_playing: :py:class:`bool`
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
    .. py:method:: apply_effects(effect_list)
 
+      
       Apply a list of audio effects such as fade-in, fade-out, or speed changes.
 
       :param effect_list: A list of effects to apply. Each effect must be an instance of `FadeIn`, `FadeOut`, `ChangeSpeed`, or similar.
@@ -211,8 +398,51 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: callback()
+
+      
+      Get the callback function associated with the audio sink.
+
+      Returns:
+          Optional[Callable]: The Python callable if set; otherwise, None.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: cancel_callback()
 
+      
       Cancels the current audio callback.
 
       This method sets a flag to indicate that the audio callback should be canceled.
@@ -230,8 +460,51 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: empty()
+
+      
+      Check if the audio sink is empty.
+
+      Returns:
+          bool: True if the audio sink is empty; otherwise, False.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: get_pos()
 
+      
       Get the current playback position in seconds.
 
       :return: The playback position.
@@ -241,8 +514,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: get_remaining_time()
 
+      
       Get the remaining time of the audio playback.
 
       :return: The remaining time of the audio in seconds, rounded to two decimal places.
@@ -252,8 +542,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: get_speed()
 
+      
       Get the current playback speed of the audio.
 
       :return: The playback speed.
@@ -261,8 +568,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: get_volume()
 
+      
       Get the current volume level.
 
       :return: The current volume level.
@@ -270,8 +594,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: load_audio(filename)
 
+      
       Load an audio file for playback.
 
       :param filename: The path to the audio file to load.
@@ -279,11 +620,29 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: pause()
 
+      
       Pause the currently playing audio, if any.
 
-      :raises RuntimeError: If no audio has been loaded.
+      Raises:
+          RuntimeError: If no audio has been loaded.
 
       Example:
 
@@ -296,14 +655,32 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: play()
 
+      
       Start playing the loaded audio.
 
       This method begins playback of the audio that was loaded using the `load_audio` method.
       If the audio is already playing, this method has no effect.
 
-      :raises RuntimeError: If no audio has been loaded.
+      Raises:
+          RuntimeError: If no audio has been loaded.
 
       Example:
 
@@ -315,8 +692,56 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: playback_data()
+
+      
+      Retrieve playback metadata and effects associated with the audio sink.
+
+      Returns:
+          Dict[str, Any]: A dictionary containing playback metadata, a list of effects, 
+          and the current playback position. The dictionary includes the following keys:
+
+          - 'effects': A list of effect dictionaries, each representing an action (e.g., 
+          FadeIn, FadeOut, ChangeSpeed).
+          - 'position': The current playback position.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: set_duration(duration)
 
+      
       Set the length of the audio file to the meta data.
 
       :param duration: The duration. Must be a float
@@ -325,8 +750,24 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: set_speed(speed)
 
+      
       Set the playback speed of the audio.
 
       :param speed: The playback speed. Must be a float.
@@ -338,8 +779,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: set_volume(volume)
 
+      
       Set the volume level for playback.
 
       :param volume: The volume level. Must be between 0.0 and 1.0.
@@ -351,11 +809,29 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: stop()
 
+      
       Stop the currently playing audio, if any.
 
-      :raises RuntimeError: If no audio has been loaded.
+      Raises:
+          RuntimeError: If no audio has been loaded.
 
       Example:
 
@@ -368,8 +844,25 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: try_seek(position)
 
+      
       Attempt to seek to a specific position in the audio playback.
 
       :param position: The position in seconds to seek to.
@@ -379,13 +872,30 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:property:: is_playing
       :type: bool
 
+      
       Flag indicating whether the audio is currently playing.
 
-      :returns: True if the audio is playing, False otherwise.
-      :rtype: bool
+      Returns:
+          bool: True if the audio is playing, False otherwise.
 
       Example:
 
@@ -397,9 +907,27 @@ Package Contents
           print(handler.is_playing)  # True if audio is playing
 
 
-   .. py:property:: metadata
-      :type: dict[str, any]
 
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:property:: metadata
+      :type: MetaData
+
+      
       Get metadata for the audio file.
 
       Example:
@@ -410,12 +938,65 @@ Package Contents
           audio_1.load_audio("ex.wav")
           data = audio_1.metadata
 
+      :return: An instance of the MetaData class containing metadata for the audio file.
+      :rtype: MetaData
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:property:: metadata_dict
+      :type: dict[str, any]
+
+      
+      Get metadata for the audio file as a dictionary.
+
+      Example:
+
+      .. code-block:: python
+
+          audio_1: rpaudio.AudioSink = rpaudio.AudioSink(callback=on_audio_stop)
+          audio_1.load_audio("ex.wav")
+          data_dict = audio_1.metadata_dict
+
       :return: A dictionary containing metadata for the audio file.
       :rtype: dict[str, any]
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
 .. py:class:: ChannelManager
 
+   
    Manages multiple audio channels and provides an API to control them.
 
        Example:
@@ -453,8 +1034,25 @@ Package Contents
    :vartype channels: dict
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
    .. py:method:: add_channel(name, channel)
 
+      
       Adds a new audio channel to the manager.
       :param name: The unique identifier for the channel.
       :type name: str
@@ -463,8 +1061,26 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: channel(name)
 
+      
       Retrieves a channel by its identifier.
       :param name: The unique identifier of the channel.
       :type name: str
@@ -473,8 +1089,26 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: drop_channel(name)
 
+      
       Drops an audio channel from the manager.
       :param name: The unique identifier of the channel to drop.
       :type name: str
@@ -482,16 +1116,69 @@ Package Contents
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: start_all()
 
+      
       Starts auto-consuming audio on all channels.
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
    .. py:method:: stop_all()
 
+      
       Stops auto-consuming audio on all channels.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:attribute:: channels
