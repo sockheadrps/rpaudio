@@ -14,6 +14,7 @@ Package Contents
    Bases: :py:obj:`Exception`
 
 
+   
    Exception raised when an effect manipulation conflict occurs.
 
    This exception is raised when a user tries to change the volume or speed of the audio
@@ -45,4 +46,20 @@ Package Contents
                except EffectConflictException as e:
                    print(f"Error: {e}")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
