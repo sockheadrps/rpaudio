@@ -225,7 +225,7 @@ async def test_audio_handler_callback():
 async def test_default_values(audio_handler):
     handler, _ = audio_handler
     assert handler.is_playing is False
-    assert handler.get_volume() == 0.0
+    assert handler.get_volume() == 1.0
     assert handler.get_speed() == 1.0
 
 
