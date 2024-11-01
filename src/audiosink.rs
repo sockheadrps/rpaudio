@@ -40,14 +40,7 @@ impl AudioSink {
                     Some(self.metadata.duration.unwrap() as f32),
                 ));
                 match action {
-                    ActionType::FadeIn(fade_in) => {
-                        if self.initial_play {
-                            if let Some(start_val) = fade_in.start_val {
-                                sink.lock().unwrap().set_volume(start_val);
-                            }
-                            self.initial_play = false;
-                        }
-
+                    ActionType::FadeIn(_fade_in) => {
                         effects_guard.push(effect_sync);
                     }
                     ActionType::FadeOut(_fade_out) => {
@@ -56,6 +49,12 @@ impl AudioSink {
                     ActionType::ChangeSpeed(_) => {
                         effects_guard.push(effect_sync);
                     }
+                }
+            } else {
+                if self.initial_play {
+                    self.initial_volume(&sink);
+
+                    self.initial_play = false;
                 }
             }
 
@@ -118,6 +117,46 @@ impl AudioSink {
                 }
                 keep_effect
             });
+        }
+    }
+    pub fn initial_volume(&self, sink: &Arc<Mutex<Sink>>) {
+        let has_fade_in = self
+            .effects_chain
+            .iter()
+            .any(|effect| matches!(effect, ActionType::FadeIn(_)));
+
+        let apply_after_values: Vec<Option<f32>> = self
+            .effects_chain
+            .iter()
+            .filter_map(|effect| {
+                if let ActionType::FadeIn(fade_in) = effect {
+                    Some(fade_in.apply_after)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        if has_fade_in {
+            let current_volume = sink.lock().unwrap().volume();
+            if apply_after_values
+                .iter()
+                .all(|val| val.is_none() || *val == Some(0.0))
+            {
+                if current_volume != 0.0 {
+                    sink.lock().unwrap().set_volume(0.0);
+                }
+            } else {
+                if current_volume == 0.0 {
+                    sink.lock().unwrap().set_volume(1.0);
+                }
+            }
+        } else {
+            if let Some(sink) = &self.sink {
+                let current_volume = sink.lock().unwrap().volume();
+                if current_volume == 0.0 {
+                    sink.lock().unwrap().set_volume(1.0);
+                }
+            }
         }
     }
 }
@@ -279,10 +318,10 @@ impl AudioSink {
             *self.is_playing.write().unwrap() = true;
             if self.initial_play {
                 sink.lock().unwrap().play();
-
-                self.handle_action_and_effects(sink.clone());
             } else {
                 self.resume = true;
+                sink.lock().unwrap().play();
+
                 self.handle_action_and_effects(sink.clone());
             }
             Ok(())
@@ -470,6 +509,9 @@ impl AudioSink {
 
             Ok(())
         })?;
+
+        // If there is a FadeIn effect, check if it has an apply_after value, if its none or 0.0, but the current volume is not 0.0, set it to 0.0
+        self.initial_volume(&self.sink.clone().unwrap());
 
         if let Some(sender) = self.action_sender.take() {
             let effects_guard = &self.effects_chain;
