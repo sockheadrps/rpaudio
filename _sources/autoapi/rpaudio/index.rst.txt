@@ -4,8 +4,8 @@ rpaudio
 .. py:module:: rpaudio
 
 
-Subpackages
------------
+Submodules
+----------
 
 .. toctree::
    :maxdepth: 1
@@ -240,6 +240,7 @@ Package Contents
    .. py:property:: auto_consume
       :type: bool
 
+
       
       Returns whether the channel automatically consumes the queue.
 
@@ -265,6 +266,7 @@ Package Contents
 
    .. py:property:: current_audio
       :type: AudioSink
+
 
       
       Returns the currently playing AudioSink object.
@@ -314,6 +316,7 @@ Package Contents
 
    .. py:property:: queue_contents
       :type: List[AudioSink]
+
 
       
       Returns the current queue of AudioSink objects.
@@ -891,6 +894,7 @@ Package Contents
    .. py:property:: is_playing
       :type: bool
 
+
       
       Flag indicating whether the audio is currently playing.
 
@@ -927,6 +931,7 @@ Package Contents
    .. py:property:: metadata
       :type: MetaData
 
+
       
       Get metadata for the audio file.
 
@@ -961,6 +966,7 @@ Package Contents
 
    .. py:property:: metadata_dict
       :type: dict[str, any]
+
 
       
       Get metadata for the audio file as a dictionary.

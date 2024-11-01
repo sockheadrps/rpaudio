@@ -363,11 +363,46 @@
                   
   <section id="quick-start-guide">
 <h1>Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Link to this heading">#</a></h1>
-<p>To quickly get started with rpaudio, follow these steps:</p>
+<p>Rpaudio can be use in both synchronous and asynchronous Python code.
+To quickly get started with rpaudio, follow these steps:</p>
 <ol class="arabic">
 <li><p>Install rpaudio:</p>
 <blockquote>
 <div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>rpaudio
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Use rpaudio in your synchronous Python code:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rpaudio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">kill_audio</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">AUDIO_FILE</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\16145\Desktop\a1.mp3&quot;</span>
+
+<span class="k">def</span> <span class="nf">on_audio_stop</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">kill_audio</span>
+    <span class="n">kill_audio</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Audio has stopped&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">play_audio</span><span class="p">():</span>
+    <span class="c1"># Initialize and load the audio file</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">rpaudio</span><span class="o">.</span><span class="n">AudioSink</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">on_audio_stop</span><span class="p">)</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="n">AUDIO_FILE</span><span class="p">)</span>
+
+    <span class="c1"># Set the volume to 50% (optional)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">set_volume</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+    <span class="c1"># Loop until the audio completes, print the time elapsed</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">kill_audio</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">play_audio</span><span class="p">()</span>
 </pre></div>
 </div>
 </div></blockquote>
