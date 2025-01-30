@@ -14,6 +14,7 @@ pub struct AudioChannel {
     pub auto_consume: Arc<Mutex<bool>>,
     currently_playing: Arc<Mutex<Option<AudioSink>>>,
     effects_chain: Arc<Mutex<Vec<ActionType>>>,
+    channel_volume: Arc<Mutex<f32>>,
 }
 
 impl fmt::Debug for AudioSink {
@@ -33,7 +34,15 @@ impl AudioChannel {
 
     pub fn consume(&mut self) {
         if let Some(mut sink) = self.pop() {
+            let volume = self.channel_volume.lock().unwrap();
+            let _ = sink.set_volume(*volume);
             let _ = sink.play();
+        }
+    }
+
+    pub fn set_volume(&mut self, volume: f32) {
+        if let Ok(mut volume_guard) = self.channel_volume.lock() {
+            *volume_guard = volume;
         }
     }
 }
@@ -47,6 +56,7 @@ impl AudioChannel {
             auto_consume: Arc::new(Mutex::new(false)),
             currently_playing: Arc::new(Mutex::new(None)),
             effects_chain: Arc::new(Mutex::new(Vec::new())),
+            channel_volume: Arc::new(Mutex::new(1.0)),
         };
 
         let channel_arc = Arc::new(Mutex::new(channel));
@@ -72,6 +82,8 @@ impl AudioChannel {
                 {
                     if playing_guard.is_none() && !queue_guard.is_empty() {
                         let mut next_sink = queue_guard.remove(0);
+                        let volume = channel.channel_volume.lock().unwrap();
+                        let _ = next_sink.set_volume(*volume);
 
                         drop(queue_guard);
 
@@ -134,6 +146,18 @@ impl AudioChannel {
     pub fn set_auto_consume(&mut self, value: bool) {
         if let Ok(mut auto_consume_guard) = self.auto_consume.lock() {
             *auto_consume_guard = value;
+        }
+    }
+
+    #[setter]
+    pub fn  channel_volume(&mut self, volume: f32) {
+        if let Ok(mut volume_guard) = self.channel_volume.lock() {
+            *volume_guard = volume;
+            if let Ok(mut currently_playing) = self.currently_playing.lock() {
+                if let Some(ref mut sink) = *currently_playing {
+                    let _ = sink.set_volume(volume);
+                }
+            }
         }
     }
 
